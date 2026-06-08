@@ -29,6 +29,7 @@ export default function AddRoundModal({ onClose }: AddRoundModalProps) {
   const [penaltyPoints, setPenaltyPoints] = useState<number>(100);
 
   const handleScoreChange = (playerId: string, val: string) => {
+    // Izinkan angka, minus, atau string kosong
     if (val === "" || val === "-" || /^-?\d+$/.test(val)) {
       setScores((prev) => ({ ...prev, [playerId]: val }));
     }
@@ -78,19 +79,47 @@ export default function AddRoundModal({ onClose }: AddRoundModalProps) {
         <div className="p-6 overflow-y-auto flex-1 space-y-6">
           
           <div className="space-y-4">
-            {players.map((p) => (
-              <div key={p.id} className="flex items-center justify-between gap-4">
-                <span className="font-bold text-lg text-zinc-300 w-16">{p.initials}</span>
-                <input
-                  type="text"
-                  inputMode="decimal"
-                  placeholder="0"
-                  value={scores[p.id]}
-                  onChange={(e) => handleScoreChange(p.id, e.target.value)}
-                  className="flex-1 bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-3 text-white text-right text-xl focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-all"
-                />
-              </div>
-            ))}
+            {players.map((p) => {
+              const isMinus = scores[p.id]?.startsWith("-");
+              
+              return (
+                <div key={p.id} className="flex items-center justify-between gap-4">
+                  <span className="font-bold text-lg text-zinc-300 w-12">{p.initials}</span>
+                  
+                  <div className="flex-1 relative">
+                    {/* TOMBOL PLUS/MINUS CUSTOM */}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const currentVal = scores[p.id] || "";
+                        if (currentVal.startsWith("-")) {
+                          handleScoreChange(p.id, currentVal.substring(1)); // Ilangin minus
+                        } else if (currentVal !== "" && currentVal !== "0") {
+                          handleScoreChange(p.id, "-" + currentVal); // Tambahin minus
+                        } else {
+                          handleScoreChange(p.id, "-"); // Set minus pertama kali
+                        }
+                      }}
+                      className={cn(
+                        "absolute left-1.5 top-1.5 bottom-1.5 w-12 flex items-center justify-center rounded-lg font-black text-lg transition-all active:scale-95",
+                        isMinus ? "bg-rose-500 text-white shadow-[inset_0_-2px_0_rgba(0,0,0,0.2)]" : "bg-zinc-800 text-zinc-400 hover:text-white"
+                      )}
+                    >
+                      +/-
+                    </button>
+
+                    <input
+                      type="text"
+                      inputMode="numeric" // Keyboard di HP bakal murni ngeluarin angka
+                      placeholder="0"
+                      value={scores[p.id]}
+                      onChange={(e) => handleScoreChange(p.id, e.target.value)}
+                      className="w-full bg-zinc-950 border border-zinc-800 rounded-xl pl-16 pr-4 py-3 text-white text-right text-xl focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-all font-mono"
+                    />
+                  </div>
+                </div>
+              );
+            })}
           </div>
 
           {validationErrors.length > 0 && (
