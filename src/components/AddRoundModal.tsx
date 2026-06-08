@@ -102,7 +102,7 @@ export default function AddRoundModal({ onClose }: AddRoundModalProps) {
                       }}
                       className={cn(
                         "absolute left-1.5 top-1.5 bottom-1.5 w-12 flex items-center justify-center rounded-lg font-black text-lg transition-all active:scale-95",
-                        isMinus ? "bg-rose-500 text-white shadow-[inset_0_-2px_0_rgba(0,0,0,0.2)]" : "bg-zinc-800 text-zinc-400 hover:text-white"
+                        isMinus ? "bg-rose-500 text-white shadow-[inset_0_-2px_0_rgba(0,0,0,0.2)]" : "bg-green-600 text-white shadow-[inset_0_-2px_0_rgba(0,0,0,0.2)]"
                       )}
                     >
                       {isMinus ? "-" : "+"}
