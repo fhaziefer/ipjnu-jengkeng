@@ -105,7 +105,7 @@ export default function AddRoundModal({ onClose }: AddRoundModalProps) {
                         isMinus ? "bg-rose-500 text-white shadow-[inset_0_-2px_0_rgba(0,0,0,0.2)]" : "bg-zinc-800 text-zinc-400 hover:text-white"
                       )}
                     >
-                      +/-
+                      {isMinus ? "-" : "+"}
                     </button>
 
                     <input
