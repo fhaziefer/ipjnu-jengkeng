@@ -83,7 +83,7 @@ export default function AddRoundModal({ onClose }: AddRoundModalProps) {
                 <span className="font-bold text-lg text-zinc-300 w-16">{p.initials}</span>
                 <input
                   type="text"
-                  inputMode="numeric"
+                  inputMode="decimal"
                   placeholder="0"
                   value={scores[p.id]}
                   onChange={(e) => handleScoreChange(p.id, e.target.value)}
