@@ -7,9 +7,19 @@ import { cn } from "@/lib/utils";
 
 export default function SetupScreen() {
   const startGame = useGameStore((state) => state.startGame);
-  
-  const [initials, setInitials] = useState<string[]>(["", "", "", ""]);
-  
+  const existingPlayers = useGameStore((state) => state.players); // Ambil data pemain sebelumnya (kalau ada)
+
+  // Kalau ada data pemain sebelumnya (dari fitur "Ganti"), otomatis masukin ke kolom input
+  const [initials, setInitials] = useState<string[]>(() => {
+    const defaultInitials = ["", "", "", ""];
+    if (existingPlayers && existingPlayers.length > 0) {
+      existingPlayers.forEach((p, index) => {
+        if (index < 4) defaultInitials[index] = p.initials;
+      });
+    }
+    return defaultInitials;
+  });
+
   const handleInitialChange = (index: number, val: string) => {
     const newInitials = [...initials];
     newInitials[index] = val.slice(0, 3).toUpperCase(); // Max 3 chars
@@ -35,7 +45,7 @@ export default function SetupScreen() {
     <div className="min-h-screen flex flex-col items-center justify-center p-6 bg-zinc-950">
       <div className="w-full max-w-sm space-y-8">
         <div className="text-center space-y-2">
-          <h1 className="text-4xl font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-br from-amber-400 to-rose-500">
+          <h1 className="text-4xl font-black tracking-tighter text-transparent bg-clip-text bg-linear-to-br from-amber-400 to-rose-500">
             JENGKENG
           </h1>
           <p className="text-zinc-400 text-sm">Digawe ngitung, ben gak mumet</p>
@@ -46,7 +56,7 @@ export default function SetupScreen() {
             <Users className="w-5 h-5 text-amber-500" />
             <span>Pemain</span>
           </div>
-          
+
           {initials.map((initial, index) => (
             <div key={index} className="flex flex-col gap-1">
               <label className="text-xs text-zinc-500 ml-1">
@@ -69,7 +79,7 @@ export default function SetupScreen() {
           className={cn(
             "w-full flex items-center justify-center gap-2 py-4 rounded-2xl font-bold text-lg transition-all",
             isValid
-              ? "bg-gradient-to-r from-amber-500 to-rose-600 text-white shadow-lg shadow-rose-500/20 active:scale-[0.98]"
+              ? "bg-linear-to-r from-amber-500 to-rose-600 text-white shadow-lg shadow-rose-500/20 active:scale-[0.98]"
               : "bg-zinc-800 text-zinc-500 cursor-not-allowed"
           )}
         >

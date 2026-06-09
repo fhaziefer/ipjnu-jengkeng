@@ -17,3 +17,37 @@
     display: none; /* Chrome, Safari and Opera */
   }
 }
+
+@media print {
+  @page {
+    /* "auto" membuat printer/browser menyesuaikan panjang kertas dengan konten */
+    size: auto;
+    margin: 0;
+  }
+
+  body {
+    /* Memastikan body tidak terpotong margin default browser */
+    margin: 0 !important;
+    padding: 0 !important;
+    background: white !important;
+    color: black !important;
+    font-family: monospace;
+  }
+
+  /* Sembunyikan semua tombol dan elemen yang cuma buat layar HP */
+  .no-print {
+    display: none !important;
+  }
+
+  /* Styling tabel biar hemat tinta dan rapi */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  td,
+  th {
+    padding: 5px;
+    border: 1px solid #000 !important;
+  }
+}
