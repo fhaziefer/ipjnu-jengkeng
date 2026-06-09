@@ -16,6 +16,7 @@
 # next.js
 /.next/
 /out/
+/ai_context/
 
 # production
 /build
