@@ -47,6 +47,7 @@ export interface RoundScore {
 export interface Round {
   roundId: string;
   scores: RoundScore[];
+  isEdited?: boolean; // Tanda apakah ronde ini hasil editan
 }
 
 export interface ShootRecord {
@@ -68,9 +69,10 @@ interface GameState {
   startGame: (players: Player[]) => void;
   addRound: (
     scores: { playerId: string; baseScore: number }[],
-    shoot?: { shooterId: string; victimId: string; penaltyPoints: number }
+    shoot?: { shooterId: string; victimId: string; penaltyPoints: number },
+    isEdited?: boolean // Parameter baru
   ) => void;
-  undoLastRound: () => void; // FITUR BARU
+  undoLastRound: () => void;
   finishGame: () => void;
   resetGame: () => void;
 }
@@ -98,7 +100,7 @@ export const useGameStore = create<GameState>()(
         });
       },
 
-      addRound: (scores, shoot) => {
+      addRound: (scores, shoot, isEdited = false) => {
         const roundId = Date.now().toString();
 
         const finalScores = scores.map((s) => {
@@ -116,6 +118,7 @@ export const useGameStore = create<GameState>()(
         const newRound: Round = {
           roundId,
           scores: finalScores,
+          isEdited, // Masukin tandanya ke database
         };
 
         set((state) => {
@@ -166,21 +169,17 @@ export const useGameStore = create<GameState>()(
         });
       },
 
-      // LOGIKA UNDO RONDE TERAKHIR
       undoLastRound: () => {
         set((state) => {
-          if (state.rounds.length === 0) return state; // Cegah error kalau array kosong
+          if (state.rounds.length === 0) return state;
 
-          // Buang ronde paling akhir
           const newRounds = state.rounds.slice(0, -1);
           const lastRound = state.rounds[state.rounds.length - 1];
 
-          // Buang record gepukan yang nyangkut di ronde tersebut
           const newShootRecords = state.shootRecords.filter(
             (record) => record.roundId !== lastRound.roundId
           );
 
-          // Kalkulasi ulang total skor setelah di-undo
           const totals = state.players.reduce((acc, p) => {
             acc[p.id] = 0;
             return acc;
@@ -192,7 +191,6 @@ export const useGameStore = create<GameState>()(
             });
           });
 
-          // Evaluasi ulang siapa juru kunci yang asli sekarang
           let minScore = Infinity;
           const tiedForLast: string[] = [];
 
