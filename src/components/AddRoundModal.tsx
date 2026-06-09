@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useGameStore } from "@/store/useGameStore";
 import { X, Plus, AlertCircle, ShieldAlert } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -27,6 +27,13 @@ export default function AddRoundModal({ onClose }: AddRoundModalProps) {
   const [shooterId, setShooterId] = useState("");
   const [victimId, setVictimId] = useState("");
   const [penaltyPoints, setPenaltyPoints] = useState<number>(100);
+
+  // FIX: Reset Victim otomatis kalau namanya sama dengan Shooter
+  useEffect(() => {
+    if (shooterId && shooterId === victimId) {
+      setVictimId("");
+    }
+  }, [shooterId, victimId]);
 
   const handleScoreChange = (playerId: string, val: string) => {
     // Izinkan angka, minus, atau string kosong
@@ -66,7 +73,7 @@ export default function AddRoundModal({ onClose }: AddRoundModalProps) {
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/80 backdrop-blur-sm sm:items-center p-0 sm:p-4 animate-in fade-in duration-200">
       <div className="bg-zinc-900 w-full sm:max-w-md rounded-t-3xl sm:rounded-3xl border border-zinc-800 shadow-2xl flex flex-col max-h-[90vh]">
-        
+
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-zinc-800">
           <h2 className="text-xl font-bold text-white">Wayahe Ngitung</h2>
@@ -77,15 +84,15 @@ export default function AddRoundModal({ onClose }: AddRoundModalProps) {
 
         {/* Content */}
         <div className="p-6 overflow-y-auto flex-1 space-y-6">
-          
+
           <div className="space-y-4">
             {players.map((p) => {
               const isMinus = scores[p.id]?.startsWith("-");
-              
+
               return (
                 <div key={p.id} className="flex items-center justify-between gap-4">
                   <span className="font-bold text-lg text-zinc-300 w-12">{p.initials}</span>
-                  
+
                   <div className="flex-1 relative">
                     {/* TOMBOL PLUS/MINUS CUSTOM */}
                     <button
@@ -145,7 +152,7 @@ export default function AddRoundModal({ onClose }: AddRoundModalProps) {
               </div>
               <Plus className={cn("w-5 h-5 transition-transform", isGepukOpen && "rotate-45")} />
             </button>
-            
+
             {isGepukOpen && (
               <div className="p-4 bg-zinc-900 space-y-4 border-t border-zinc-800">
                 <div className="grid grid-cols-2 gap-4">
@@ -172,7 +179,7 @@ export default function AddRoundModal({ onClose }: AddRoundModalProps) {
                     </select>
                   </div>
                 </div>
-                
+
                 <div className="space-y-1">
                   <label className="text-xs text-zinc-500 font-medium ml-1">Gepukane</label>
                   <select

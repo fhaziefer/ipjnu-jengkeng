@@ -15,6 +15,12 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "IPJNU - Jengkeng",
   description: "Jamiyyah Jengkeng Indonesia",
+  manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "JENGKENG",
+  },
 };
 
 export default function RootLayout({

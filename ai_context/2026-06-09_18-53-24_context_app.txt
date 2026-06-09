@@ -1,0 +1,96 @@
+<context_dump>
+
+<file path="src/app/layout.tsx">
+import type { Metadata } from "next";
+import { Geist, Geist_Mono } from "next/font/google";
+import "./globals.css";
+
+const geistSans = Geist({
+  variable: "--font-geist-sans",
+  subsets: ["latin"],
+});
+
+const geistMono = Geist_Mono({
+  variable: "--font-geist-mono",
+  subsets: ["latin"],
+});
+
+export const metadata: Metadata = {
+  title: "IPJNU - Jengkeng",
+  description: "Jamiyyah Jengkeng Indonesia",
+};
+
+export default function RootLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
+  return (
+    <html
+      lang="en"
+      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+    >
+      <body className="min-h-full flex flex-col">{children}</body>
+    </html>
+  );
+}
+</file>
+
+<file path="src/app/page.tsx">
+"use client";
+
+import { useGameStore } from "@/store/useGameStore";
+import SetupScreen from "@/components/SetupScreen";
+import DashboardScreen from "@/components/DashboardScreen";
+import FinishedScreen from "@/components/FinishedScreen";
+import { useEffect, useState } from "react";
+
+export default function Home() {
+  const { gameStatus } = useGameStore();
+  const [mounted, setMounted] = useState(false);
+
+  // Avoid hydration errors with persist middleware
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) return null;
+
+  if (gameStatus === "idle") {
+    return <SetupScreen />;
+  }
+
+  if (gameStatus === "active") {
+    return <DashboardScreen />;
+  }
+
+  if (gameStatus === "finished") {
+    return <FinishedScreen />;
+  }
+
+  return null;
+}
+</file>
+
+<file path="src/app/globals.css">
+@import "tailwindcss";
+
+@theme {
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+@layer base {
+  body {
+    @apply bg-zinc-950 text-zinc-100 antialiased selection:bg-amber-500/30;
+    /* Hide scrollbar for mobile clean look */
+    -ms-overflow-style: none; /* IE and Edge */
+    scrollbar-width: none; /* Firefox */
+  }
+
+  body::-webkit-scrollbar {
+    display: none; /* Chrome, Safari and Opera */
+  }
+}
+</file>
+</context_dump>

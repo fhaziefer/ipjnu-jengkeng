@@ -1,0 +1,1045 @@
+<context_dump>
+
+<file path="src/components/PsywarFooter.tsx">
+"use client";
+
+import { useGameStore } from "@/store/useGameStore";
+import { useNow } from "@/hooks/useNow";
+import { useMemo } from "react";
+import { Flame } from "lucide-react";
+
+// ============================================================
+// SUB-KOMPONEN OPTIMASI: Biar re-render timer gak bikin berat
+// ============================================================
+function GameDurationText({ startTime }: { startTime: number | null }) {
+  const now = useNow(30000); // update setiap 30 detik
+  const gameDurationMs = startTime ? now - startTime : 0;
+  const gameDurationHrs = Math.floor(gameDurationMs / 3600000);
+  const gameDurationMins = Math.floor((gameDurationMs % 3600000) / 60000);
+
+  return <>{gameDurationHrs} Jam {gameDurationMins} Menit</>;
+}
+
+function StuckDurationText({ since }: { since: number | null }) {
+  const now = useNow(30000); // update setiap 30 detik
+  const stuckMs = since ? now - since : 0;
+  const stuckHrs = Math.floor(stuckMs / 3600000);
+  const stuckMins = Math.floor((stuckMs % 3600000) / 60000);
+
+  return <>({stuckHrs} jam {stuckMins} menit)</>;
+}
+
+// ============================================================
+// KOMPONEN UTAMA
+// ============================================================
+export default function PsywarFooter() {
+  const { players, rounds, currentLastPlacePlayerId, lastPlaceSinceTimestamp, gameStartTime } = useGameStore();
+
+  // Kalkulasi total poin keseluruhan
+  const totals = useMemo(() => {
+    const acc: Record<string, number> = {};
+    players.forEach((p) => (acc[p.id] = 0));
+    rounds.forEach((r) => {
+      r.scores.forEach((s) => {
+        acc[s.playerId] += s.finalScore;
+      });
+    });
+    return acc;
+  }, [players, rounds]);
+
+  // Urutkan pemain dari yang poinnya terbesar ke terkecil
+  const sortedPlayers = useMemo(() => {
+    return [...players].sort((a, b) => totals[b.id] - totals[a.id]);
+  }, [players, totals]);
+
+  // Render state awal jika permainan baru dimulai
+  if (rounds.length === 0 || sortedPlayers.length < 2) {
+    return (
+      <div className="shrink-0 p-4 border-t border-zinc-800 bg-zinc-950 pb-28 text-center z-10">
+        <p className="text-zinc-500 text-sm">
+          0 Mainan | <GameDurationText startTime={gameStartTime} />
+        </p>
+      </div>
+    );
+  }
+
+  // Tentukan Juru Kunci saat ini untuk tampilan Gap Poin
+  const lastPlace = sortedPlayers[sortedPlayers.length - 1];
+  const secondLastPlace = sortedPlayers[sortedPlayers.length - 2];
+  const gap = totals[secondLastPlace.id] - totals[lastPlace.id];
+
+  // Kalkulasi seberapa banyak Juru Kunci ini nyungsep berturut-turut
+  let consecutiveRounds = 0;
+  const tempTotals: Record<string, number> = {};
+  players.forEach((p) => (tempTotals[p.id] = 0));
+
+  const historyRanks: string[][] = [];
+
+  rounds.forEach((r) => {
+    r.scores.forEach((s) => {
+      tempTotals[s.playerId] += s.finalScore;
+    });
+
+    let minScore = Infinity;
+    let tiedForLast: string[] = [];
+
+    // Logika pencarian posisi terakhir (mendukung hasil seri/tie)
+    for (const [id, score] of Object.entries(tempTotals)) {
+      if (score < minScore) {
+        minScore = score;
+        tiedForLast = [id];
+      } else if (score === minScore) {
+        tiedForLast.push(id);
+      }
+    }
+    historyRanks.push(tiedForLast);
+  });
+
+  // Hitung mundur dari ronde terakhir ke awal
+  for (let i = historyRanks.length - 1; i >= 0; i--) {
+    if (historyRanks[i].includes(currentLastPlacePlayerId || "")) {
+      consecutiveRounds++;
+    } else {
+      break;
+    }
+  }
+
+  // Gunakan data dari Store sebagai sumber kebenaran utama
+  const displayLastPlace = players.find(p => p.id === currentLastPlacePlayerId) || lastPlace;
+
+  return (
+    <div className="shrink-0 p-4 border-t border-zinc-800 bg-zinc-950 pb-28 space-y-4 z-10 relative shadow-[0_-10px_40px_rgba(0,0,0,0.5)]">
+
+      {/* Top Info Bar */}
+      <div className="flex items-center justify-center gap-4 text-xs text-zinc-500 font-mono">
+        <span>{rounds.length} Mainan</span>
+        <span>•</span>
+        <span className="flex items-center gap-1">
+          <GameDurationText startTime={gameStartTime} />
+        </span>
+      </div>
+
+      {/* Dashed Psywar Box */}
+      <div className="bg-zinc-900/50 border border-dashed border-zinc-700 rounded-2xl p-4 text-center space-y-3">
+        <div className="flex items-center justify-center gap-2 text-rose-400 font-medium text-sm">
+          <Flame className="w-4 h-4" />
+          <span>Woro-woro</span>
+          <Flame className="w-4 h-4" />
+        </div>
+
+        <p className="text-zinc-300 text-sm">
+          <strong className="text-white">{displayLastPlace.initials}</strong> 💩 butuh <strong className="text-amber-400">{gap}</strong> poin nyalip <strong className="text-white">{secondLastPlace.initials}</strong> 😭.
+        </p>
+
+        {consecutiveRounds > 0 && (
+          <p className="text-rose-500 text-xs bg-rose-500/10 py-2 px-3 rounded-xl inline-block">
+            {displayLastPlace.initials} jengkeng <strong>{consecutiveRounds} mainan</strong> <StuckDurationText since={lastPlaceSinceTimestamp} />
+          </p>
+        )}
+      </div>
+
+    </div>
+  );
+}</file>
+
+<file path="src/components/RoundList.tsx">
+"use client";
+
+import { useGameStore } from "@/store/useGameStore";
+import { useMemo } from "react";
+import { cn } from "@/lib/utils";
+
+export default function RoundList() {
+  const { players, rounds, shootRecords } = useGameStore();
+
+  const gridColsClass = useMemo(() => {
+    switch (players.length) {
+      case 2: return "grid-cols-2";
+      case 3: return "grid-cols-3";
+      case 4: return "grid-cols-4";
+      default: return "grid-cols-2";
+    }
+  }, [players.length]);
+
+  const cumulativeRounds = useMemo(() => {
+    const totals: Record<string, number> = {};
+    
+    // Tracker untuk ngecek apakah pemain udah pernah nyentuh batas
+    const hasCrossedGodTier: Record<string, boolean> = {};
+    const hasCrossedHellTier: Record<string, boolean> = {};
+
+    players.forEach((p) => {
+      totals[p.id] = 0;
+      hasCrossedGodTier[p.id] = false;
+      hasCrossedHellTier[p.id] = false;
+    });
+
+    return rounds.map((round) => {
+      const godTierHits: Record<string, boolean> = {};
+      const hellTierHits: Record<string, boolean> = {};
+
+      round.scores.forEach((s) => {
+        totals[s.playerId] += s.finalScore;
+      });
+
+      // Cek momen pecah telur di ronde ini
+      players.forEach((p) => {
+        const currentScore = totals[p.id];
+        
+        // Kalau nyentuh 1000+ dan belum pernah sebelumnya
+        if (currentScore >= 1000 && !hasCrossedGodTier[p.id]) {
+          godTierHits[p.id] = true;
+          hasCrossedGodTier[p.id] = true; // Kunci biar ronde depan gak nyala lagi
+        }
+        
+        // Kalau nyentuh -1000 dan belum pernah sebelumnya
+        if (currentScore <= -1000 && !hasCrossedHellTier[p.id]) {
+          hellTierHits[p.id] = true;
+          hasCrossedHellTier[p.id] = true; // Kunci biar ronde depan gak nyala lagi
+        }
+      });
+
+      let maxScore = -Infinity;
+      let minScore = Infinity;
+
+      for (const score of Object.values(totals)) {
+        if (score > maxScore) maxScore = score;
+        if (score < minScore) minScore = score;
+      }
+
+      return {
+        ...round,
+        cumulativeScores: { ...totals },
+        godTierHits,
+        hellTierHits,
+        maxScore,
+        minScore,
+      };
+    });
+  }, [rounds, players]);
+
+  if (rounds.length === 0) {
+    return (
+      <div className="flex-1 flex flex-col items-center justify-center p-8 text-center space-y-4 opacity-50 overflow-y-auto">
+        <p className="text-zinc-500 text-sm">Nembe Mulai, durung itungan.</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex-1 overflow-y-auto bg-zinc-950 flex flex-col">
+      {cumulativeRounds.map((round, rowIndex) => {
+        const isLastRow = rowIndex === cumulativeRounds.length - 1;
+
+        return (
+          <div
+            key={round.roundId}
+            className={cn(
+              "grid gap-[1px] bg-zinc-900 border-b border-zinc-900 shrink-0",
+              gridColsClass
+            )}
+          >
+            {players.map((p) => {
+              const score = round.cumulativeScores[p.id];
+              const isMax = score === round.maxScore && score !== round.minScore;
+              const isMin = score === round.minScore && score !== round.maxScore;
+
+              const isShooter = shootRecords.some(r => r.roundId === round.roundId && r.shooterId === p.id);
+              const isVictim = shootRecords.some(r => r.roundId === round.roundId && r.victimId === p.id);
+
+              // Cek apakah di ronde ini dia baru saja pecah telur
+              const isJustHitGod = round.godTierHits[p.id];
+              const isJustHitHell = round.hellTierHits[p.id];
+              const hasSpecialEffect = isJustHitGod || isJustHitHell;
+
+              return (
+                <div
+                  key={`${round.roundId}-${p.id}`}
+                  className={cn(
+                    "relative flex items-center justify-center transition-colors overflow-hidden",
+                    isLastRow ? "py-5" : "py-3",
+                    // Kalau gak ada efek muter, pasang warna background dan border normal
+                    !hasSpecialEffect && "bg-zinc-950",
+                    !hasSpecialEffect && isMax && "bg-amber-500/10",
+                    !hasSpecialEffect && isMin && "bg-rose-500/10",
+                    !hasSpecialEffect && isShooter && "border-2 border-amber-500",
+                    !hasSpecialEffect && isVictim && "border-2 border-rose-500"
+                  )}
+                >
+                  
+                  {/* EFEK ANIMASI KHUSUS SAAT PERTAMA KALI NYENTUH 1000 / -1000 */}
+                  {hasSpecialEffect && (
+                    <>
+                      {/* Gradient berputar */}
+                      <div 
+                        className={cn(
+                          "absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[200%] h-[200%] animate-[spin_2s_linear_infinite] z-0",
+                          isJustHitGod 
+                            ? "bg-[conic-gradient(transparent_25%,#fbbf24_50%,transparent_75%,#fbbf24_100%)]" 
+                            : "bg-[conic-gradient(transparent_25%,#f43f5e_50%,transparent_75%,#f43f5e_100%)]"
+                        )} 
+                      />
+                      {/* Tutupan tengah biar jadinya cuma border (2px) */}
+                      <div className="absolute inset-[2px] bg-zinc-950 z-0" />
+                      
+                      {/* Lapis warna heatmap sesuai status (Max/Min) di balik teks */}
+                      <div className={cn(
+                        "absolute inset-[2px] z-0",
+                        isMax && "bg-amber-500/10",
+                        isMin && "bg-rose-500/10"
+                      )} />
+                      
+                      {/* Efek Glow */}
+                      <div 
+                        className={cn(
+                          "absolute inset-0 z-0 pointer-events-none",
+                          isJustHitGod 
+                            ? "shadow-[inset_0_0_15px_rgba(251,191,36,0.3)]" 
+                            : "shadow-[inset_0_0_15px_rgba(244,63,94,0.3)]"
+                        )} 
+                      />
+                    </>
+                  )}
+
+                  <span
+                    className={cn(
+                      "relative z-10 font-mono transition-all",
+                      isLastRow ? "text-lg font-bold" : "text-sm",
+                      isMax ? "text-amber-400" : isMin ? "text-rose-400" : "text-zinc-100"
+                    )}
+                  >
+                    {score} {isShooter && "👊🏻"} {isVictim && "🤕"}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        );
+      })}
+    </div>
+  );
+}</file>
+
+<file path="src/components/FinishedScreen.tsx">
+"use client";
+
+import { useGameStore } from "@/store/useGameStore";
+import { RefreshCcw, Trophy, Skull } from "lucide-react";
+import { useMemo } from "react";
+
+export default function FinishedScreen() {
+  const { players, rounds, resetGame } = useGameStore();
+
+  const totals = useMemo(() => {
+    const acc: Record<string, number> = {};
+    players.forEach((p) => (acc[p.id] = 0));
+    rounds.forEach((r) => {
+      r.scores.forEach((s) => {
+        acc[s.playerId] += s.finalScore;
+      });
+    });
+    return acc;
+  }, [players, rounds]);
+
+  const sortedPlayers = useMemo(() => {
+    return [...players].sort((a, b) => totals[b.id] - totals[a.id]);
+  }, [players, totals]);
+
+  const winner = sortedPlayers[0];
+  const loser = sortedPlayers[sortedPlayers.length - 1];
+
+  return (
+    <div className="min-h-screen flex flex-col items-center justify-center p-6 bg-zinc-950">
+      <div className="w-full max-w-sm space-y-8 animate-in fade-in zoom-in duration-500">
+        <div className="text-center space-y-4">
+          <div className="inline-flex items-center justify-center w-24 h-24 rounded-full bg-gradient-to-br from-amber-400 to-amber-600 shadow-xl shadow-amber-500/20 mb-4">
+            <Trophy className="w-12 h-12 text-zinc-950" />
+          </div>
+          <h1 className="text-4xl font-black text-white">Sreeet</h1>
+          <div className="space-y-1">
+            <p className="text-zinc-400 text-sm">Pengarit Handal 👑</p>
+            <p className="text-amber-500 font-bold text-2xl uppercase">
+              {winner?.initials}
+            </p>
+          </div>
+        </div>
+
+        <div className="bg-zinc-900/50 border border-zinc-800 rounded-3xl p-6 space-y-4">
+          <h2 className="text-sm font-semibold text-zinc-500 uppercase tracking-wider text-center">
+            Bijine Cah-Cah
+          </h2>
+          <div className="space-y-3">
+            {sortedPlayers.map((player, index) => (
+              <div
+                key={player.id}
+                className="flex items-center justify-between bg-zinc-950 p-4 rounded-xl border border-zinc-800/50"
+              >
+                <div className="flex items-center gap-3">
+                  <span className="text-zinc-500 font-mono text-sm">
+                    #{index + 1}
+                  </span>
+                  <span className="font-bold text-white text-lg">
+                    {player.initials}
+                  </span>
+                </div>
+                <span className="font-mono text-xl text-amber-500 font-semibold">
+                  {totals[player.id]}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="bg-rose-500/10 border border-rose-500/20 rounded-3xl p-6 text-center space-y-2">
+          <Skull className="w-8 h-8 text-rose-500 mx-auto mb-2" />
+          <div className="space-y-1">
+            <p className="text-rose-400 font-medium">Juru Kunci</p>
+            <p className="text-rose-300 text-xl font-bold uppercase">{loser?.initials} 💩</p>
+          </div>
+          <p className="text-sm text-rose-500/80 mt-2">Sesok ojo sungkan ngajak maneh.</p>
+        </div>
+
+        <button
+          onClick={resetGame}
+          className="w-full flex items-center justify-center gap-2 py-4 rounded-2xl font-bold text-lg bg-zinc-800 text-white hover:bg-zinc-700 transition-all active:scale-[0.98]"
+        >
+          <RefreshCcw className="w-5 h-5" />
+          Main Maneh
+        </button>
+      </div>
+    </div>
+  );
+}
+</file>
+
+<file path="src/components/AddRoundModal.tsx">
+"use client";
+
+import { useState, useEffect } from "react";
+import { useGameStore } from "@/store/useGameStore";
+import { X, Plus, AlertCircle, ShieldAlert } from "lucide-react";
+import { cn } from "@/lib/utils";
+
+interface AddRoundModalProps {
+  onClose: () => void;
+}
+
+const PENALTY_OPTIONS = [
+  { label: "Godongan", value: 100 },
+  { label: "Londo", value: 200 },
+  { label: "As", value: 300 },
+  { label: "Joker 1", value: 500 },
+  { label: "Nyewu", value: 1000 },
+];
+
+export default function AddRoundModal({ onClose }: AddRoundModalProps) {
+  const { players, addRound } = useGameStore();
+  const [scores, setScores] = useState<Record<string, string>>(
+    players.reduce((acc, p) => ({ ...acc, [p.id]: "" }), {})
+  );
+
+  const [isGepukOpen, setIsGepukOpen] = useState(false);
+  const [shooterId, setShooterId] = useState("");
+  const [victimId, setVictimId] = useState("");
+  const [penaltyPoints, setPenaltyPoints] = useState<number>(100);
+
+  // FIX: Reset Victim otomatis kalau namanya sama dengan Shooter
+  useEffect(() => {
+    if (shooterId && shooterId === victimId) {
+      setVictimId("");
+    }
+  }, [shooterId, victimId]);
+
+  const handleScoreChange = (playerId: string, val: string) => {
+    // Izinkan angka, minus, atau string kosong
+    if (val === "" || val === "-" || /^-?\d+$/.test(val)) {
+      setScores((prev) => ({ ...prev, [playerId]: val }));
+    }
+  };
+
+  const validationErrors: string[] = [];
+  players.forEach((p) => {
+    const s = scores[p.id];
+    if (s && s !== "-" && parseInt(s) % 5 !== 0) {
+      validationErrors.push(`${p.initials} harus kelipatan 5.`);
+    }
+  });
+
+  const isAllFilled = players.every((p) => scores[p.id] && scores[p.id] !== "-");
+  const isValid = isAllFilled && validationErrors.length === 0;
+
+  const handleSubmit = () => {
+    if (!isValid) return;
+
+    const baseScores = players.map((p) => ({
+      playerId: p.id,
+      baseScore: parseInt(scores[p.id]),
+    }));
+
+    let shootData = undefined;
+    if (isGepukOpen && shooterId && victimId && shooterId !== victimId) {
+      shootData = { shooterId, victimId, penaltyPoints };
+    }
+
+    addRound(baseScores, shootData);
+    onClose();
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/80 backdrop-blur-sm sm:items-center p-0 sm:p-4 animate-in fade-in duration-200">
+      <div className="bg-zinc-900 w-full sm:max-w-md rounded-t-3xl sm:rounded-3xl border border-zinc-800 shadow-2xl flex flex-col max-h-[90vh]">
+
+        {/* Header */}
+        <div className="flex items-center justify-between p-6 border-b border-zinc-800">
+          <h2 className="text-xl font-bold text-white">Wayahe Ngitung</h2>
+          <button onClick={onClose} className="p-2 bg-zinc-800 rounded-full text-zinc-400 hover:text-white transition-colors">
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+
+        {/* Content */}
+        <div className="p-6 overflow-y-auto flex-1 space-y-6">
+
+          <div className="space-y-4">
+            {players.map((p) => {
+              const isMinus = scores[p.id]?.startsWith("-");
+
+              return (
+                <div key={p.id} className="flex items-center justify-between gap-4">
+                  <span className="font-bold text-lg text-zinc-300 w-12">{p.initials}</span>
+
+                  <div className="flex-1 relative">
+                    {/* TOMBOL PLUS/MINUS CUSTOM */}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const currentVal = scores[p.id] || "";
+                        if (currentVal.startsWith("-")) {
+                          handleScoreChange(p.id, currentVal.substring(1)); // Ilangin minus
+                        } else if (currentVal !== "" && currentVal !== "0") {
+                          handleScoreChange(p.id, "-" + currentVal); // Tambahin minus
+                        } else {
+                          handleScoreChange(p.id, "-"); // Set minus pertama kali
+                        }
+                      }}
+                      className={cn(
+                        "absolute left-1.5 top-1.5 bottom-1.5 w-12 flex items-center justify-center rounded-lg font-black text-lg transition-all active:scale-95",
+                        isMinus ? "bg-rose-500 text-white shadow-[inset_0_-2px_0_rgba(0,0,0,0.2)]" : "bg-green-600 text-white shadow-[inset_0_-2px_0_rgba(0,0,0,0.2)]"
+                      )}
+                    >
+                      {isMinus ? "-" : "+"}
+                    </button>
+
+                    <input
+                      type="text"
+                      inputMode="numeric" // Keyboard di HP bakal murni ngeluarin angka
+                      placeholder="0"
+                      value={scores[p.id]}
+                      onChange={(e) => handleScoreChange(p.id, e.target.value)}
+                      className="w-full bg-zinc-950 border border-zinc-800 rounded-xl pl-16 pr-4 py-3 text-white text-right text-xl focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-all font-mono"
+                    />
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {validationErrors.length > 0 && (
+            <div className="bg-rose-500/10 border border-rose-500/20 text-rose-400 p-3 rounded-xl text-sm flex gap-2">
+              <AlertCircle className="w-5 h-5 shrink-0" />
+              <ul className="list-disc pl-4">
+                {validationErrors.map((err, i) => (
+                  <li key={i}>{err}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {/* Tembak Section */}
+          <div className="border border-zinc-800 rounded-2xl overflow-hidden">
+            <button
+              onClick={() => setIsGepukOpen(!isGepukOpen)}
+              className="w-full flex items-center justify-between p-4 bg-zinc-950 text-amber-500 font-bold"
+            >
+              <div className="flex items-center gap-2">
+                <ShieldAlert className="w-5 h-5" />
+                <span>Gepukan?</span>
+              </div>
+              <Plus className={cn("w-5 h-5 transition-transform", isGepukOpen && "rotate-45")} />
+            </button>
+
+            {isGepukOpen && (
+              <div className="p-4 bg-zinc-900 space-y-4 border-t border-zinc-800">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-1">
+                    <label className="text-xs text-zinc-500 font-medium ml-1">Sing Gepuk</label>
+                    <select
+                      value={shooterId}
+                      onChange={(e) => setShooterId(e.target.value)}
+                      className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-3 py-3 text-white focus:outline-none focus:border-amber-500"
+                    >
+                      <option value="">Pilih...</option>
+                      {players.map(p => <option key={p.id} value={p.id}>{p.initials}</option>)}
+                    </select>
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-xs text-zinc-500 font-medium ml-1">Sing Digepuk</label>
+                    <select
+                      value={victimId}
+                      onChange={(e) => setVictimId(e.target.value)}
+                      className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-3 py-3 text-white focus:outline-none focus:border-amber-500"
+                    >
+                      <option value="">Pilih...</option>
+                      {players.filter(p => p.id !== shooterId).map(p => <option key={p.id} value={p.id}>{p.initials}</option>)}
+                    </select>
+                  </div>
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-xs text-zinc-500 font-medium ml-1">Gepukane</label>
+                  <select
+                    value={penaltyPoints}
+                    onChange={(e) => setPenaltyPoints(Number(e.target.value))}
+                    className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-3 py-3 text-white focus:outline-none focus:border-amber-500"
+                  >
+                    {PENALTY_OPTIONS.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
+                  </select>
+                </div>
+              </div>
+            )}
+          </div>
+
+        </div>
+
+        {/* Footer */}
+        <div className="p-6 border-t border-zinc-800 bg-zinc-950 shrink-0">
+          <button
+            onClick={handleSubmit}
+            disabled={!isValid}
+            className={cn(
+              "w-full py-4 rounded-2xl font-bold text-lg transition-all",
+              isValid
+                ? "bg-gradient-to-r from-amber-500 to-rose-600 text-white shadow-lg shadow-rose-500/20 active:scale-[0.98]"
+                : "bg-zinc-800 text-zinc-500 cursor-not-allowed"
+            )}
+          >
+            Oke Josjis
+          </button>
+        </div>
+
+      </div>
+    </div>
+  );
+}</file>
+
+<file path="src/components/SetupScreen.tsx">
+"use client";
+
+import { useState } from "react";
+import { useGameStore } from "@/store/useGameStore";
+import { Users, Play } from "lucide-react";
+import { cn } from "@/lib/utils";
+
+export default function SetupScreen() {
+  const startGame = useGameStore((state) => state.startGame);
+  
+  const [initials, setInitials] = useState<string[]>(["", "", "", ""]);
+  
+  const handleInitialChange = (index: number, val: string) => {
+    const newInitials = [...initials];
+    newInitials[index] = val.slice(0, 3).toUpperCase(); // Max 3 chars
+    setInitials(newInitials);
+  };
+
+  const handleStart = () => {
+    // Filter out empty initials
+    const validInitials = initials.filter((val) => val.trim().length > 0);
+    if (validInitials.length < 2) return;
+
+    const players = validInitials.map((initial, index) => ({
+      id: `player-${index + 1}`,
+      initials: initial,
+    }));
+
+    startGame(players);
+  };
+
+  const isValid = initials.filter((val) => val.trim().length > 0).length >= 2;
+
+  return (
+    <div className="min-h-screen flex flex-col items-center justify-center p-6 bg-zinc-950">
+      <div className="w-full max-w-sm space-y-8">
+        <div className="text-center space-y-2">
+          <h1 className="text-4xl font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-br from-amber-400 to-rose-500">
+            JENGKENG
+          </h1>
+          <p className="text-zinc-400 text-sm">Digawe ngitung, ben gak mumet</p>
+        </div>
+
+        <div className="space-y-4 bg-zinc-900/50 p-6 rounded-3xl border border-zinc-800 shadow-xl shadow-black/50">
+          <div className="flex items-center gap-2 text-zinc-300 font-medium mb-4">
+            <Users className="w-5 h-5 text-amber-500" />
+            <span>Pemain</span>
+          </div>
+          
+          {initials.map((initial, index) => (
+            <div key={index} className="flex flex-col gap-1">
+              <label className="text-xs text-zinc-500 ml-1">
+                Pemain {index + 1} {index >= 2 ? "(Opsional)" : "*"}
+              </label>
+              <input
+                type="text"
+                placeholder="Inisial (misal: BG)"
+                value={initial}
+                onChange={(e) => handleInitialChange(index, e.target.value)}
+                className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-3 text-white placeholder:text-zinc-700 focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500 transition-all uppercase"
+              />
+            </div>
+          ))}
+        </div>
+
+        <button
+          onClick={handleStart}
+          disabled={!isValid}
+          className={cn(
+            "w-full flex items-center justify-center gap-2 py-4 rounded-2xl font-bold text-lg transition-all",
+            isValid
+              ? "bg-gradient-to-r from-amber-500 to-rose-600 text-white shadow-lg shadow-rose-500/20 active:scale-[0.98]"
+              : "bg-zinc-800 text-zinc-500 cursor-not-allowed"
+          )}
+        >
+          <Play className="w-5 h-5 fill-current" />
+          Mulai Jengkeng
+        </button>
+      </div>
+    </div>
+  );
+}
+</file>
+
+<file path="src/components/DashboardScreen.tsx">
+"use client";
+
+import { useState, useMemo } from "react";
+import { useGameStore } from "@/store/useGameStore";
+import { Plus, CheckCircle2, AlertTriangle, RotateCcw } from "lucide-react";
+import { cn } from "@/lib/utils";
+import RoundList from "./RoundList";
+import PsywarFooter from "./PsywarFooter";
+import AddRoundModal from "./AddRoundModal";
+import PlayerDetailModal from "./PlayerDetailModal";
+
+export default function DashboardScreen() {
+  const { players, rounds, finishGame, undoLastRound } = useGameStore();
+  const [isAddRoundOpen, setIsAddRoundOpen] = useState(false);
+  const [selectedPlayerId, setSelectedPlayerId] = useState<string | null>(null);
+  const [isFinishModalOpen, setIsFinishModalOpen] = useState(false);
+  const [isUndoModalOpen, setIsUndoModalOpen] = useState(false); // Modal state untuk Undo
+
+  const gridColsClass = useMemo(() => {
+    switch (players.length) {
+      case 2: return "grid-cols-2";
+      case 3: return "grid-cols-3";
+      case 4: return "grid-cols-4";
+      default: return "grid-cols-2";
+    }
+  }, [players.length]);
+
+  const totals = useMemo(() => {
+    const acc: Record<string, number> = {};
+    players.forEach((p) => (acc[p.id] = 0));
+    rounds.forEach((r) => {
+      r.scores.forEach((s) => {
+        acc[s.playerId] += s.finalScore;
+      });
+    });
+    return acc;
+  }, [players, rounds]);
+
+  const playerRanks = useMemo(() => {
+    const sortedIds = [...players].sort((a, b) => totals[b.id] - totals[a.id]).map(p => p.id);
+    const ranks: Record<string, string> = {};
+
+    players.forEach(p => {
+      const rankIndex = sortedIds.indexOf(p.id);
+      if (rankIndex === 0) {
+        ranks[p.id] = "👑";
+      } else if (rankIndex === players.length - 1) {
+        ranks[p.id] = "💩";
+      } else if (rankIndex === 1 && players.length === 4) {
+        ranks[p.id] = "😜";
+      } else {
+        ranks[p.id] = "😭";
+      }
+    });
+
+    if (rounds.length === 0) {
+      players.forEach(p => ranks[p.id] = "");
+    }
+
+    return ranks;
+  }, [players, totals, rounds.length]);
+
+  return (
+    <div className="h-[100dvh] flex flex-col bg-zinc-950 relative overflow-hidden">
+
+      {/* Header */}
+      <header className="flex items-center justify-between p-4 bg-zinc-950 border-b border-zinc-900 shrink-0">
+        <h1 className="text-xl font-black text-transparent bg-clip-text bg-gradient-to-br from-amber-400 to-rose-500">
+          JENGKENG
+        </h1>
+        <button
+          onClick={() => setIsFinishModalOpen(true)}
+          className="flex items-center gap-1.5 px-3 py-1.5 bg-rose-500/10 text-rose-500 font-bold rounded-full border border-rose-500/20 active:scale-95 transition-transform"
+        >
+          <CheckCircle2 className="w-4 h-4" />
+          <span>SRET</span>
+        </button>
+      </header>
+
+      {/* Sticky Player Initials Header */}
+      <div className={cn("shrink-0 z-10 bg-zinc-950/90 backdrop-blur-md border-b border-zinc-800 grid gap-[1px]", gridColsClass)}>
+        {players.map((p) => {
+          const score = totals[p.id] || 0;
+
+          // Pisah kondisi buat yang plus dan minus
+          const isGodTier = score >= 1000;
+          const isHellTier = score <= -1000;
+          const hasSpecialEffect = isGodTier || isHellTier;
+
+          return (
+            <button
+              key={p.id}
+              onClick={() => setSelectedPlayerId(p.id)}
+              className="relative flex flex-col items-center justify-center py-3 bg-zinc-950 active:bg-zinc-900 transition-colors overflow-hidden group"
+            >
+              {/* Efek Animasi Border Muter */}
+              {hasSpecialEffect && (
+                <>
+                  <div
+                    className={cn(
+                      "absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[200%] h-[200%] animate-[spin_2s_linear_infinite] z-0",
+                      isGodTier
+                        ? "bg-[conic-gradient(transparent_25%,#fbbf24_50%,transparent_75%,#fbbf24_100%)]"
+                        : "bg-[conic-gradient(transparent_25%,#f43f5e_50%,transparent_75%,#f43f5e_100%)]" // Warna rose-500 buat Hell Tier
+                    )}
+                  />
+                  <div className="absolute inset-[2px] bg-zinc-950 z-0" />
+                  {/* Efek glow tambahan sesuai warna */}
+                  <div
+                    className={cn(
+                      "absolute inset-0 z-0 pointer-events-none",
+                      isGodTier
+                        ? "shadow-[inset_0_0_15px_rgba(251,191,36,0.3)]"
+                        : "shadow-[inset_0_0_15px_rgba(244,63,94,0.3)]"
+                    )}
+                  />
+                </>
+              )}
+
+              {/* Konten Text (harus z-10 biar posisinya di atas efek animasi) */}
+              <span className="relative z-10 text-sm font-black text-white">{p.initials}</span>
+              <span className="relative z-10 text-lg">{playerRanks[p.id]}</span>
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Scrollable Ledger */}
+      <RoundList />
+
+      {/* Psywar Footer */}
+      <PsywarFooter />
+
+      {/* Floating Action Button & Undo Button */}
+      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-20 w-full max-w-sm px-4 flex gap-3">
+
+        {/* Tombol Undo muncul kalau udah ada minimal 1 ronde */}
+        {rounds.length > 0 && (
+          <button
+            onClick={() => setIsUndoModalOpen(true)}
+            className="flex-1 flex items-center justify-center bg-zinc-800 text-zinc-300 py-4 rounded-xl font-bold shadow-xl active:scale-95 transition-all hover:bg-zinc-700 hover:text-white border border-zinc-700"
+          >
+            <span>Salah Ngitung</span>
+          </button>
+        )}
+
+        <button
+          onClick={() => setIsAddRoundOpen(true)}
+          className="flex-1 flex items-center justify-center bg-gradient-to-r from-amber-500 to-rose-600 text-white py-4 rounded-xl font-bold shadow-xl shadow-rose-500/30 active:scale-95 transition-all"
+        >
+          <span>Wayahe Ngitung</span>
+        </button>
+      </div>
+
+      {/* Modals */}
+      {isAddRoundOpen && <AddRoundModal onClose={() => setIsAddRoundOpen(false)} />}
+      {selectedPlayerId && <PlayerDetailModal playerId={selectedPlayerId} onClose={() => setSelectedPlayerId(null)} />}
+
+      {/* Finish Confirmation Modal */}
+      {isFinishModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+          <div className="bg-zinc-900 w-full max-w-sm rounded-3xl border border-zinc-800 shadow-2xl overflow-hidden p-6 text-center space-y-6">
+            <div className="flex justify-center text-amber-500">
+              <AlertTriangle className="w-12 h-12" />
+            </div>
+            <div className="space-y-2">
+              <h2 className="text-xl font-bold text-white">Sret tenan??</h2>
+            </div>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setIsFinishModalOpen(false)}
+                className="flex-1 py-3 rounded-xl font-bold text-zinc-300 bg-zinc-800 hover:bg-zinc-700 transition-colors"
+              >
+                Gak Sido
+              </button>
+              <button
+                onClick={() => {
+                  setIsFinishModalOpen(false);
+                  finishGame();
+                }}
+                className="flex-1 py-3 rounded-xl font-bold text-white bg-rose-600 hover:bg-rose-500 transition-colors"
+              >
+                Sret Wae
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Undo Confirmation Modal */}
+      {isUndoModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+          <div className="bg-zinc-900 w-full max-w-sm rounded-3xl border border-zinc-800 shadow-2xl overflow-hidden p-6 text-center space-y-6">
+            <div className="flex justify-center text-zinc-400">
+              <RotateCcw className="w-12 h-12" />
+            </div>
+            <div className="space-y-2">
+              <h2 className="text-xl font-bold text-white">Busek Itungan Keri Dhewe?</h2>
+              <p className="text-sm text-zinc-500">Itungan sing nembe dilebokne bakal ilang.</p>
+            </div>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setIsUndoModalOpen(false)}
+                className="flex-1 py-3 rounded-xl font-bold text-zinc-300 bg-zinc-800 hover:bg-zinc-700 transition-colors"
+              >
+                Gak Sido
+              </button>
+              <button
+                onClick={() => {
+                  undoLastRound();
+                  setIsUndoModalOpen(false);
+                }}
+                className="flex-1 py-3 rounded-xl font-bold text-white bg-rose-600 hover:bg-rose-500 transition-colors"
+              >
+                Busek
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+    </div>
+  );
+}</file>
+
+<file path="src/components/PlayerDetailModal.tsx">
+"use client";
+
+import { useGameStore } from "@/store/useGameStore";
+import { X, Coins, TrendingDown } from "lucide-react";
+import { useMemo } from "react";
+
+interface PlayerDetailModalProps {
+  playerId: string;
+  onClose: () => void;
+}
+
+export default function PlayerDetailModal({ playerId, onClose }: PlayerDetailModalProps) {
+  const { players, shootRecords } = useGameStore();
+  const player = players.find((p) => p.id === playerId);
+
+  const stats = useMemo(() => {
+    let timesShooter = 0;
+    let timesVictim = 0;
+    let pointsGained = 0;
+    let pointsLost = 0;
+
+    shootRecords.forEach((record) => {
+      if (record.shooterId === playerId) {
+        timesShooter++;
+        pointsGained += record.penaltyPoints;
+      }
+      if (record.victimId === playerId) {
+        timesVictim++;
+        pointsLost += record.penaltyPoints;
+      }
+    });
+
+    return { timesShooter, timesVictim, pointsGained, pointsLost };
+  }, [playerId, shootRecords]);
+
+  if (!player) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-in fade-in zoom-in duration-200">
+      <div className="bg-zinc-900 w-full max-w-sm rounded-3xl border border-zinc-800 shadow-2xl overflow-hidden">
+        
+        {/* Header */}
+        <div className="bg-zinc-950 p-6 flex items-center justify-between border-b border-zinc-800">
+          <div className="flex items-center gap-3">
+            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-amber-400 to-rose-500 flex items-center justify-center shadow-lg shadow-rose-500/20">
+              <span className="font-black text-xl text-zinc-950">{player.initials}</span>
+            </div>
+            <div>
+              <h2 className="text-xl font-bold text-white">Statistik Gepukan</h2>
+            </div>
+          </div>
+          <button onClick={onClose} className="p-2 bg-zinc-800/50 rounded-full text-zinc-400 hover:text-white transition-colors">
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+
+        {/* Content */}
+        <div className="p-6 space-y-4">
+          <div className="grid grid-cols-2 gap-4">
+            
+            <div className="bg-zinc-950 p-4 rounded-2xl border border-zinc-800">
+              <div className="flex items-center gap-2 text-amber-500 mb-2">
+                <span className="text-xs font-bold uppercase tracking-wider">👊🏻 Gepuk</span>
+              </div>
+              <p className="text-2xl font-black text-white">{stats.timesShooter}x</p>
+            </div>
+
+            <div className="bg-zinc-950 p-4 rounded-2xl border border-zinc-800">
+              <div className="flex items-center gap-2 text-rose-500 mb-2">
+                <span className="text-xs font-bold uppercase tracking-wider">🤕 Digepuk</span>
+              </div>
+              <p className="text-2xl font-black text-white">{stats.timesVictim}x</p>
+            </div>
+
+            <div className="bg-amber-500/10 p-4 rounded-2xl border border-amber-500/20">
+              <div className="flex items-center gap-2 text-amber-400 mb-2">
+                <Coins className="w-4 h-4" />
+                <span className="text-xs font-bold uppercase tracking-wider">Gepukan</span>
+              </div>
+              <p className="text-2xl font-black text-amber-500">+{stats.pointsGained}</p>
+            </div>
+
+            <div className="bg-rose-500/10 p-4 rounded-2xl border border-rose-500/20">
+              <div className="flex items-center gap-2 text-rose-400 mb-2">
+                <TrendingDown className="w-4 h-4" />
+                <span className="text-xs font-bold uppercase tracking-wider">Digepuk</span>
+              </div>
+              <p className="text-2xl font-black text-rose-500">-{stats.pointsLost}</p>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+    </div>
+  );
+}
+</file>
+</context_dump>

@@ -1,0 +1,37 @@
+<project_structure>
+.
+├── .gitignore
+├── AGENTS.md
+├── CLAUDE.md
+├── README.md
+├── dump-context.sh
+├── eslint.config.mjs
+├── next-env.d.ts
+├── next.config.ts
+├── package-lock.json
+├── package.json
+├── postcss.config.mjs
+├── public
+├── src
+│   ├── app
+│   │   ├── globals.css
+│   │   ├── layout.tsx
+│   │   └── page.tsx
+│   ├── components
+│   │   ├── AddRoundModal.tsx
+│   │   ├── DashboardScreen.tsx
+│   │   ├── FinishedScreen.tsx
+│   │   ├── PlayerDetailModal.tsx
+│   │   ├── PsywarFooter.tsx
+│   │   ├── RoundList.tsx
+│   │   └── SetupScreen.tsx
+│   ├── hooks
+│   │   └── useNow.ts
+│   ├── lib
+│   │   └── utils.ts
+│   └── store
+│       └── useGameStore.ts
+└── tsconfig.json
+
+8 directories, 25 files
+</project_structure>

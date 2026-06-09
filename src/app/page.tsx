@@ -4,6 +4,7 @@ import { useGameStore } from "@/store/useGameStore";
 import SetupScreen from "@/components/SetupScreen";
 import DashboardScreen from "@/components/DashboardScreen";
 import FinishedScreen from "@/components/FinishedScreen";
+import InstallPrompt from "@/components/InstallPrompt";
 import { useEffect, useState } from "react";
 
 export default function Home() {
@@ -17,17 +18,14 @@ export default function Home() {
 
   if (!mounted) return null;
 
-  if (gameStatus === "idle") {
-    return <SetupScreen />;
-  }
+  return (
+    <>
+      {gameStatus === "idle" && <SetupScreen />}
+      {gameStatus === "active" && <DashboardScreen />}
+      {gameStatus === "finished" && <FinishedScreen />}
 
-  if (gameStatus === "active") {
-    return <DashboardScreen />;
-  }
-
-  if (gameStatus === "finished") {
-    return <FinishedScreen />;
-  }
-
-  return null;
+      {/* Pop Up akan nangkring otomatis di bawah */}
+      <InstallPrompt />
+    </>
+  );
 }

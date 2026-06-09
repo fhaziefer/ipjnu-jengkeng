@@ -1,3 +1,33 @@
+<context_dump>
+
+<file path="src/lib/utils.ts">
+import { clsx, type ClassValue } from "clsx";
+import { twMerge } from "tailwind-merge";
+
+export function cn(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs));
+}
+</file>
+
+<file path="src/hooks/useNow.ts">
+import { useState, useEffect } from "react";
+
+export function useNow(updateIntervalMs = 1000) {
+  const [now, setNow] = useState(Date.now());
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setNow(Date.now());
+    }, updateIntervalMs);
+
+    return () => clearInterval(interval);
+  }, [updateIntervalMs]);
+
+  return now;
+}
+</file>
+
+<file path="src/store/useGameStore.ts">
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
@@ -214,4 +244,5 @@ export const useGameStore = create<GameState>()(
       name: 'jengkeng-score-storage',
     }
   )
-);
+);</file>
+</context_dump>
