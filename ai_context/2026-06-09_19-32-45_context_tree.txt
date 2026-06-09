@@ -15,12 +15,15 @@
 ├── src
 │   ├── app
 │   │   ├── globals.css
+│   │   ├── icon.svg
 │   │   ├── layout.tsx
+│   │   ├── manifest.json
 │   │   └── page.tsx
 │   ├── components
 │   │   ├── AddRoundModal.tsx
 │   │   ├── DashboardScreen.tsx
 │   │   ├── FinishedScreen.tsx
+│   │   ├── InstallPrompt.tsx
 │   │   ├── PlayerDetailModal.tsx
 │   │   ├── PsywarFooter.tsx
 │   │   ├── RoundList.tsx
@@ -33,5 +36,5 @@
 │       └── useGameStore.ts
 └── tsconfig.json
 
-8 directories, 25 files
+8 directories, 28 files
 </project_structure>

@@ -30,7 +30,8 @@ export default function RootLayout({
 }>) {
   return (
     <html
-      lang="en"
+      lang="id" // 1. Ubah dari "en" ke "id" (Indonesia)
+      translate="no" // 2. Atribut sakti penangkal Google Translate
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">{children}</body>

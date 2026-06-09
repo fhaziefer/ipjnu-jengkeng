@@ -18,6 +18,12 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "IPJNU - Jengkeng",
   description: "Jamiyyah Jengkeng Indonesia",
+  manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "JENGKENG",
+  },
 };
 
 export default function RootLayout({
@@ -27,12 +33,44 @@ export default function RootLayout({
 }>) {
   return (
     <html
-      lang="en"
+      lang="id" // 1. Ubah dari "en" ke "id" (Indonesia)
+      translate="no" // 2. Atribut sakti penangkal Google Translate
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">{children}</body>
     </html>
   );
+}
+</file>
+
+<file path="src/app/manifest.json">
+{
+  "name": "IPJNU - Jengkeng",
+  "short_name": "JENGKENG",
+  "description": "Score tracker buat tongkrongan",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#09090b",
+  "theme_color": "#09090b",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    },
+    {
+      "src": "/web-app-manifest-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/web-app-manifest-512x512.jpg",
+      "sizes": "512x512",
+      "type": "image/jpeg",
+      "purpose": "maskable"
+    }
+  ]
 }
 </file>
 
@@ -43,6 +81,7 @@ import { useGameStore } from "@/store/useGameStore";
 import SetupScreen from "@/components/SetupScreen";
 import DashboardScreen from "@/components/DashboardScreen";
 import FinishedScreen from "@/components/FinishedScreen";
+import InstallPrompt from "@/components/InstallPrompt";
 import { useEffect, useState } from "react";
 
 export default function Home() {
@@ -56,21 +95,17 @@ export default function Home() {
 
   if (!mounted) return null;
 
-  if (gameStatus === "idle") {
-    return <SetupScreen />;
-  }
+  return (
+    <>
+      {gameStatus === "idle" && <SetupScreen />}
+      {gameStatus === "active" && <DashboardScreen />}
+      {gameStatus === "finished" && <FinishedScreen />}
 
-  if (gameStatus === "active") {
-    return <DashboardScreen />;
-  }
-
-  if (gameStatus === "finished") {
-    return <FinishedScreen />;
-  }
-
-  return null;
-}
-</file>
+      {/* Pop Up akan nangkring otomatis di bawah */}
+      <InstallPrompt />
+    </>
+  );
+}</file>
 
 <file path="src/app/globals.css">
 @import "tailwindcss";

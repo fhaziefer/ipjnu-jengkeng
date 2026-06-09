@@ -18,7 +18,7 @@ const PENALTY_OPTIONS = [
 ];
 
 export default function AddRoundModal({ onClose }: AddRoundModalProps) {
-  const { players, addRound } = useGameStore();
+  const { players, rounds, addRound } = useGameStore();
   const [scores, setScores] = useState<Record<string, string>>(
     players.reduce((acc, p) => ({ ...acc, [p.id]: "" }), {})
   );
@@ -28,7 +28,7 @@ export default function AddRoundModal({ onClose }: AddRoundModalProps) {
   const [victimId, setVictimId] = useState("");
   const [penaltyPoints, setPenaltyPoints] = useState<number>(100);
 
-  // FIX: Reset Victim otomatis kalau namanya sama dengan Shooter
+  // Reset Victim otomatis kalau namanya sama dengan Shooter
   useEffect(() => {
     if (shooterId && shooterId === victimId) {
       setVictimId("");
@@ -36,7 +36,6 @@ export default function AddRoundModal({ onClose }: AddRoundModalProps) {
   }, [shooterId, victimId]);
 
   const handleScoreChange = (playerId: string, val: string) => {
-    // Izinkan angka, minus, atau string kosong
     if (val === "" || val === "-" || /^-?\d+$/.test(val)) {
       setScores((prev) => ({ ...prev, [playerId]: val }));
     }
@@ -66,7 +65,86 @@ export default function AddRoundModal({ onClose }: AddRoundModalProps) {
       shootData = { shooterId, victimId, penaltyPoints };
     }
 
+    // Hitung total skor dari ronde-ronde sebelumnya
+    const currentTotals: Record<string, number> = {};
+    players.forEach((p) => (currentTotals[p.id] = 0));
+    rounds.forEach((r) => {
+      r.scores.forEach((s) => {
+        currentTotals[s.playerId] += s.finalScore;
+      });
+    });
+
     addRound(baseScores, shootData);
+
+    // ==========================================
+    // FITUR TEXT-TO-SPEECH (SKOR & PSYWAR)
+    // ==========================================
+    if ("speechSynthesis" in window) {
+      window.speechSynthesis.cancel();
+
+      let speechText = "Skor saat ini. ";
+      const newTotals: Record<string, number> = {};
+      const nyewuPlayers: string[] = [];
+      
+      players.forEach((p) => {
+        let roundScore = parseInt(scores[p.id]);
+        if (shootData) {
+          if (p.id === shootData.shooterId) roundScore += shootData.penaltyPoints;
+          if (p.id === shootData.victimId) roundScore -= shootData.penaltyPoints;
+        }
+
+        // Total skor = Skor lama + skor ronde ini
+        const finalTotalScore = currentTotals[p.id] + roundScore;
+        newTotals[p.id] = finalTotalScore; // Simpan untuk kalkulasi gap nanti
+
+        // Cek momen pecah 1000 (Sebelumnya di bawah 1000, sekarang >= 1000)
+        if (currentTotals[p.id] < 1000 && finalTotalScore >= 1000) {
+          nyewuPlayers.push(p.initials);
+        }
+
+        const scoreText = finalTotalScore < 0 ? `minus ${Math.abs(finalTotalScore)}` : finalTotalScore.toString();
+        speechText += `${p.initials}, ${scoreText} poin. `;
+      });
+
+      // 1. Tambah Woro-woro Gepukan
+      if (shootData) {
+        const shooter = players.find((p) => p.id === shooterId)?.initials;
+        const victim = players.find((p) => p.id === victimId)?.initials;
+        speechText += `Woro woro! ${shooter} gepuk ${victim} ${penaltyPoints} poin. `;
+      }
+
+      // 2. Tambah Woro-woro Tembus 1000
+      if (nyewuPlayers.length > 0) {
+        speechText += `Woro woro! ${nyewuPlayers.join(" dan ")} wes nyewu, ngarit tenaan. `;
+      }
+
+      // 3. Tambah Woro-woro Jarak Juru Kunci >= 500
+      if (players.length >= 2) {
+        // Urutkan skor dari terbesar ke terkecil
+        const sortedScores = Object.values(newTotals).sort((a, b) => b - a);
+        const lowest = sortedScores[sortedScores.length - 1];
+        const secondLowest = sortedScores[sortedScores.length - 2];
+        const gap = secondLowest - lowest;
+
+        if (gap >= 500) {
+          speechText += `Woro woro! Jarake wes punjul 500, sret po gak? `;
+        }
+      }
+
+      const utterance = new SpeechSynthesisUtterance(speechText);
+      utterance.lang = "id-ID"; 
+      
+      const voices = window.speechSynthesis.getVoices();
+      const indonesianVoice = voices.find(v => v.lang === "id-ID" || v.lang === "id_ID");
+      if (indonesianVoice) {
+        utterance.voice = indonesianVoice;
+      }
+
+      utterance.rate = 0.9; 
+      window.speechSynthesis.speak(utterance);
+    }
+    // ==========================================
+
     onClose();
   };
 

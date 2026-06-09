@@ -61,8 +61,7 @@ export default function DashboardScreen() {
   }, [players, totals, rounds.length]);
 
   return (
-    <div className="h-[100dvh] flex flex-col bg-zinc-950 relative overflow-hidden">
-
+    <div className="h-[100dvh] flex flex-col bg-zinc-950 relative overflow-hidden w-full max-w-md mx-auto sm:shadow-2xl">
       {/* Header */}
       <header className="flex items-center justify-between p-4 bg-zinc-950 border-b border-zinc-900 shrink-0">
         <h1 className="text-xl font-black text-transparent bg-clip-text bg-gradient-to-br from-amber-400 to-rose-500">

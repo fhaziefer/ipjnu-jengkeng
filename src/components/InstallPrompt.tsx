@@ -49,17 +49,17 @@ export default function InstallPrompt() {
                     <X className="w-4 h-4" />
                 </button>
 
-                <h3 className="font-bold text-white text-lg pr-6">Main Tanpa Browser!</h3>
+                <h3 className="font-bold text-white text-lg pr-6">Buka tanpo rikuh!</h3>
                 <p className="text-sm text-zinc-400">
-                    Biar lu mainnya enak tanpa Address Bar, masukin aplikasi ini ke Home Screen HP lu.
+                    Ben ngitunge penak, install aplikasi iki nang Home Screen HP mu.
                 </p>
 
                 {isIOS ? (
                     <div className="bg-zinc-950 rounded-xl p-3 text-sm flex flex-col gap-2 text-zinc-300 mt-1 border border-zinc-800">
                         <div className="flex items-center gap-2">
-                            <span>1. Tekan ikon</span>
+                            <span>1. Pencet ikon</span>
                             <Share className="w-4 h-4 text-blue-500" />
-                            <span>di menu bawah.</span>
+                            <span>nang menu.</span>
                         </div>
                         <div className="flex items-center gap-2">
                             <span>2. Pilih</span>
@@ -69,7 +69,7 @@ export default function InstallPrompt() {
                     </div>
                 ) : (
                     <div className="bg-zinc-950 rounded-xl p-3 text-sm text-zinc-300 mt-1 border border-zinc-800 leading-relaxed">
-                        Tekan menu titik tiga (⋮) di pojok kanan atas browser, lalu pilih <strong className="text-white">Add to Home screen</strong> atau <strong className="text-white">Install app</strong>.
+                        Pencet menu titik telu (⋮) nang pojok nduwur browser, terus pilih <strong className="text-white">Add to Home screen</strong> atau <strong className="text-white">Install app</strong>.
                     </div>
                 )}
             </div>
