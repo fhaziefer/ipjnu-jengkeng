@@ -1,20 +1,31 @@
-import { useState, useEffect } from "react";
+"use client";
 
-export function useNow(updateIntervalMs = 1000) {
-  // FIX BUG 4: Inisiasi state dengan 0 biar seragam pas Server-Side Rendering (SSR)
-  const [now, setNow] = useState<number>(0);
+import { useGameStore } from "@/store/useGameStore";
+import SetupScreen from "@/components/SetupScreen";
+import DashboardScreen from "@/components/DashboardScreen";
+import FinishedScreen from "@/components/FinishedScreen";
+import InstallPrompt from "@/components/InstallPrompt";
+import { useEffect, useState } from "react";
 
+export default function Home() {
+  const { gameStatus } = useGameStore();
+  const [mounted, setMounted] = useState(false);
+
+  // Avoid hydration errors with persist middleware
   useEffect(() => {
-    // Update dengan waktu sebenarnya setelah komponen di-mount di browser
-    setNow(Date.now());
-    
-    const interval = setInterval(() => {
-      setNow(Date.now());
-    }, updateIntervalMs);
+    setMounted(true);
+  }, []);
 
-    return () => clearInterval(interval);
-  }, [updateIntervalMs]);
+  if (!mounted) return null;
 
-  // Fallback aman: kalau masih 0 (belum mount) return Date.now() biar hitungan nggak error
-  return now === 0 ? Date.now() : now; 
+  return (
+    <>
+      {gameStatus === "idle" && <SetupScreen />}
+      {gameStatus === "active" && <DashboardScreen />}
+      {gameStatus === "finished" && <FinishedScreen />}
+
+      {/* Pop Up akan nangkring otomatis di bawah */}
+      <InstallPrompt />
+    </>
+  );
 }
