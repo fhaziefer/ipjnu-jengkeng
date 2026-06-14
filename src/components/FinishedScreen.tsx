@@ -35,6 +35,7 @@ export default function FinishedScreen() {
   const { players, rounds, resetGame, startGame } = useGameStore();
 
   const receiptRef = useRef<HTMLDivElement>(null);
+
   const [isExporting, setIsExporting] = useState(false);
   const [isRematchModalOpen, setIsRematchModalOpen] = useState(false);
 
@@ -90,7 +91,6 @@ export default function FinishedScreen() {
     try {
       setIsExporting(true);
 
-      // Kasih browser 1 frame buat memastikan layout receipt selesai dihitung.
       await new Promise<void>((resolve) => {
         requestAnimationFrame(() => resolve());
       });
@@ -119,25 +119,24 @@ export default function FinishedScreen() {
       const nav = navigator as NavigatorWithFileShare;
       const shareData = { files: [file] };
 
-      // iPhone / Android yang support akan buka native share sheet:
-      // WhatsApp, Instagram, Telegram, AirDrop, Files, dll tergantung OS.
       if (nav.share && nav.canShare?.(shareData)) {
         await nav.share(shareData);
         return;
       }
 
-      // Fallback untuk browser yang tidak support file sharing.
       downloadDataUrl(dataUrl, fileName);
+
     } catch (error) {
       console.error("Gagal export/share gambar", error);
       alert("Gagal bikin atau share gambar. Coba maneh!");
+
     } finally {
       setIsExporting(false);
     }
   };
 
   return (
-    <div className="min-h-[100dvh] flex flex-col items-center justify-center p-6 bg-zinc-950 relative overflow-hidden">
+    <div className="min-h-dvh flex flex-col items-center justify-center p-6 bg-zinc-950 relative overflow-hidden">
       {/* ===================================================== */}
       {/* 1. TAMPILAN LAYAR HP (UI UTAMA) */}
       {/* ===================================================== */}
@@ -246,8 +245,14 @@ export default function FinishedScreen() {
       {/* MODAL REMATCH (PANGGAH / GANTI / BUBAR) */}
       {/* ===================================================== */}
       {isRematchModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-          <div className="bg-zinc-900 w-full max-w-sm rounded-3xl border border-zinc-800 shadow-2xl overflow-hidden p-6 text-center space-y-6">
+        <div 
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-in fade-in duration-200"
+          onClick={() => setIsRematchModalOpen(false)}
+        >
+          <div 
+            className="bg-zinc-900 w-full max-w-sm rounded-3xl border border-zinc-800 shadow-2xl overflow-hidden p-6 text-center space-y-6"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="flex justify-center text-amber-500">
               <RefreshCcw className="w-12 h-12" />
             </div>
@@ -305,13 +310,13 @@ export default function FinishedScreen() {
       {/* ===================================================== */}
       {/* 2. TAMPILAN RAHASIA UNTUK EXPORT PNG (Disembunyikan) */}
       {/* ===================================================== */}
-      <div className="fixed left-[-10000px] top-0 pointer-events-none opacity-100">
+      <div className="absolute inset-0 -z-50 opacity-0 pointer-events-none overflow-hidden flex items-start justify-center">
         <div
           ref={receiptRef}
           className={cn(
             "bg-zinc-950 flex flex-col relative overflow-hidden box-border",
             "mx-auto",
-            isWideReceipt ? "w-[500px]" : "w-[430px]",
+            isWideReceipt ? "w-125" : "w-107.5",
             isUltraCompactReceipt
               ? "p-5"
               : isCompactReceipt
@@ -319,9 +324,8 @@ export default function FinishedScreen() {
                 : "p-8"
           )}
         >
-          {/* Glow jangan pakai right/bottom negatif karena bisa bikin scrollWidth palsu */}
-          <div className="absolute top-[-80px] right-[-40px] w-[220px] h-[220px] bg-amber-500/20 rounded-full blur-[70px] pointer-events-none" />
-          <div className="absolute bottom-[-80px] left-[-40px] w-[220px] h-[220px] bg-rose-500/20 rounded-full blur-[70px] pointer-events-none" />
+          <div className="absolute -top-20 -right-10 w-55 h-55 bg-amber-500/20 rounded-full blur-[70px] pointer-events-none" />
+          <div className="absolute -bottom-20 -left-10 w-55 h-55 bg-rose-500/20 rounded-full blur-[70px] pointer-events-none" />
 
           <div className="relative z-10 flex flex-col items-center w-full">
             <div
@@ -426,233 +430,7 @@ export default function FinishedScreen() {
                               className={cn(
                                 "px-1 text-center font-mono font-medium tabular-nums whitespace-nowrap leading-none",
                                 isUltraCompactReceipt
-                                  ? "py-[3px]"
-                                  : isCompactReceipt
-                                    ? "py-1"
-                                    : "py-2",
-                                colorClass
-                              )}
-                            >
-                              {score}
-                            </td>
-                          );
-                        })}
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-
-            <div
-              className={cn(
-                "w-full max-w-full border-t border-dashed border-zinc-700 grid grid-cols-2 box-border",
-                isCompactReceipt ? "pt-4 gap-3" : "pt-6 gap-4"
-              )}
-            >
-              <div className="flex flex-col items-center text-center min-w-0">
-                <p
-                  className={cn(
-                    "text-zinc-500 uppercase tracking-widest font-bold mb-2 text-center",
-                    isCompactReceipt ? "text-[8px]" : "text-[10px]"
-                  )}
-                >
-                  Pengarit Handal
-                </p>
-
-                <div className="flex items-center justify-center gap-2 min-w-0">
-                  <Trophy
-                    className={cn(
-                      "text-amber-500 shrink-0",
-                      isCompactReceipt ? "w-5 h-5" : "w-6 h-6"
-                    )}
-                  />
-                  <h2
-                    className={cn(
-                      "font-black text-white truncate",
-                      isCompactReceipt ? "text-xl" : "text-2xl"
-                    )}
-                  >
-                    {winner?.initials}
-                  </h2>
-                </div>
-
-                <p
-                  className={cn(
-                    "text-amber-500 font-mono mt-1 font-bold text-center",
-                    isCompactReceipt ? "text-base" : "text-lg"
-                  )}
-                >
-                  {totals[winner?.id || ""]}
-                </p>
-              </div>
-
-              <div className="flex flex-col items-center text-center min-w-0">
-                <p
-                  className={cn(
-                    "text-zinc-500 uppercase tracking-widest font-bold mb-2 text-center",
-                    isCompactReceipt ? "text-[8px]" : "text-[10px]"
-                  )}
-                >
-                  Sing Ngesret
-                </p>
-
-                <div className="flex items-center justify-center gap-2 min-w-0">
-                  <Skull
-                    className={cn(
-                      "text-rose-500 shrink-0",
-                      isCompactReceipt ? "w-5 h-5" : "w-6 h-6"
-                    )}
-                  />
-                  <h2
-                    className={cn(
-                      "font-black text-white truncate",
-                      isCompactReceipt ? "text-xl" : "text-2xl"
-                    )}
-                  >
-                    {loser?.initials}
-                  </h2>
-                </div>
-
-                <p
-                  className={cn(
-                    "text-rose-500 font-mono mt-1 font-bold text-center",
-                    isCompactReceipt ? "text-base" : "text-lg"
-                  )}
-                >
-                  {totals[loser?.id || ""]}
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* ===================================================== */}
-      {/* 2. TAMPILAN RAHASIA UNTUK EXPORT PNG (Disembunyikan) */}
-      {/* ===================================================== */}
-      <div className="fixed left-[-10000px] top-0 pointer-events-none opacity-100">
-        <div
-          ref={receiptRef}
-          className={cn(
-            "bg-zinc-950 flex flex-col relative overflow-hidden box-border",
-            "mx-auto",
-            isWideReceipt ? "w-[500px]" : "w-[430px]",
-            isUltraCompactReceipt
-              ? "p-5"
-              : isCompactReceipt
-                ? "p-6"
-                : "p-8"
-          )}
-        >
-          {/* Glow jangan pakai right/bottom negatif karena bisa bikin scrollWidth palsu */}
-          <div className="absolute top-[-80px] right-[-40px] w-[220px] h-[220px] bg-amber-500/20 rounded-full blur-[70px] pointer-events-none" />
-          <div className="absolute bottom-[-80px] left-[-40px] w-[220px] h-[220px] bg-rose-500/20 rounded-full blur-[70px] pointer-events-none" />
-
-          <div className="relative z-10 flex flex-col items-center w-full">
-            <div
-              className={cn(
-                "flex flex-col items-center w-full text-center",
-                isUltraCompactReceipt ? "mb-3" : isCompactReceipt ? "mb-4" : "mb-6"
-              )}
-            >
-              <img
-                src="/icon.svg"
-                width={isCompactReceipt ? 54 : 70}
-                height={isCompactReceipt ? 54 : 70}
-                className="mb-3 object-contain"
-                alt="Logo"
-              />
-
-              <h1
-                className={cn(
-                  "font-black tracking-widest text-transparent bg-clip-text bg-linear-to-r from-amber-400 to-rose-500 text-center",
-                  isCompactReceipt ? "text-xl" : "text-2xl"
-                )}
-              >
-                IPJNU JENGKENG
-              </h1>
-
-              <p className="text-zinc-500 text-xs mt-1 text-center">
-                {rounds.length} Mainan
-              </p>
-            </div>
-
-            <div
-              className={cn(
-                "w-full max-w-full bg-zinc-900/60 rounded-2xl border border-zinc-800 mb-6 box-border",
-                isUltraCompactReceipt
-                  ? "p-2"
-                  : isCompactReceipt
-                    ? "p-3"
-                    : "p-4"
-              )}
-            >
-              <table
-                className={cn(
-                  "w-full table-fixed text-white border-collapse",
-                  isUltraCompactReceipt
-                    ? "text-[8px]"
-                    : isCompactReceipt
-                      ? "text-[10px]"
-                      : "text-xs"
-                )}
-              >
-                <thead>
-                  <tr className="border-b border-zinc-700">
-                    {players.map((p) => (
-                      <th
-                        key={p.id}
-                        className={cn(
-                          "px-1 text-center uppercase tracking-wider whitespace-nowrap overflow-hidden text-ellipsis",
-                          isCompactReceipt ? "py-1" : "py-2"
-                        )}
-                      >
-                        {p.initials}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-
-                <tbody>
-                  {cumulativeRounds.map((r, i) => {
-                    const isLastRow = i === cumulativeRounds.length - 1;
-
-                    return (
-                      <tr
-                        key={r.roundNumber}
-                        className={!isLastRow ? "border-b border-zinc-800/50" : ""}
-                      >
-                        {players.map((p) => {
-                          const score = r.scores[p.id];
-                          let colorClass = "text-zinc-300";
-
-                          if (isLastRow) {
-                            if (score === totals[winner?.id || ""]) {
-                              colorClass = cn(
-                                "text-amber-500 font-bold",
-                                isCompactReceipt ? "text-[10px]" : "text-sm"
-                              );
-                            } else if (score === totals[loser?.id || ""]) {
-                              colorClass = cn(
-                                "text-rose-500 font-bold",
-                                isCompactReceipt ? "text-[10px]" : "text-sm"
-                              );
-                            } else {
-                              colorClass = cn(
-                                "text-zinc-100 font-bold",
-                                isCompactReceipt ? "text-[10px]" : "text-sm"
-                              );
-                            }
-                          }
-
-                          return (
-                            <td
-                              key={p.id}
-                              className={cn(
-                                "px-1 text-center font-mono font-medium tabular-nums whitespace-nowrap leading-none",
-                                isUltraCompactReceipt
-                                  ? "py-[3px]"
+                                  ? "py-0.75"
                                   : isCompactReceipt
                                     ? "py-1"
                                     : "py-2",

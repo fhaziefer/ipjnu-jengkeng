@@ -23,7 +23,6 @@ const PENALTY_OPTIONS = [
 ];
 
 export default function AddRoundModal({ onClose, editData, isEditMode }: AddRoundModalProps) {
-  // Tambahin undoLastRound di sini
   const { players, rounds, addRound, undoLastRound } = useGameStore();
 
   const [scores, setScores] = useState<Record<string, string>>(() => {
@@ -102,8 +101,7 @@ export default function AddRoundModal({ onClose, editData, isEditMode }: AddRoun
 
     const currentTotals: Record<string, number> = {};
     players.forEach((p) => (currentTotals[p.id] = 0));
-
-    // Kalau mode edit aktif, hitung total poin SEMENTARA (Abaikan ronde cacat yang mau dihapus)
+    
     const validRounds = isEditMode ? rounds.slice(0, -1) : rounds;
     validRounds.forEach((r) => {
       r.scores.forEach((s) => {
@@ -111,20 +109,18 @@ export default function AddRoundModal({ onClose, editData, isEditMode }: AddRoun
       });
     });
 
-    // 1. Eksekusi Undo (Hapus nilai salah) SEKARANG SAAT DISUBMIT
     if (isEditMode) {
       undoLastRound();
     }
 
-    // 2. Ambil Juru Kunci SEBELUM round baru ini masuk
     const oldLastPlace = useGameStore.getState().currentLastPlacePlayerId;
 
-    // 3. Simpan data editan yang bener
     addRound(baseScores, shootData, isEditMode);
 
     const newLastPlace = useGameStore.getState().currentLastPlacePlayerId;
 
     if ("speechSynthesis" in window) {
+      window.speechSynthesis.pause();
       window.speechSynthesis.cancel();
 
       let speechText = "Biji sak iki. ";
@@ -147,7 +143,7 @@ export default function AddRoundModal({ onClose, editData, isEditMode }: AddRoun
           nyewuPlayers.push(spellInitial(p.initials));
         }
 
-        const scoreText = finalTotalScore < 0 ? `min ${Math.abs(finalTotalScore)}` : finalTotalScore.toString();
+        const scoreText = finalTotalScore < 0 ? `minus ${Math.abs(finalTotalScore)}` : finalTotalScore.toString();
         speechText += `${spellInitial(p.initials)}, ${scoreText} ... `;
       });
 
@@ -177,7 +173,7 @@ export default function AddRoundModal({ onClose, editData, isEditMode }: AddRoun
             psywarPukulan = `${penaltyPoints} poin ...`;
         }
 
-        speechText += `Woro woro! ... ${shooter} gepuk ${victim} ${psywarPukulan} ...`;
+        speechText += `Woro woro! ... ${shooter} gepuk ${victim} ${psywarPukulan} `;
       }
 
       if (nyewuPlayers.length > 0) {
@@ -208,7 +204,10 @@ export default function AddRoundModal({ onClose, editData, isEditMode }: AddRoun
       if (indonesianVoice) utterance.voice = indonesianVoice;
 
       utterance.rate = 0.9;
-      window.speechSynthesis.speak(utterance);
+      
+      setTimeout(() => {
+        window.speechSynthesis.speak(utterance);
+      }, 50);
     }
 
     onClose();
@@ -231,7 +230,6 @@ export default function AddRoundModal({ onClose, editData, isEditMode }: AddRoun
         </div>
 
         <div className="p-3 sm:p-6 overflow-y-auto flex-1 space-y-6">
-
           <div className="space-y-4">
             {players.map((p) => {
               return (
@@ -248,7 +246,7 @@ export default function AddRoundModal({ onClose, editData, isEditMode }: AddRoun
                       placeholder="0"
                       value={scores[p.id] === "0" ? "LEG" : scores[p.id]}
                       className={cn(
-                        "w-full h-[40px] sm:h-[48px] bg-zinc-950 border border-zinc-800 rounded-xl px-1 text-center text-base sm:text-lg focus:outline-none transition-all select-none font-mono",
+                        "w-full h-10 sm:h-12 bg-zinc-950 border border-zinc-800 rounded-xl px-1 text-center text-base sm:text-lg focus:outline-none transition-all select-none font-mono",
                         scores[p.id] === "0" ? "text-amber-500 font-bold text-[10px] sm:text-[11px] tracking-widest" : "text-white"
                       )}
                     />
@@ -261,7 +259,7 @@ export default function AddRoundModal({ onClose, editData, isEditMode }: AddRoun
                         type="button"
                         onClick={() => handleShortcut(p.id, val as number | "LEG")}
                         className={cn(
-                          "flex-1 h-[40px] sm:h-[48px] rounded-[8px] sm:rounded-[10px] font-bold transition-colors flex items-center justify-center border active:scale-95 px-0",
+                          "flex-1 h-10 sm:h-12 rounded-lg sm:rounded-[10px] font-bold transition-colors flex items-center justify-center border active:scale-95 px-0",
                           val === "LEG"
                             ? "text-[9px] sm:text-[10px] bg-linear-to-r from-amber-400 to-amber-500 text-zinc-950 border-amber-500 shadow-md"
                             : "text-[11px] sm:text-sm " + (
@@ -357,7 +355,7 @@ export default function AddRoundModal({ onClose, editData, isEditMode }: AddRoun
                 </div>
 
                 <div className="space-y-2 pt-2">
-                  <label className="block text-center text-xs text-zinc-500 font-medium">Gepukane</label>
+                  <label className="block text-center text-xs text-zinc-500 font-medium">Pilih Gepukane</label>
                   <div className="grid grid-cols-2 gap-2">
                     {PENALTY_OPTIONS.map((opt) => (
                       <button

@@ -68,7 +68,7 @@ export default function DashboardScreen() {
   }, [players, totals, rounds.length]);
 
   return (
-    <div className="h-[100dvh] flex flex-col bg-zinc-950 relative overflow-hidden w-full max-w-md mx-auto sm:shadow-2xl">
+    <div className="h-dvh flex flex-col bg-zinc-950 relative overflow-hidden w-full max-w-md mx-auto sm:shadow-2xl">
       <header className="flex items-center justify-between p-4 bg-zinc-950 border-b border-zinc-900 shrink-0">
         <h1 className="text-xl font-black text-transparent bg-clip-text bg-linear-to-br from-amber-400 to-rose-500">
           JENGKENG
@@ -76,20 +76,22 @@ export default function DashboardScreen() {
         <button
           onClick={() => {
             if ("speechSynthesis" in window) {
+              window.speechSynthesis.pause();
               window.speechSynthesis.cancel();
 
-              // Pilih kata-kata sesuai selera
               const speechText = "Mosok sret tenan? ... yo gak opo opo, lek gak isin, ha ha ha.";
               const utterance = new SpeechSynthesisUtterance(speechText);
               utterance.lang = "id-ID";
 
-              // Opsional: cari suara bahasa indonesia kalau ada
               const voices = window.speechSynthesis.getVoices();
               const indonesianVoice = voices.find(v => v.lang === "id-ID" || v.lang === "id_ID");
               if (indonesianVoice) utterance.voice = indonesianVoice;
 
               utterance.rate = 0.9;
-              window.speechSynthesis.speak(utterance);
+              
+              setTimeout(() => {
+                window.speechSynthesis.speak(utterance);
+              }, 50);
             }
             setIsFinishModalOpen(true)
           }}
@@ -100,7 +102,7 @@ export default function DashboardScreen() {
         </button>
       </header>
 
-      <div className={cn("shrink-0 z-10 bg-zinc-950/90 backdrop-blur-md border-b border-zinc-800 grid gap-[1px]", gridColsClass)}>
+      <div className={cn("shrink-0 z-10 bg-zinc-950/90 backdrop-blur-md border-b border-zinc-800 grid gap-px", gridColsClass)}>
         {players.map((p) => {
           const score = totals[p.id] || 0;
           const isGodTier = score >= 1000;
@@ -123,7 +125,7 @@ export default function DashboardScreen() {
                         : "bg-[conic-gradient(transparent_25%,#f43f5e_50%,transparent_75%,#f43f5e_100%)]"
                     )}
                   />
-                  <div className="absolute inset-[2px] bg-zinc-950 z-0" />
+                  <div className="absolute inset-0.5 bg-zinc-950 z-0" />
                   <div
                     className={cn(
                       "absolute inset-0 z-0 pointer-events-none",
@@ -176,7 +178,6 @@ export default function DashboardScreen() {
 
       {selectedPlayerId && <PlayerDetailModal playerId={selectedPlayerId} onClose={() => setSelectedPlayerId(null)} />}
 
-      {/* Finish Confirmation Modal */}
       {isFinishModalOpen && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-in fade-in duration-200"
@@ -213,7 +214,6 @@ export default function DashboardScreen() {
         </div>
       )}
 
-      {/* Undo/Edit Confirmation Modal */}
       {isUndoModalOpen && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-in fade-in duration-200"

@@ -17,7 +17,7 @@ export interface RoundScore {
 export interface Round {
   roundId: string;
   scores: RoundScore[];
-  isEdited?: boolean; // Tanda apakah ronde ini hasil editan
+  isEdited?: boolean;
 }
 
 export interface ShootRecord {
@@ -40,7 +40,7 @@ interface GameState {
   addRound: (
     scores: { playerId: string; baseScore: number }[],
     shoot?: { shooterId: string; victimId: string; penaltyPoints: number },
-    isEdited?: boolean // Parameter baru
+    isEdited?: boolean
   ) => void;
   undoLastRound: () => void;
   finishGame: () => void;
@@ -88,7 +88,7 @@ export const useGameStore = create<GameState>()(
         const newRound: Round = {
           roundId,
           scores: finalScores,
-          isEdited, // Masukin tandanya ke database
+          isEdited,
         };
 
         set((state) => {
@@ -183,11 +183,16 @@ export const useGameStore = create<GameState>()(
 
           const hasLastPlaceChanged = newLastPlaceId !== state.currentLastPlacePlayerId;
 
+          // FIX BUG 1: Ambil waktu dari ronde terakhir yang tersisa, bukan waktu saat ini
+          const fallbackTimestamp = newRounds.length > 0 
+            ? parseInt(newRounds[newRounds.length - 1].roundId) 
+            : state.gameStartTime;
+
           return {
             rounds: newRounds,
             shootRecords: newShootRecords,
             currentLastPlacePlayerId: newLastPlaceId,
-            lastPlaceSinceTimestamp: hasLastPlaceChanged ? Date.now() : state.lastPlaceSinceTimestamp,
+            lastPlaceSinceTimestamp: hasLastPlaceChanged ? fallbackTimestamp : state.lastPlaceSinceTimestamp,
           };
         });
       },
