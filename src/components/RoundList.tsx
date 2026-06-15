@@ -112,7 +112,7 @@ export default function RoundList() {
                   key={`${round.roundId}-${p.id}`}
                   className={cn(
                     "relative flex items-center justify-center transition-colors overflow-hidden",
-                    isLastRow ? "py-5" : "py-3",
+                    isLastRow ? "py-4 sm:py-5 md:py-6" : "py-2.5 sm:py-3 md:py-4",
                     // Kalau gak ada efek muter, pasang warna background dan border normal
                     !hasSpecialEffect && "bg-zinc-950",
                     !hasSpecialEffect && isMax && "bg-amber-500/10",
@@ -159,7 +159,7 @@ export default function RoundList() {
                   <span
                     className={cn(
                       "relative z-10 font-mono transition-all",
-                      isLastRow ? "text-lg font-bold" : "text-sm",
+                      isLastRow ? "text-base sm:text-lg md:text-xl font-bold" : "text-xs sm:text-sm md:text-base",
                       isMax ? "text-amber-400" : isMin ? "text-rose-400" : "text-zinc-100"
                     )}
                   >

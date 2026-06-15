@@ -42,8 +42,8 @@ export default function SetupScreen() {
   const isValid = initials.filter((val) => val.trim().length > 0).length >= 2;
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-6 bg-zinc-950">
-      <div className="w-full max-w-sm space-y-8">
+    <div className="min-h-dvh flex flex-col items-center justify-center px-4 py-6 sm:px-6 md:px-8 bg-zinc-950 overflow-y-auto">
+      <div className="w-full max-w-sm sm:max-w-md md:max-w-lg space-y-6 sm:space-y-8">
         <div className="text-center space-y-2">
           <h1 className="text-4xl font-black tracking-tighter text-transparent bg-clip-text bg-linear-to-br from-amber-400 to-rose-500">
             JENGKENG
@@ -51,7 +51,7 @@ export default function SetupScreen() {
           <p className="text-zinc-400 text-sm">Digawe ngitung, ben gak mumet</p>
         </div>
 
-        <div className="space-y-4 bg-zinc-900/50 p-6 rounded-3xl border border-zinc-800 shadow-xl shadow-black/50">
+        <div className="space-y-4 bg-zinc-900/50 p-4 sm:p-6 rounded-3xl border border-zinc-800 shadow-xl shadow-black/50">
           <div className="flex items-center gap-2 text-zinc-300 font-medium mb-4">
             <Users className="w-5 h-5 text-amber-500" />
             <span>Pemain</span>
@@ -67,7 +67,7 @@ export default function SetupScreen() {
                 placeholder="Inisial (misal: BG)"
                 value={initial}
                 onChange={(e) => handleInitialChange(index, e.target.value)}
-                className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-3 text-white placeholder:text-zinc-700 focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500 transition-all uppercase"
+                className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-3 sm:py-3.5 text-base text-white placeholder:text-zinc-700 focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500 transition-all uppercase"
               />
             </div>
           ))}

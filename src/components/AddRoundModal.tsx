@@ -219,7 +219,7 @@ export default function AddRoundModal({ onClose, editData, isEditMode }: AddRoun
       onClick={onClose}
     >
       <div
-        className="bg-zinc-900 w-full sm:max-w-md rounded-t-3xl sm:rounded-3xl border border-zinc-800 shadow-2xl flex flex-col max-h-[90vh]"
+        className="bg-zinc-900 w-full sm:max-w-lg md:max-w-2xl rounded-t-3xl sm:rounded-3xl border border-zinc-800 shadow-2xl flex flex-col max-h-[92dvh] sm:max-h-[90dvh]"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between p-6 border-b border-zinc-800">
@@ -229,16 +229,16 @@ export default function AddRoundModal({ onClose, editData, isEditMode }: AddRoun
           </button>
         </div>
 
-        <div className="p-3 sm:p-6 overflow-y-auto flex-1 space-y-6">
+        <div className="p-3 sm:p-5 md:p-6 overflow-y-auto flex-1 space-y-5 sm:space-y-6">
           <div className="space-y-4">
             {players.map((p) => {
               return (
-                <div key={p.id} className="flex items-center justify-between gap-1.5 sm:gap-2">
+                <div key={p.id} className="flex items-center justify-between gap-1.5 sm:gap-2 md:gap-3">
                   <span className="font-bold text-sm sm:text-lg text-zinc-300 w-8 sm:w-10 shrink-0 truncate">
                     {p.initials}
                   </span>
 
-                  <div className="w-14 sm:w-16 shrink-0">
+                  <div className="w-14 sm:w-16 md:w-20 shrink-0">
                     <input
                       type="text"
                       inputMode="none"
@@ -259,10 +259,10 @@ export default function AddRoundModal({ onClose, editData, isEditMode }: AddRoun
                         type="button"
                         onClick={() => handleShortcut(p.id, val as number | "LEG")}
                         className={cn(
-                          "flex-1 h-10 sm:h-12 rounded-lg sm:rounded-[10px] font-bold transition-colors flex items-center justify-center border active:scale-95 px-0",
+                          "flex-1 h-10 sm:h-12 md:h-14 rounded-lg sm:rounded-[10px] font-bold transition-colors flex items-center justify-center border active:scale-95 px-0 min-w-0",
                           val === "LEG"
                             ? "text-[9px] sm:text-[10px] bg-linear-to-r from-amber-400 to-amber-500 text-zinc-950 border-amber-500 shadow-md"
-                            : "text-[11px] sm:text-sm " + (
+                            : "text-[10px] sm:text-sm md:text-base " + (
                               (val as number) < 0
                                 ? "bg-rose-950/40 hover:bg-rose-900/60 text-rose-400 border-rose-900/50"
                                 : "bg-zinc-800 hover:bg-zinc-700 text-zinc-300 border-zinc-700"

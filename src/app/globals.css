@@ -6,15 +6,21 @@
 }
 
 @layer base {
+  html {
+    height: 100%;
+    background: #09090b;
+  }
+
   body {
-    @apply bg-zinc-950 text-zinc-100 antialiased selection:bg-amber-500/30;
-    /* Hide scrollbar for mobile clean look */
-    -ms-overflow-style: none; /* IE and Edge */
-    scrollbar-width: none; /* Firefox */
+    @apply bg-zinc-950 text-zinc-100 antialiased selection:bg-amber-500/30 overflow-x-hidden;
+    min-height: 100%;
+    -webkit-tap-highlight-color: transparent;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
   }
 
   body::-webkit-scrollbar {
-    display: none; /* Chrome, Safari and Opera */
+    display: none;
   }
 }
 

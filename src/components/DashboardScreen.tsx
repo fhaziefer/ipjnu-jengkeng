@@ -68,8 +68,8 @@ export default function DashboardScreen() {
   }, [players, totals, rounds.length]);
 
   return (
-    <div className="h-dvh flex flex-col bg-zinc-950 relative overflow-hidden w-full max-w-md mx-auto sm:shadow-2xl">
-      <header className="flex items-center justify-between p-4 bg-zinc-950 border-b border-zinc-900 shrink-0">
+    <div className="h-dvh flex flex-col bg-zinc-950 relative overflow-hidden w-full max-w-[480px] sm:max-w-xl md:max-w-2xl lg:max-w-3xl mx-auto sm:shadow-2xl">
+      <header className="flex items-center justify-between px-4 py-3 sm:px-5 sm:py-4 bg-zinc-950 border-b border-zinc-900 shrink-0">
         <h1 className="text-xl font-black text-transparent bg-clip-text bg-linear-to-br from-amber-400 to-rose-500">
           JENGKENG
         </h1>
@@ -113,7 +113,7 @@ export default function DashboardScreen() {
             <button
               key={p.id}
               onClick={() => setSelectedPlayerId(p.id)}
-              className="relative flex flex-col items-center justify-center py-3 bg-zinc-950 active:bg-zinc-900 transition-colors overflow-hidden group"
+              className="relative flex flex-col items-center justify-center py-3 sm:py-4 md:py-5 bg-zinc-950 active:bg-zinc-900 transition-colors overflow-hidden group min-w-0"
             >
               {hasSpecialEffect && (
                 <>
@@ -137,8 +137,8 @@ export default function DashboardScreen() {
                 </>
               )}
 
-              <span className="relative z-10 text-sm font-black text-white">{p.initials}</span>
-              <span className="relative z-10 text-lg">{playerRanks[p.id]}</span>
+              <span className="relative z-10 text-sm sm:text-base md:text-lg font-black text-white truncate max-w-full px-1">{p.initials}</span>
+              <span className="relative z-10 text-lg sm:text-xl md:text-2xl">{playerRanks[p.id]}</span>
             </button>
           );
         })}
@@ -147,18 +147,18 @@ export default function DashboardScreen() {
       <RoundList />
       <PsywarFooter />
 
-      <div className="absolute bottom-6 left-0 w-full px-4 z-20 flex gap-3">
+      <div className="absolute bottom-[calc(1rem+env(safe-area-inset-bottom))] sm:bottom-6 left-0 w-full px-4 sm:px-5 z-20 flex gap-3">
         {rounds.length > 0 && (
           <button
             onClick={() => setIsUndoModalOpen(true)}
-            className="flex-1 flex items-center justify-center bg-zinc-800 text-zinc-300 py-4 rounded-xl font-bold shadow-xl active:scale-95 transition-all hover:bg-zinc-700 hover:text-white border border-zinc-700"
+            className="flex-1 flex items-center justify-center bg-zinc-800 text-zinc-300 py-3.5 sm:py-4 rounded-xl font-bold shadow-xl active:scale-95 transition-all hover:bg-zinc-700 hover:text-white border border-zinc-700"
           >
             <span>Salah Ngitung</span>
           </button>
         )}
         <button
           onClick={() => setIsAddRoundOpen(true)}
-          className="flex-1 flex items-center justify-center bg-linear-to-r from-amber-500 to-rose-600 text-white py-4 rounded-xl font-bold shadow-xl shadow-rose-500/30 active:scale-95 transition-all"
+          className="flex-1 flex items-center justify-center bg-linear-to-r from-amber-500 to-rose-600 text-white py-3.5 sm:py-4 rounded-xl font-bold shadow-xl shadow-rose-500/30 active:scale-95 transition-all"
         >
           <span>Wayahe Ngitung</span>
         </button>

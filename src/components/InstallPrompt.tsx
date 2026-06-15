@@ -40,7 +40,7 @@ export default function InstallPrompt() {
     if (!showPrompt || isStandalone) return null;
 
     return (
-        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[100] w-full max-w-sm px-4 animate-in slide-in-from-bottom-10 fade-in duration-500">
+        <div className="fixed bottom-[calc(1rem+env(safe-area-inset-bottom))] sm:bottom-6 left-1/2 -translate-x-1/2 z-[100] w-full max-w-sm sm:max-w-md px-4 animate-in slide-in-from-bottom-10 fade-in duration-500">
             <div className="bg-zinc-900 border border-amber-500/30 rounded-2xl p-5 shadow-2xl shadow-amber-500/10 flex flex-col gap-3 relative">
                 <button
                     onClick={handleDismiss}

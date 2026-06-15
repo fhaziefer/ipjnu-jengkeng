@@ -136,13 +136,13 @@ export default function FinishedScreen() {
   };
 
   return (
-    <div className="min-h-dvh flex flex-col items-center justify-center p-6 bg-zinc-950 relative overflow-hidden">
+    <div className="min-h-dvh flex flex-col items-center justify-start sm:justify-center px-4 py-6 sm:p-6 bg-zinc-950 relative overflow-y-auto overflow-x-hidden">
       {/* ===================================================== */}
       {/* 1. TAMPILAN LAYAR HP (UI UTAMA) */}
       {/* ===================================================== */}
-      <div className="w-full max-w-sm space-y-8 animate-in fade-in zoom-in duration-500 relative z-10">
+      <div className="w-full max-w-sm sm:max-w-md md:max-w-lg space-y-5 sm:space-y-8 animate-in fade-in zoom-in duration-500 relative z-10">
         <div className="text-center space-y-4">
-          <div className="inline-flex items-center justify-center w-24 h-24 rounded-full bg-linear-to-br from-amber-400 to-amber-600 shadow-xl shadow-amber-500/20 mb-4">
+          <div className="inline-flex items-center justify-center w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-linear-to-br from-amber-400 to-amber-600 shadow-xl shadow-amber-500/20 mb-3 sm:mb-4">
             <Trophy className="w-12 h-12 text-zinc-950" />
           </div>
 
@@ -156,7 +156,7 @@ export default function FinishedScreen() {
           </div>
         </div>
 
-        <div className="bg-zinc-900/50 border border-zinc-800 rounded-3xl p-6 space-y-4">
+        <div className="bg-zinc-900/50 border border-zinc-800 rounded-3xl p-4 sm:p-6 space-y-4">
           <h2 className="text-sm font-semibold text-zinc-500 uppercase tracking-wider text-center">
             Bijine Cah-Cah
           </h2>
@@ -174,7 +174,7 @@ export default function FinishedScreen() {
               return (
                 <div
                   key={player.id}
-                  className="flex items-center justify-between bg-zinc-950 p-4 rounded-xl border border-zinc-800/50"
+                  className="flex items-center justify-between bg-zinc-950 p-3 sm:p-4 rounded-xl border border-zinc-800/50 gap-3"
                 >
                   <div className="flex items-center gap-3">
                     <span className="text-zinc-500 font-mono text-sm">
@@ -250,7 +250,7 @@ export default function FinishedScreen() {
           onClick={() => setIsRematchModalOpen(false)}
         >
           <div 
-            className="bg-zinc-900 w-full max-w-sm rounded-3xl border border-zinc-800 shadow-2xl overflow-hidden p-6 text-center space-y-6"
+            className="bg-zinc-900 w-full max-w-sm sm:max-w-md rounded-3xl border border-zinc-800 shadow-2xl overflow-hidden p-5 sm:p-6 text-center space-y-6"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex justify-center text-amber-500">

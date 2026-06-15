@@ -102,11 +102,11 @@ export default function PlayerDetailModal({ playerId, onClose }: PlayerDetailMod
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-in fade-in zoom-in duration-200"
+      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/80 backdrop-blur-sm p-0 sm:p-4 animate-in fade-in zoom-in duration-200"
       onClick={onClose} // Klik di area gelap untuk tutup
     >
       <div
-        className="bg-zinc-900 w-full max-w-sm rounded-3xl border border-zinc-800 shadow-2xl overflow-hidden"
+        className="bg-zinc-900 w-full sm:max-w-lg md:max-w-2xl rounded-t-3xl sm:rounded-3xl border border-zinc-800 shadow-2xl overflow-hidden max-h-[92dvh]"
         onClick={(e) => e.stopPropagation()} // Mencegah klik di dalam modal ikut menutup
       >
 
@@ -126,10 +126,10 @@ export default function PlayerDetailModal({ playerId, onClose }: PlayerDetailMod
         </div>
 
         {/* Content */}
-        <div className="p-6 space-y-4 max-h-[70vh] overflow-y-auto">
+        <div className="p-4 sm:p-6 space-y-4 max-h-[70dvh] overflow-y-auto">
 
           <h3 className="text-xs font-bold text-zinc-500 uppercase tracking-widest mb-1">Riwayat Gepukan</h3>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
             <div className="bg-zinc-950 p-4 rounded-2xl border border-zinc-800">
               <div className="flex items-center gap-2 text-amber-500 mb-2">
                 <span className="text-xs font-bold uppercase tracking-wider">👊🏻 Gepuk</span>
@@ -162,7 +162,7 @@ export default function PlayerDetailModal({ playerId, onClose }: PlayerDetailMod
           </div>
 
           <h3 className="text-xs font-bold text-zinc-500 uppercase tracking-widest mt-6 mb-1">Catetan Jengkeng</h3>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-2 gap-3 sm:gap-4">
             <div className="bg-rose-500/5 p-4 rounded-2xl border border-rose-500/30">
               <div className="flex items-center gap-2 text-rose-400 mb-2">
                 <Skull className="w-4 h-4" />
