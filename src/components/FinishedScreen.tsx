@@ -4,6 +4,7 @@ import { useGameStore } from "@/store/useGameStore";
 import { RefreshCcw, Trophy, Skull, Share2, Loader2 } from "lucide-react";
 import { useMemo, useRef, useState } from "react";
 import { toPng } from "html-to-image";
+import { buildShortLabels } from "@/lib/playerName";
 import { cn } from "@/lib/utils";
 
 type FileShareData = {
@@ -32,12 +33,15 @@ function downloadDataUrl(dataUrl: string, fileName: string) {
 }
 
 export default function FinishedScreen() {
-  const { players, rounds, resetGame, startGame } = useGameStore();
+  const { players, rounds, resetGame, startGame, currentLastPlacePlayerId } =
+    useGameStore();
 
   const receiptRef = useRef<HTMLDivElement>(null);
 
   const [isExporting, setIsExporting] = useState(false);
   const [isRematchModalOpen, setIsRematchModalOpen] = useState(false);
+
+  const shortLabels = useMemo(() => buildShortLabels(players), [players]);
 
   const totals = useMemo(() => {
     const acc: Record<string, number> = {};
@@ -60,7 +64,17 @@ export default function FinishedScreen() {
   }, [players, totals]);
 
   const winner = sortedPlayers[0];
-  const loser = sortedPlayers[sortedPlayers.length - 1];
+
+  /**
+   * Juru kunci diambil dari store, bukan dari posisi terakhir hasil sort.
+   *
+   * Kalau skor terbawah seri, sort akan menunjuk pemain yang kebetulan
+   * terakhir di array — bisa berbeda dari orang yang kalah spin dan berbeda
+   * dari yang sudah diumumkan TTS.
+   */
+  const loser =
+    players.find((p) => p.id === currentLastPlacePlayerId) ??
+    sortedPlayers[sortedPlayers.length - 1];
 
   const cumulativeRounds = useMemo(() => {
     const runningTotals: Record<string, number> = {};
@@ -84,6 +98,11 @@ export default function FinishedScreen() {
   const isCompactReceipt = cumulativeRounds.length > 15;
   const isUltraCompactReceipt = cumulativeRounds.length > 28;
   const isWideReceipt = players.length >= 4;
+
+  // Legend hanya perlu kalau inisialnya memang berbeda dari nama aslinya.
+  const needsLegend = players.some(
+    (p) => shortLabels[p.id].toLowerCase() !== p.name.toLowerCase()
+  );
 
   const handleExportPNG = async () => {
     if (!receiptRef.current) return;
@@ -150,8 +169,8 @@ export default function FinishedScreen() {
 
           <div className="space-y-1">
             <p className="text-zinc-400 text-sm">Pengarit Handal 👑</p>
-            <p className="text-amber-500 font-bold text-2xl uppercase">
-              {winner?.initials}
+            <p className="text-amber-500 font-bold text-2xl px-4 break-words">
+              {winner?.name}
             </p>
           </div>
         </div>
@@ -163,35 +182,32 @@ export default function FinishedScreen() {
 
           <div className="space-y-3">
             {sortedPlayers.map((player, index) => {
-              let scoreColor = "text-white";
+              const isWinner = player.id === winner?.id;
+              const isLoser = player.id === loser?.id;
 
-              if (index === 0) {
-                scoreColor = "text-amber-500";
-              } else if (index === sortedPlayers.length - 1) {
-                scoreColor = "text-rose-500";
-              }
+              let scoreColor = "text-white";
+              if (isWinner) scoreColor = "text-amber-500";
+              else if (isLoser) scoreColor = "text-rose-500";
 
               return (
                 <div
                   key={player.id}
                   className="flex items-center justify-between bg-zinc-950 p-3 sm:p-4 rounded-xl border border-zinc-800/50 gap-3"
                 >
-                  <div className="flex items-center gap-3">
-                    <span className="text-zinc-500 font-mono text-sm">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <span className="text-zinc-500 font-mono text-sm shrink-0">
                       #{index + 1}
                     </span>
 
-                    <span className="font-bold text-white text-lg flex items-center gap-2">
-                      {player.initials}
-                      {index === 0 && <span className="text-base">👑</span>}
-                      {index === sortedPlayers.length - 1 && (
-                        <span className="text-base">💩</span>
-                      )}
+                    <span className="font-bold text-white text-lg flex items-center gap-2 min-w-0">
+                      <span className="truncate">{player.name}</span>
+                      {isWinner && <span className="text-base shrink-0">👑</span>}
+                      {isLoser && <span className="text-base shrink-0">💩</span>}
                     </span>
                   </div>
 
                   <span
-                    className={`font-mono text-xl font-semibold ${scoreColor}`}
+                    className={`font-mono text-xl font-semibold shrink-0 ${scoreColor}`}
                   >
                     {totals[player.id]}
                   </span>
@@ -206,13 +222,13 @@ export default function FinishedScreen() {
 
           <div className="space-y-1">
             <p className="text-rose-400 font-medium">Sing Ngesret</p>
-            <p className="text-rose-300 text-xl font-bold uppercase">
-              {loser?.initials} 💩
+            <p className="text-rose-300 text-xl font-bold break-words">
+              {loser?.name} 💩
             </p>
           </div>
 
           <p className="text-sm text-rose-500/80 mt-2">
-            {loser?.initials} remeh {loser?.initials} remeeeeh... 💩💩💩
+            {loser?.name} remeh {loser?.name} remeeeeh... 💩💩💩
           </p>
         </div>
 
@@ -245,11 +261,11 @@ export default function FinishedScreen() {
       {/* MODAL REMATCH (PANGGAH / GANTI / BUBAR) */}
       {/* ===================================================== */}
       {isRematchModalOpen && (
-        <div 
+        <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-in fade-in duration-200"
           onClick={() => setIsRematchModalOpen(false)}
         >
-          <div 
+          <div
             className="bg-zinc-900 w-full max-w-sm sm:max-w-md rounded-3xl border border-zinc-800 shadow-2xl overflow-hidden p-5 sm:p-6 text-center space-y-6"
             onClick={(e) => e.stopPropagation()}
           >
@@ -280,10 +296,19 @@ export default function FinishedScreen() {
               <div className="flex gap-3">
                 <button
                   onClick={() => {
+                    /**
+                     * Versi lama cuma mengosongkan rounds & shootRecords, jadi
+                     * juru kunci dan sisa spin dari permainan sebelumnya ikut
+                     * terbawa ke sesi setup berikutnya.
+                     */
                     useGameStore.setState({
                       gameStatus: "idle",
                       rounds: [],
                       shootRecords: [],
+                      currentLastPlacePlayerId: null,
+                      lastPlaceSinceTimestamp: null,
+                      pendingTieBreak: null,
+                      carriedTieBreak: null,
                     });
                     setIsRematchModalOpen(false);
                   }}
@@ -386,7 +411,9 @@ export default function FinishedScreen() {
                           isCompactReceipt ? "py-1" : "py-2"
                         )}
                       >
-                        {p.initials}
+                        {/* Inisial, bukan nama. 4 kolom nama panjang kepotong
+                            jadi tidak terbaca di receipt. */}
+                        {shortLabels[p.id]}
                       </th>
                     ))}
                   </tr>
@@ -406,12 +433,17 @@ export default function FinishedScreen() {
                           let colorClass = "text-zinc-300";
 
                           if (isLastRow) {
-                            if (score === totals[winner?.id || ""]) {
+                            /**
+                             * Dibandingkan per id, bukan per nilai skor.
+                             * Kalau dua pemain punya total sama, versi lama
+                             * mewarnai dua-duanya merah.
+                             */
+                            if (p.id === winner?.id) {
                               colorClass = cn(
                                 "text-amber-500 font-bold",
                                 isCompactReceipt ? "text-[10px]" : "text-sm"
                               );
-                            } else if (score === totals[loser?.id || ""]) {
+                            } else if (p.id === loser?.id) {
                               colorClass = cn(
                                 "text-rose-500 font-bold",
                                 isCompactReceipt ? "text-[10px]" : "text-sm"
@@ -446,6 +478,26 @@ export default function FinishedScreen() {
                   })}
                 </tbody>
               </table>
+
+              {/* Tanpa ini, hasil share cuma berisi inisial tanpa penjelasan. */}
+              {needsLegend && (
+                <div
+                  className={cn(
+                    "mt-3 pt-2 border-t border-dashed border-zinc-800 flex flex-wrap justify-center gap-x-3 gap-y-1 text-zinc-500",
+                    isUltraCompactReceipt ? "text-[7px]" : "text-[9px]"
+                  )}
+                >
+                  {players.map((p) => (
+                    <span key={p.id} className="whitespace-nowrap">
+                      <span className="font-bold text-zinc-400">
+                        {shortLabels[p.id]}
+                      </span>
+                      {" = "}
+                      {p.name}
+                    </span>
+                  ))}
+                </div>
+              )}
             </div>
 
             <div
@@ -464,7 +516,7 @@ export default function FinishedScreen() {
                   Pengarit Handal
                 </p>
 
-                <div className="flex items-center justify-center gap-2 min-w-0">
+                <div className="flex items-center justify-center gap-2 min-w-0 w-full">
                   <Trophy
                     className={cn(
                       "text-amber-500 shrink-0",
@@ -474,10 +526,10 @@ export default function FinishedScreen() {
                   <h2
                     className={cn(
                       "font-black text-white truncate",
-                      isCompactReceipt ? "text-xl" : "text-2xl"
+                      isCompactReceipt ? "text-lg" : "text-xl"
                     )}
                   >
-                    {winner?.initials}
+                    {winner?.name}
                   </h2>
                 </div>
 
@@ -501,7 +553,7 @@ export default function FinishedScreen() {
                   Sing Ngesret
                 </p>
 
-                <div className="flex items-center justify-center gap-2 min-w-0">
+                <div className="flex items-center justify-center gap-2 min-w-0 w-full">
                   <Skull
                     className={cn(
                       "text-rose-500 shrink-0",
@@ -511,10 +563,10 @@ export default function FinishedScreen() {
                   <h2
                     className={cn(
                       "font-black text-white truncate",
-                      isCompactReceipt ? "text-xl" : "text-2xl"
+                      isCompactReceipt ? "text-lg" : "text-xl"
                     )}
                   >
-                    {loser?.initials}
+                    {loser?.name}
                   </h2>
                 </div>
 

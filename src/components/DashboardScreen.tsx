@@ -3,25 +3,42 @@
 import { useState, useMemo } from "react";
 import { useGameStore } from "@/store/useGameStore";
 import { CheckCircle2, AlertTriangle, RotateCcw } from "lucide-react";
+import { buildShortLabels } from "@/lib/playerName";
+import { speak } from "@/lib/speech";
 import { cn } from "@/lib/utils";
 import RoundList from "./RoundList";
 import PsywarFooter from "./PsywarFooter";
-import AddRoundModal from "./AddRoundModal";
+import AddRoundModal, { type AddRoundEditData } from "./AddRoundModal";
 import PlayerDetailModal from "./PlayerDetailModal";
+import TieBreakModal from "./TieBreakModal";
 
 export default function DashboardScreen() {
-  const { players, rounds, shootRecords, finishGame, undoLastRound } = useGameStore();
+  const {
+    players,
+    rounds,
+    shootRecords,
+    finishGame,
+    undoLastRound,
+    currentLastPlacePlayerId,
+    pendingTieBreak,
+  } = useGameStore();
 
   const [isAddRoundOpen, setIsAddRoundOpen] = useState(false);
   const [selectedPlayerId, setSelectedPlayerId] = useState<string | null>(null);
   const [isFinishModalOpen, setIsFinishModalOpen] = useState(false);
   const [isUndoModalOpen, setIsUndoModalOpen] = useState(false);
 
-  const [editData, setEditData] = useState<any>(null);
+  const [editData, setEditData] = useState<AddRoundEditData | null>(null);
   const [isEditMode, setIsEditMode] = useState(false);
 
   const lastRound = rounds[rounds.length - 1];
   const canEdit = lastRound && !lastRound.isEdited;
+
+  // Selama spin belum kelar, ronde berikutnya tidak boleh masuk: juru kunci
+  // ronde ini masih menggantung.
+  const isTieBreakPending = pendingTieBreak !== null;
+
+  const shortLabels = useMemo(() => buildShortLabels(players), [players]);
 
   const gridColsClass = useMemo(() => {
     switch (players.length) {
@@ -43,16 +60,27 @@ export default function DashboardScreen() {
     return acc;
   }, [players, rounds]);
 
+  /**
+   * 💩 diambil dari store, BUKAN dari posisi terakhir hasil sort.
+   *
+   * Kalau pakai sort, saat skor terendah seri yang dapat 💩 adalah pemain yang
+   * kebetulan terakhir di array — jadi bisa berbeda dari hasil spin dan dari
+   * apa yang diumumkan TTS.
+   */
   const playerRanks = useMemo(() => {
-    const sortedIds = [...players].sort((a, b) => totals[b.id] - totals[a.id]).map(p => p.id);
+    const sortedIds = [...players]
+      .sort((a, b) => totals[b.id] - totals[a.id])
+      .map((p) => p.id);
+
     const ranks: Record<string, string> = {};
 
-    players.forEach(p => {
+    players.forEach((p) => {
       const rankIndex = sortedIds.indexOf(p.id);
-      if (rankIndex === 0) {
-        ranks[p.id] = "👑";
-      } else if (rankIndex === players.length - 1) {
+
+      if (p.id === currentLastPlacePlayerId) {
         ranks[p.id] = "💩";
+      } else if (rankIndex === 0) {
+        ranks[p.id] = "👑";
       } else if (rankIndex === 1 && players.length === 4) {
         ranks[p.id] = "😜";
       } else {
@@ -61,11 +89,11 @@ export default function DashboardScreen() {
     });
 
     if (rounds.length === 0) {
-      players.forEach(p => ranks[p.id] = "");
+      players.forEach((p) => (ranks[p.id] = ""));
     }
 
     return ranks;
-  }, [players, totals, rounds.length]);
+  }, [players, totals, rounds.length, currentLastPlacePlayerId]);
 
   return (
     <div className="h-dvh flex flex-col bg-zinc-950 relative overflow-hidden w-full max-w-[480px] sm:max-w-xl md:max-w-2xl lg:max-w-3xl mx-auto sm:shadow-2xl">
@@ -74,35 +102,29 @@ export default function DashboardScreen() {
           JENGKENG
         </h1>
         <button
+          disabled={isTieBreakPending}
           onClick={() => {
-            if ("speechSynthesis" in window) {
-              window.speechSynthesis.pause();
-              window.speechSynthesis.cancel();
-
-              const speechText = "Mosok sret tenan? ... yo gak opo opo, lek gak isin, ha ha ha.";
-              const utterance = new SpeechSynthesisUtterance(speechText);
-              utterance.lang = "id-ID";
-
-              const voices = window.speechSynthesis.getVoices();
-              const indonesianVoice = voices.find(v => v.lang === "id-ID" || v.lang === "id_ID");
-              if (indonesianVoice) utterance.voice = indonesianVoice;
-
-              utterance.rate = 0.9;
-              
-              setTimeout(() => {
-                window.speechSynthesis.speak(utterance);
-              }, 50);
-            }
-            setIsFinishModalOpen(true)
+            speak("Mosok sret tenan? ... yo gak opo opo, lek gak isin, ha ha ha.");
+            setIsFinishModalOpen(true);
           }}
-          className="flex items-center gap-1.5 px-3 py-1.5 bg-rose-500/10 text-rose-500 font-bold rounded-full border border-rose-500/20 active:scale-95 transition-transform"
+          className={cn(
+            "flex items-center gap-1.5 px-3 py-1.5 font-bold rounded-full border transition-transform",
+            isTieBreakPending
+              ? "bg-zinc-900 text-zinc-700 border-zinc-800 cursor-not-allowed"
+              : "bg-rose-500/10 text-rose-500 border-rose-500/20 active:scale-95"
+          )}
         >
           <CheckCircle2 className="w-4 h-4" />
           <span>SRET</span>
         </button>
       </header>
 
-      <div className={cn("shrink-0 z-10 bg-zinc-950/90 backdrop-blur-md border-b border-zinc-800 grid gap-px", gridColsClass)}>
+      <div
+        className={cn(
+          "shrink-0 z-10 bg-zinc-950/90 backdrop-blur-md border-b border-zinc-800 grid gap-px",
+          gridColsClass
+        )}
+      >
         {players.map((p) => {
           const score = totals[p.id] || 0;
           const isGodTier = score >= 1000;
@@ -113,6 +135,7 @@ export default function DashboardScreen() {
             <button
               key={p.id}
               onClick={() => setSelectedPlayerId(p.id)}
+              title={p.name}
               className="relative flex flex-col items-center justify-center py-3 sm:py-4 md:py-5 bg-zinc-950 active:bg-zinc-900 transition-colors overflow-hidden group min-w-0"
             >
               {hasSpecialEffect && (
@@ -137,8 +160,12 @@ export default function DashboardScreen() {
                 </>
               )}
 
-              <span className="relative z-10 text-sm sm:text-base md:text-lg font-black text-white truncate max-w-full px-1">{p.initials}</span>
-              <span className="relative z-10 text-lg sm:text-xl md:text-2xl">{playerRanks[p.id]}</span>
+              <span className="relative z-10 text-sm sm:text-base md:text-lg font-black text-white truncate max-w-full px-1">
+                {shortLabels[p.id]}
+              </span>
+              <span className="relative z-10 text-lg sm:text-xl md:text-2xl">
+                {playerRanks[p.id]}
+              </span>
             </button>
           );
         })}
@@ -150,19 +177,34 @@ export default function DashboardScreen() {
       <div className="absolute bottom-[calc(1rem+env(safe-area-inset-bottom))] sm:bottom-6 left-0 w-full px-4 sm:px-5 z-20 flex gap-3">
         {rounds.length > 0 && (
           <button
+            disabled={isTieBreakPending}
             onClick={() => setIsUndoModalOpen(true)}
-            className="flex-1 flex items-center justify-center bg-zinc-800 text-zinc-300 py-3.5 sm:py-4 rounded-xl font-bold shadow-xl active:scale-95 transition-all hover:bg-zinc-700 hover:text-white border border-zinc-700"
+            className={cn(
+              "flex-1 flex items-center justify-center py-3.5 sm:py-4 rounded-xl font-bold shadow-xl transition-all border",
+              isTieBreakPending
+                ? "bg-zinc-900 text-zinc-700 border-zinc-800 cursor-not-allowed"
+                : "bg-zinc-800 text-zinc-300 border-zinc-700 hover:bg-zinc-700 hover:text-white active:scale-95"
+            )}
           >
             <span>Salah Ngitung</span>
           </button>
         )}
         <button
+          disabled={isTieBreakPending}
           onClick={() => setIsAddRoundOpen(true)}
-          className="flex-1 flex items-center justify-center bg-linear-to-r from-amber-500 to-rose-600 text-white py-3.5 sm:py-4 rounded-xl font-bold shadow-xl shadow-rose-500/30 active:scale-95 transition-all"
+          className={cn(
+            "flex-1 flex items-center justify-center py-3.5 sm:py-4 rounded-xl font-bold shadow-xl transition-all",
+            isTieBreakPending
+              ? "bg-zinc-800 text-zinc-600 cursor-not-allowed"
+              : "bg-linear-to-r from-amber-500 to-rose-600 text-white shadow-rose-500/30 active:scale-95"
+          )}
         >
           <span>Wayahe Ngitung</span>
         </button>
       </div>
+
+      {/* Blocking. Tidak bisa ditutup sampai spin selesai. */}
+      <TieBreakModal />
 
       {isAddRoundOpen && (
         <AddRoundModal
@@ -176,7 +218,12 @@ export default function DashboardScreen() {
         />
       )}
 
-      {selectedPlayerId && <PlayerDetailModal playerId={selectedPlayerId} onClose={() => setSelectedPlayerId(null)} />}
+      {selectedPlayerId && (
+        <PlayerDetailModal
+          playerId={selectedPlayerId}
+          onClose={() => setSelectedPlayerId(null)}
+        />
+      )}
 
       {isFinishModalOpen && (
         <div
@@ -227,18 +274,24 @@ export default function DashboardScreen() {
               <RotateCcw className="w-12 h-12" />
             </div>
             <div className="space-y-2">
-              <h2 className="text-xl font-bold text-white">Edit Itungan Keri Dhewe?</h2>
-              <p className="text-sm text-zinc-500">Pilih edit nek cuma salah input angka/gepukan.</p>
+              <h2 className="text-xl font-bold text-white">
+                Edit Itungan Keri Dhewe?
+              </h2>
+              <p className="text-sm text-zinc-500">
+                Pilih edit nek cuma salah input angka/gepukan.
+              </p>
             </div>
 
             <div className="flex flex-col gap-3">
               {canEdit ? (
                 <button
                   onClick={() => {
-                    const lastRound = rounds[rounds.length - 1];
-                    const lastShoot = shootRecords.find(r => r.roundId === lastRound.roundId);
+                    const target = rounds[rounds.length - 1];
+                    const lastShoot = shootRecords.find(
+                      (r) => r.roundId === target.roundId
+                    );
 
-                    setEditData({ scores: lastRound.scores, shoot: lastShoot });
+                    setEditData({ scores: target.scores, shoot: lastShoot });
                     setIsEditMode(true);
 
                     setIsUndoModalOpen(false);

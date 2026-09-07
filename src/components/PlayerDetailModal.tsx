@@ -1,9 +1,10 @@
 "use client";
 
 import { useGameStore } from "@/store/useGameStore";
-import { X, Coins, TrendingDown, Skull, Clock } from "lucide-react";
+import { X, Coins, TrendingDown, Skull, Clock, Dices, Target } from "lucide-react";
 import { useMemo } from "react";
 import { useNow } from "@/hooks/useNow";
+import { buildShortLabels } from "@/lib/playerName";
 
 interface PlayerDetailModalProps {
   playerId: string;
@@ -11,10 +12,11 @@ interface PlayerDetailModalProps {
 }
 
 export default function PlayerDetailModal({ playerId, onClose }: PlayerDetailModalProps) {
-  const { players, rounds, shootRecords } = useGameStore();
+  const { players, rounds, shootRecords, gameStartTime } = useGameStore();
   const player = players.find((p) => p.id === playerId);
 
   const now = useNow(60000);
+  const shortLabels = useMemo(() => buildShortLabels(players), [players]);
 
   const stats = useMemo(() => {
     let timesShooter = 0;
@@ -36,91 +38,92 @@ export default function PlayerDetailModal({ playerId, onClose }: PlayerDetailMod
     return { timesShooter, timesVictim, pointsGained, pointsLost };
   }, [playerId, shootRecords]);
 
+  /**
+   * Semua angka di bawah dibaca dari keputusan yang sudah tersimpan per ronde,
+   * bukan dihitung ulang. Versi lama me-replay skor dan menganggap SEMUA
+   * pemain yang seri sebagai juru kunci, jadi saat seri angkanya dobel.
+   *
+   * Dua hal sengaja dipisah:
+   * - `atBottom`  : berapa kali dia ada di dasar klasemen (fakta skor)
+   * - `punished`  : berapa kali dia benar-benar kena hukuman (hasil spin)
+   * Selisihnya = berapa kali dia selamat karena menang spin.
+   */
   const jkStats = useMemo(() => {
-    let times = 0;
+    let punished = 0;
+    let atBottom = 0;
+    let escaped = 0;
     let timeMs = 0;
 
-    const tempTotals: Record<string, number> = {};
-    players.forEach(p => tempTotals[p.id] = 0);
+    rounds.forEach((round, index) => {
+      if (round.tiedForLast.includes(playerId)) atBottom++;
 
-    rounds.forEach((r, idx) => {
-      r.scores.forEach(s => tempTotals[s.playerId] += s.finalScore);
-
-      let minScore = Infinity;
-      let tiedForLast: string[] = [];
-      for (const id in tempTotals) {
-        if (tempTotals[id] < minScore) {
-          minScore = tempTotals[id];
-          tiedForLast = [id];
-        } else if (tempTotals[id] === minScore) {
-          tiedForLast.push(id);
+      if (round.resolvedLastPlaceId !== playerId) {
+        if (round.tieBreak && round.tieBreak.candidates.includes(playerId)) {
+          escaped++;
         }
+        return;
       }
 
-      const currentRoundTs = parseInt(r.roundId);
-      const previousTs = idx === 0
-        ? useGameStore.getState().gameStartTime || currentRoundTs
-        : parseInt(rounds[idx - 1].roundId);
+      punished++;
 
-      const durationThisRoundMs = currentRoundTs - previousTs;
+      /**
+       * Durasi hukuman = sejak ronde ini masuk sampai ronde berikutnya
+       * (atau sampai sekarang kalau ini ronde terakhir).
+       *
+       * Versi lama memakai selisih ke ronde SEBELUMNYA, yang berarti waktu
+       * sebelum keputusan dibuat ikut dihitung ke keputusan itu.
+       */
+      const startTs = Number.parseInt(round.roundId, 10);
+      const endTs =
+        index < rounds.length - 1
+          ? Number.parseInt(rounds[index + 1].roundId, 10)
+          : now;
 
-      if (tiedForLast.includes(playerId)) {
-        times++;
-        timeMs += durationThisRoundMs;
-      }
+      timeMs += Math.max(0, endTs - startTs);
     });
 
-    if (rounds.length > 0) {
-      const finalTotals: Record<string, number> = {};
-      players.forEach(p => finalTotals[p.id] = 0);
-      rounds.forEach(r => r.scores.forEach(s => finalTotals[s.playerId] += s.finalScore));
-
-      let minScore = Infinity;
-      let currentTiedForLast: string[] = [];
-      for (const id in finalTotals) {
-        if (finalTotals[id] < minScore) {
-          minScore = finalTotals[id];
-          currentTiedForLast = [id];
-        } else if (finalTotals[id] === minScore) {
-          currentTiedForLast.push(id);
-        }
-      }
-
-      if (currentTiedForLast.includes(playerId)) {
-        const lastRoundTs = parseInt(rounds[rounds.length - 1].roundId);
-        timeMs += Math.max(0, now - lastRoundTs);
-      }
-    }
-
     return {
-      times,
-      minutes: Math.floor(timeMs / 60000)
+      punished,
+      atBottom,
+      escaped,
+      minutes: Math.floor(timeMs / 60000),
     };
-  }, [rounds, players, playerId, now]);
+  }, [rounds, playerId, now]);
+
+  // gameStartTime tidak dipakai dalam perhitungan lagi, tapi tetap dibaca
+  // supaya modal ikut ter-render ulang kalau permainan di-restart.
+  void gameStartTime;
 
   if (!player) return null;
 
   return (
     <div
       className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/80 backdrop-blur-sm p-0 sm:p-4 animate-in fade-in zoom-in duration-200"
-      onClick={onClose} // Klik di area gelap untuk tutup
+      onClick={onClose}
     >
       <div
         className="bg-zinc-900 w-full sm:max-w-lg md:max-w-2xl rounded-t-3xl sm:rounded-3xl border border-zinc-800 shadow-2xl overflow-hidden max-h-[92dvh]"
-        onClick={(e) => e.stopPropagation()} // Mencegah klik di dalam modal ikut menutup
+        onClick={(e) => e.stopPropagation()}
       >
 
         {/* Header */}
-        <div className="bg-zinc-950 p-6 flex items-center justify-between border-b border-zinc-800">
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-full bg-linear-to-br from-amber-400 to-rose-500 flex items-center justify-center shadow-lg shadow-rose-500/20">
-              <span className="font-black text-xl text-zinc-950">{player.initials}</span>
+        <div className="bg-zinc-950 p-6 flex items-center justify-between border-b border-zinc-800 gap-3">
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="w-12 h-12 shrink-0 rounded-full bg-linear-to-br from-amber-400 to-rose-500 flex items-center justify-center shadow-lg shadow-rose-500/20">
+              {/* Inisial, bukan nama. Nama panjang jebol dari lingkaran 48px. */}
+              <span className="font-black text-sm text-zinc-950">
+                {shortLabels[player.id]}
+              </span>
             </div>
-            <div>
-              <h2 className="text-xl font-bold text-white">Rapor Pemain</h2>
+            <div className="min-w-0">
+              <h2 className="text-xl font-bold text-white truncate">{player.name}</h2>
+              <p className="text-xs text-zinc-500">Rapor Pemain</p>
             </div>
           </div>
-          <button onClick={onClose} className="p-2 bg-zinc-800/50 rounded-full text-zinc-400 hover:text-white transition-colors">
+          <button
+            onClick={onClose}
+            className="p-2 bg-zinc-800/50 rounded-full text-zinc-400 hover:text-white transition-colors shrink-0"
+          >
             <X className="w-5 h-5" />
           </button>
         </div>
@@ -162,13 +165,13 @@ export default function PlayerDetailModal({ playerId, onClose }: PlayerDetailMod
           </div>
 
           <h3 className="text-xs font-bold text-zinc-500 uppercase tracking-widest mt-6 mb-1">Catetan Jengkeng</h3>
-          <div className="grid grid-cols-2 gap-3 sm:gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
             <div className="bg-rose-500/5 p-4 rounded-2xl border border-rose-500/30">
               <div className="flex items-center gap-2 text-rose-400 mb-2">
                 <Skull className="w-4 h-4" />
                 <span className="text-xs font-bold uppercase tracking-wider">Jengkeng</span>
               </div>
-              <p className="text-2xl font-black text-rose-500">{jkStats.times}x</p>
+              <p className="text-2xl font-black text-rose-500">{jkStats.punished}x</p>
             </div>
 
             <div className="bg-rose-500/5 p-4 rounded-2xl border border-rose-500/30">
@@ -176,9 +179,34 @@ export default function PlayerDetailModal({ playerId, onClose }: PlayerDetailMod
                 <Clock className="w-4 h-4" />
                 <span className="text-xs font-bold uppercase tracking-wider">Suwine</span>
               </div>
-              <p className="text-2xl font-black text-rose-500">{jkStats.minutes} <span className="text-base font-medium">Mnt</span></p>
+              <p className="text-2xl font-black text-rose-500">
+                {jkStats.minutes} <span className="text-base font-medium">Mnt</span>
+              </p>
+            </div>
+
+            <div className="bg-zinc-950 p-4 rounded-2xl border border-zinc-800">
+              <div className="flex items-center gap-2 text-zinc-400 mb-2">
+                <Target className="w-4 h-4" />
+                <span className="text-xs font-bold uppercase tracking-wider">Ning Dasar</span>
+              </div>
+              <p className="text-2xl font-black text-white">{jkStats.atBottom}x</p>
+            </div>
+
+            <div className="bg-amber-500/5 p-4 rounded-2xl border border-amber-500/30">
+              <div className="flex items-center gap-2 text-amber-400 mb-2">
+                <Dices className="w-4 h-4" />
+                <span className="text-xs font-bold uppercase tracking-wider">Lolos Spin</span>
+              </div>
+              <p className="text-2xl font-black text-amber-500">{jkStats.escaped}x</p>
             </div>
           </div>
+
+          {jkStats.escaped > 0 && (
+            <p className="text-xs text-amber-500/80 bg-amber-500/5 border border-amber-500/20 rounded-xl px-3 py-2">
+              Ning dasar {jkStats.atBottom}x, tapi mung {jkStats.punished}x jengkeng.
+              Untunge ora umum 🎲.
+            </p>
+          )}
 
         </div>
 
