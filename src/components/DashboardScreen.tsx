@@ -1,5 +1,6 @@
 "use client";
 
+import { SpinBorder } from "./SpinBorder";
 import { useState, useMemo } from "react";
 import { useGameStore } from "@/store/useGameStore";
 import { CheckCircle2, AlertTriangle, RotateCcw } from "lucide-react";
@@ -126,12 +127,12 @@ export default function DashboardScreen() {
               onClick={() => setSelectedPlayerId(p.id)}
               title={p.name}
               className={cn(
-                "relative flex flex-col items-center justify-center py-3 sm:py-4 md:py-5 min-h-11 bg-bg active:bg-surface transition-colors min-w-0",
-                // Tembus +1000 (nyewu) = cincin emas, tembus -1000 = cincin merah. Statis, tanpa animasi.
-                isGodTier && "bg-accent/10 ring-2 ring-inset ring-accent",
-                isHellTier && "bg-danger/10 ring-2 ring-inset ring-danger"
+                "relative overflow-hidden flex flex-col items-center justify-center py-3 sm:py-4 md:py-5 min-h-11 bg-bg active:bg-surface transition-colors min-w-0"
               )}
             >
+              {/* Tembus +1000 (nyewu) = cincin emas berputar, tembus -1000 = cincin merah */}
+              {isGodTier && <SpinBorder tone="god" tint="bg-accent/10" />}
+              {isHellTier && <SpinBorder tone="hell" tint="bg-danger/10" />}
               <span className="relative z-10 text-sm sm:text-base md:text-lg font-black text-fg truncate max-w-full px-1">
                 {shortLabels[p.id]}
               </span>

@@ -10,6 +10,7 @@ copy berbahasa Jawa dan emote, bukan dari efek visual.
 
 ## Yang tidak boleh disentuh
 
+- **Cincin berputar ±1000** (lihat aturan 4).
 - **Emoji rank dan emote** (👑 😜 😭 💩 👊🏻 🤕) adalah karakter game, bukan ikon.
   Jangan dihapus, diganti SVG, atau dipindah logikanya. Aturan generik "tanpa emoji"
   dari alat desain mana pun kalah dari poin ini.
@@ -24,15 +25,16 @@ copy berbahasa Jawa dan emote, bukan dari efek visual.
    makna: kalah, hukuman, hapus. Warna lain tidak dipakai sebagai dekorasi.
 3. **Hanya token.** Dilarang `zinc-*`, `amber-*`, `rose-*`, atau hex di komponen. Butuh warna baru?
    Tambah token dulu, jelaskan kenapa.
-4. **Sinyal game tetap statis.** Tembus +1000 = cincin `accent`, tembus -1000 = cincin `danger`
-   (`ring-2 ring-inset`). Tanpa animasi berputar.
+4. **Cincin berputar ±1000 itu desain pemilik, jangan dihapus.** Tembus +1000 = cincin `accent-hover`
+   berputar, tembus -1000 = cincin `danger` berputar (`SpinBorder.tsx`). Ini satu-satunya animasi
+   dekoratif yang diizinkan. Tanpa glow tambahan di sekelilingnya.
 5. **Target sentuh ≥ 44px** untuk tombol aksi dan ikon; jarak antar target ≥ 8px
    (pengecualian: baris pintasan skor, 6px, karena 7 tombol harus muat di 360px).
 6. **Kontras ≥ 4.5:1** untuk semua teks, termasuk placeholder. `fg-subtle` adalah yang terendah
    yang masih boleh dipakai untuk teks. Jangan turunkan.
 7. **Teks ≥ 12px.** Chip label dan stempel kecil boleh 11px. Tidak ada 9px/10px.
 8. **Radius:** kontrol `rounded-xl`, kartu dan sheet `rounded-2xl`, pil `rounded-full`. Tidak ada `3xl`.
-9. **Gerak hanya yang berfungsi.** Tidak ada kelas animasi dekoratif (`animate-in`, `zoom-in`, dll. tidak
+9. **Gerak hanya yang berfungsi**, selain cincin ±1000. Tidak ada kelas animasi dekoratif (`animate-in`, `zoom-in`, dll. tidak
    ada di build ini; jangan ditulis). `prefers-reduced-motion` sudah dihormati di `globals.css`.
 10. **Fokus keyboard selalu terlihat** (`:focus-visible` global). Tombol ikon wajib `aria-label`.
 11. Angka skor pakai `font-mono`; kolom angka sejajar memakai `tabular-nums`.

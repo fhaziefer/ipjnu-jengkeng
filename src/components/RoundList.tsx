@@ -1,5 +1,6 @@
 "use client";
 
+import { SpinBorder } from "./SpinBorder";
 import { useGameStore } from "@/store/useGameStore";
 import { useMemo } from "react";
 import { cn } from "@/lib/utils";
@@ -105,23 +106,28 @@ export default function RoundList() {
               // Cek apakah di ronde ini dia baru saja pecah telur
               const isJustHitGod = round.godTierHits[p.id];
               const isJustHitHell = round.hellTierHits[p.id];
+              const hasSpecialEffect = isJustHitGod || isJustHitHell;
 
               return (
                 <div
                   key={`${round.roundId}-${p.id}`}
                   className={cn(
-                    "relative flex items-center justify-center transition-colors",
+                    "relative overflow-hidden flex items-center justify-center transition-colors",
                     isLastRow ? "py-4 sm:py-5 md:py-6" : "py-2.5 sm:py-3 md:py-4",
                     "bg-bg",
-                    isMax && "bg-accent/10",
-                    isMin && "bg-danger/10",
-                    isShooter && "border-2 border-accent",
-                    isVictim && "border-2 border-danger",
-                    // Pertama kali tembus +1000 / -1000 di ronde ini. Statis, tanpa animasi.
-                    isJustHitGod && "ring-2 ring-inset ring-accent",
-                    isJustHitHell && "ring-2 ring-inset ring-danger"
+                    !hasSpecialEffect && isMax && "bg-accent/10",
+                    !hasSpecialEffect && isMin && "bg-danger/10",
+                    !hasSpecialEffect && isShooter && "border-2 border-accent",
+                    !hasSpecialEffect && isVictim && "border-2 border-danger"
                   )}
                 >
+                  {/* Pertama kali tembus +1000 / -1000 di ronde ini: cincin berputar */}
+                  {hasSpecialEffect && (
+                    <SpinBorder
+                      tone={isJustHitGod ? "god" : "hell"}
+                      tint={isMax ? "bg-accent/10" : isMin ? "bg-danger/10" : undefined}
+                    />
+                  )}
                   <span
                     className={cn(
                       "relative z-10 font-mono transition-all",
