@@ -1,5 +1,7 @@
 "use client";
 
+import { renderTemplate } from "@/lib/speechTemplates";
+import { buildTieIntroVars } from "@/lib/speechContext";
 import { useEffect, useRef, useState } from "react";
 import { Dices, Skull, ArrowRight } from "lucide-react";
 import { useGameStore, drawSpin, evaluateTieResults } from "@/store/useGameStore";
@@ -58,7 +60,16 @@ export default function TieBreakModal() {
 
         setIsLocked(true);
         setVerdict(null);
-        speak(getTemplates().tieIntro, { onEnd: () => setIsLocked(false) });
+        // Dibaca langsung dari store (bukan dari render) supaya efek ini tetap
+        // hanya bergantung pada pendingRoundId dan tidak terpicu ulang.
+        const { players: currentPlayers, pendingTieBreak: pending } = useGameStore.getState();
+        speak(
+            renderTemplate(
+                getTemplates().tieIntro,
+                buildTieIntroVars(currentPlayers, pending?.candidates ?? [])
+            ),
+            { onEnd: () => setIsLocked(false) }
+        );
     }, [pendingRoundId]);
 
     useEffect(() => {
