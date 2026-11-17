@@ -1,5 +1,7 @@
 "use client";
 
+import { renderTemplate } from "@/lib/speechTemplates";
+import { buildSretVars } from "@/lib/speechContext";
 import { getTemplates } from "@/store/useSettingsStore";
 import { SpinBorder } from "./SpinBorder";
 import { useState, useMemo } from "react";
@@ -96,7 +98,12 @@ export default function DashboardScreen() {
         <button
           disabled={isTieBreakPending}
           onClick={() => {
-            speak(getTemplates().sretConfirm);
+            speak(
+              renderTemplate(
+                getTemplates().sretConfirm,
+                buildSretVars(players, currentLastPlacePlayerId)
+              )
+            );
             setIsFinishModalOpen(true);
           }}
           className={cn(
