@@ -98,31 +98,32 @@ export default function PlayerDetailModal({ playerId, onClose }: PlayerDetailMod
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/80 backdrop-blur-sm p-0 sm:p-4 animate-in fade-in zoom-in duration-200"
+      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/75 p-0 sm:p-4"
       onClick={onClose}
     >
       <div
-        className="bg-zinc-900 w-full sm:max-w-lg md:max-w-2xl rounded-t-3xl sm:rounded-3xl border border-zinc-800 shadow-2xl overflow-hidden max-h-[92dvh]"
+        className="bg-surface w-full sm:max-w-lg md:max-w-2xl rounded-t-3xl sm:rounded-2xl border border-line overflow-hidden max-h-[92dvh]"
         onClick={(e) => e.stopPropagation()}
       >
 
         {/* Header */}
-        <div className="bg-zinc-950 p-6 flex items-center justify-between border-b border-zinc-800 gap-3">
+        <div className="bg-bg p-6 flex items-center justify-between border-b border-line gap-3">
           <div className="flex items-center gap-3 min-w-0">
-            <div className="w-12 h-12 shrink-0 rounded-full bg-linear-to-br from-amber-400 to-rose-500 flex items-center justify-center shadow-lg shadow-rose-500/20">
+            <div className="w-12 h-12 shrink-0 rounded-full flex items-center justify-center bg-accent text-on-accent hover:bg-accent-hover">
               {/* Inisial, bukan nama. Nama panjang jebol dari lingkaran 48px. */}
-              <span className="font-black text-sm text-zinc-950">
+              <span className="font-black text-sm text-on-accent">
                 {shortLabels[player.id]}
               </span>
             </div>
             <div className="min-w-0">
-              <h2 className="text-xl font-bold text-white truncate">{player.name}</h2>
-              <p className="text-xs text-zinc-500">Rapor Pemain</p>
+              <h2 className="text-xl font-bold text-fg truncate">{player.name}</h2>
+              <p className="text-xs text-fg-subtle">Rapor Pemain</p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-2 bg-zinc-800/50 rounded-full text-zinc-400 hover:text-white transition-colors shrink-0"
+            aria-label="Tutup"
+            className="size-11 inline-flex items-center justify-center bg-surface-2/50 rounded-full text-fg-muted hover:text-fg transition-colors shrink-0"
           >
             <X className="w-5 h-5" />
           </button>
@@ -131,78 +132,78 @@ export default function PlayerDetailModal({ playerId, onClose }: PlayerDetailMod
         {/* Content */}
         <div className="p-4 sm:p-6 space-y-4 max-h-[70dvh] overflow-y-auto">
 
-          <h3 className="text-xs font-bold text-zinc-500 uppercase tracking-widest mb-1">Riwayat Gepukan</h3>
+          <h3 className="text-xs font-bold text-fg-subtle uppercase tracking-widest mb-1">Riwayat Gepukan</h3>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
-            <div className="bg-zinc-950 p-4 rounded-2xl border border-zinc-800">
-              <div className="flex items-center gap-2 text-amber-500 mb-2">
+            <div className="bg-bg p-4 rounded-2xl border border-line">
+              <div className="flex items-center gap-2 text-accent mb-2">
                 <span className="text-xs font-bold uppercase tracking-wider">👊🏻 Gepuk</span>
               </div>
-              <p className="text-2xl font-black text-white">{stats.timesShooter}x</p>
+              <p className="text-2xl font-black text-fg">{stats.timesShooter}x</p>
             </div>
 
-            <div className="bg-zinc-950 p-4 rounded-2xl border border-zinc-800">
-              <div className="flex items-center gap-2 text-rose-500 mb-2">
+            <div className="bg-bg p-4 rounded-2xl border border-line">
+              <div className="flex items-center gap-2 text-danger mb-2">
                 <span className="text-xs font-bold uppercase tracking-wider">🤕 Digepuk</span>
               </div>
-              <p className="text-2xl font-black text-white">{stats.timesVictim}x</p>
+              <p className="text-2xl font-black text-fg">{stats.timesVictim}x</p>
             </div>
 
-            <div className="bg-amber-500/10 p-4 rounded-2xl border border-amber-500/20">
-              <div className="flex items-center gap-2 text-amber-400 mb-2">
+            <div className="bg-accent/10 p-4 rounded-2xl border border-accent/20">
+              <div className="flex items-center gap-2 text-accent mb-2">
                 <Coins className="w-4 h-4" />
                 <span className="text-xs font-bold uppercase tracking-wider">Gepukan</span>
               </div>
-              <p className="text-2xl font-black text-amber-500">+{stats.pointsGained}</p>
+              <p className="text-2xl font-black text-accent">+{stats.pointsGained}</p>
             </div>
 
-            <div className="bg-rose-500/10 p-4 rounded-2xl border border-rose-500/20">
-              <div className="flex items-center gap-2 text-rose-400 mb-2">
+            <div className="bg-danger/10 p-4 rounded-2xl border border-danger/20">
+              <div className="flex items-center gap-2 text-danger mb-2">
                 <TrendingDown className="w-4 h-4" />
                 <span className="text-xs font-bold uppercase tracking-wider">Digepuk</span>
               </div>
-              <p className="text-2xl font-black text-rose-500">-{stats.pointsLost}</p>
+              <p className="text-2xl font-black text-danger">-{stats.pointsLost}</p>
             </div>
           </div>
 
-          <h3 className="text-xs font-bold text-zinc-500 uppercase tracking-widest mt-6 mb-1">Catetan Jengkeng</h3>
+          <h3 className="text-xs font-bold text-fg-subtle uppercase tracking-widest mt-6 mb-1">Catetan Jengkeng</h3>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
-            <div className="bg-rose-500/5 p-4 rounded-2xl border border-rose-500/30">
-              <div className="flex items-center gap-2 text-rose-400 mb-2">
+            <div className="bg-danger/5 p-4 rounded-2xl border border-danger/30">
+              <div className="flex items-center gap-2 text-danger mb-2">
                 <Skull className="w-4 h-4" />
                 <span className="text-xs font-bold uppercase tracking-wider">Jengkeng</span>
               </div>
-              <p className="text-2xl font-black text-rose-500">{jkStats.punished}x</p>
+              <p className="text-2xl font-black text-danger">{jkStats.punished}x</p>
             </div>
 
-            <div className="bg-rose-500/5 p-4 rounded-2xl border border-rose-500/30">
-              <div className="flex items-center gap-2 text-rose-400 mb-2">
+            <div className="bg-danger/5 p-4 rounded-2xl border border-danger/30">
+              <div className="flex items-center gap-2 text-danger mb-2">
                 <Clock className="w-4 h-4" />
                 <span className="text-xs font-bold uppercase tracking-wider">Suwine</span>
               </div>
-              <p className="text-2xl font-black text-rose-500">
+              <p className="text-2xl font-black text-danger">
                 {jkStats.minutes} <span className="text-base font-medium">Mnt</span>
               </p>
             </div>
 
-            <div className="bg-zinc-950 p-4 rounded-2xl border border-zinc-800">
-              <div className="flex items-center gap-2 text-zinc-400 mb-2">
+            <div className="bg-bg p-4 rounded-2xl border border-line">
+              <div className="flex items-center gap-2 text-fg-muted mb-2">
                 <Target className="w-4 h-4" />
                 <span className="text-xs font-bold uppercase tracking-wider">Ning Dasar</span>
               </div>
-              <p className="text-2xl font-black text-white">{jkStats.atBottom}x</p>
+              <p className="text-2xl font-black text-fg">{jkStats.atBottom}x</p>
             </div>
 
-            <div className="bg-amber-500/5 p-4 rounded-2xl border border-amber-500/30">
-              <div className="flex items-center gap-2 text-amber-400 mb-2">
+            <div className="bg-accent/5 p-4 rounded-2xl border border-accent/30">
+              <div className="flex items-center gap-2 text-accent mb-2">
                 <Dices className="w-4 h-4" />
                 <span className="text-xs font-bold uppercase tracking-wider">Lolos Spin</span>
               </div>
-              <p className="text-2xl font-black text-amber-500">{jkStats.escaped}x</p>
+              <p className="text-2xl font-black text-accent">{jkStats.escaped}x</p>
             </div>
           </div>
 
           {jkStats.escaped > 0 && (
-            <p className="text-xs text-amber-500/80 bg-amber-500/5 border border-amber-500/20 rounded-xl px-3 py-2">
+            <p className="text-xs text-accent/80 bg-accent/5 border border-accent/20 rounded-xl px-3 py-2">
               Ning dasar {jkStats.atBottom}x, tapi mung {jkStats.punished}x jengkeng.
               Untunge ora umum 🎲.
             </p>

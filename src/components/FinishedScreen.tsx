@@ -145,28 +145,28 @@ export default function FinishedScreen() {
   };
 
   return (
-    <div className="min-h-dvh flex flex-col items-center justify-start sm:justify-center px-4 py-6 sm:p-6 bg-zinc-950 relative overflow-y-auto overflow-x-hidden">
+    <div className="min-h-dvh flex flex-col items-center justify-start sm:justify-center px-4 py-6 sm:p-6 bg-bg relative overflow-y-auto overflow-x-hidden">
       {/* ===================================================== */}
       {/* 1. TAMPILAN LAYAR HP (UI UTAMA) */}
       {/* ===================================================== */}
-      <div className="w-full max-w-sm sm:max-w-md md:max-w-lg space-y-5 sm:space-y-8 animate-in fade-in zoom-in duration-500 relative z-10">
+      <div className="w-full max-w-sm sm:max-w-md md:max-w-lg space-y-5 sm:space-y-8 relative z-10">
         <div className="text-center space-y-4">
-          <div className="inline-flex items-center justify-center w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-linear-to-br from-amber-400 to-amber-600 shadow-xl shadow-amber-500/20 mb-3 sm:mb-4">
-            <Trophy className="w-12 h-12 text-zinc-950" />
+          <div className="inline-flex items-center justify-center w-20 h-20 sm:w-24 sm:h-24 rounded-full mb-3 sm:mb-4 bg-accent text-on-accent hover:bg-accent-hover">
+            <Trophy className="w-12 h-12 text-on-accent" />
           </div>
 
-          <h1 className="text-4xl font-black text-white">Sreeet</h1>
+          <h1 className="text-4xl font-black text-fg">Sreeet</h1>
 
           <div className="space-y-1">
-            <p className="text-zinc-400 text-sm">Pengarit Handal 👑</p>
-            <p className="text-amber-500 font-bold text-2xl px-4 break-words">
+            <p className="text-fg-muted text-sm">Pengarit Handal 👑</p>
+            <p className="text-accent font-bold text-2xl px-4 break-words">
               {winner?.name}
             </p>
           </div>
         </div>
 
-        <div className="bg-zinc-900/50 border border-zinc-800 rounded-3xl p-4 sm:p-6 space-y-4">
-          <h2 className="text-sm font-semibold text-zinc-500 uppercase tracking-wider text-center">
+        <div className="bg-surface/50 border border-line rounded-2xl p-4 sm:p-6 space-y-4">
+          <h2 className="text-sm font-semibold text-fg-subtle uppercase tracking-wider text-center">
             Bijine Cah-Cah
           </h2>
 
@@ -175,21 +175,21 @@ export default function FinishedScreen() {
               const isWinner = player.id === winner?.id;
               const isLoser = player.id === loser?.id;
 
-              let scoreColor = "text-white";
-              if (isWinner) scoreColor = "text-amber-500";
-              else if (isLoser) scoreColor = "text-rose-500";
+              let scoreColor = "text-fg";
+              if (isWinner) scoreColor = "text-accent";
+              else if (isLoser) scoreColor = "text-danger";
 
               return (
                 <div
                   key={player.id}
-                  className="flex items-center justify-between bg-zinc-950 p-3 sm:p-4 rounded-xl border border-zinc-800/50 gap-3"
+                  className="flex items-center justify-between bg-bg p-3 sm:p-4 rounded-xl border border-line/50 gap-3"
                 >
                   <div className="flex items-center gap-3 min-w-0">
-                    <span className="text-zinc-500 font-mono text-sm shrink-0">
+                    <span className="text-fg-subtle font-mono text-sm shrink-0">
                       #{index + 1}
                     </span>
 
-                    <span className="font-bold text-white text-lg flex items-center gap-2 min-w-0">
+                    <span className="font-bold text-fg text-lg flex items-center gap-2 min-w-0">
                       <span className="truncate">{player.name}</span>
                       {isWinner && <span className="text-base shrink-0">👑</span>}
                       {isLoser && <span className="text-base shrink-0">💩</span>}
@@ -207,17 +207,17 @@ export default function FinishedScreen() {
           </div>
         </div>
 
-        <div className="bg-rose-500/10 border border-rose-500/20 rounded-3xl p-6 text-center space-y-2">
-          <Skull className="w-8 h-8 text-rose-500 mx-auto mb-2" />
+        <div className="bg-danger/10 border border-danger/20 rounded-2xl p-6 text-center space-y-2">
+          <Skull className="w-8 h-8 text-danger mx-auto mb-2" />
 
           <div className="space-y-1">
-            <p className="text-rose-400 font-medium">Sing Ngesret</p>
-            <p className="text-rose-300 text-xl font-bold break-words">
+            <p className="text-danger font-medium">Sing Ngesret</p>
+            <p className="text-danger text-xl font-bold break-words">
               {loser?.name} 💩
             </p>
           </div>
 
-          <p className="text-sm text-rose-500/80 mt-2">
+          <p className="text-sm text-danger/80 mt-2">
             {loser?.name} remeh {loser?.name} remeeeeh... 💩💩💩
           </p>
         </div>
@@ -226,7 +226,7 @@ export default function FinishedScreen() {
           <button
             onClick={handleExportPNG}
             disabled={isExporting}
-            className="w-full flex items-center justify-center gap-2 py-4 rounded-2xl font-bold text-lg border border-zinc-700 bg-zinc-900 text-zinc-300 hover:bg-zinc-800 hover:text-white transition-all active:scale-[0.98] disabled:opacity-50 disabled:active:scale-100"
+            className="w-full flex items-center justify-center gap-2 py-4 rounded-2xl font-bold text-lg border border-line-strong bg-surface text-fg-soft hover:bg-surface-2 hover:text-fg transition-all active:scale-[0.98] disabled:opacity-50 disabled:active:scale-100"
           >
             {isExporting ? (
               <Loader2 className="w-5 h-5 animate-spin" />
@@ -239,7 +239,7 @@ export default function FinishedScreen() {
 
           <button
             onClick={() => setIsRematchModalOpen(true)}
-            className="w-full flex items-center justify-center gap-2 py-4 rounded-2xl font-bold text-lg bg-zinc-800 text-white hover:bg-zinc-700 transition-all active:scale-[0.98]"
+            className="w-full flex items-center justify-center gap-2 py-4 rounded-2xl font-bold text-lg bg-surface-2 text-fg hover:bg-surface-3 transition-all active:scale-[0.98]"
           >
             <RefreshCcw className="w-5 h-5" />
             Main Maneh
@@ -247,7 +247,7 @@ export default function FinishedScreen() {
 
           <button
             onClick={() => setIsHistoryOpen(true)}
-            className="w-full flex items-center justify-center gap-2 py-3 rounded-2xl font-semibold text-zinc-400 hover:text-white transition-colors"
+            className="w-full flex items-center justify-center gap-2 py-3 rounded-2xl font-semibold text-fg-muted hover:text-fg transition-colors"
           >
             <History className="w-4 h-4" />
             Riwayat
@@ -262,22 +262,22 @@ export default function FinishedScreen() {
       {/* ===================================================== */}
       {isRematchModalOpen && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-in fade-in duration-200"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4"
           onClick={() => setIsRematchModalOpen(false)}
         >
           <div
-            className="bg-zinc-900 w-full max-w-sm sm:max-w-md rounded-3xl border border-zinc-800 shadow-2xl overflow-hidden p-5 sm:p-6 text-center space-y-6"
+            className="bg-surface w-full max-w-sm sm:max-w-md rounded-2xl border border-line overflow-hidden p-5 sm:p-6 text-center space-y-6"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex justify-center text-amber-500">
+            <div className="flex justify-center text-accent">
               <RefreshCcw className="w-12 h-12" />
             </div>
 
             <div className="space-y-2">
-              <h2 className="text-xl font-bold text-white">
+              <h2 className="text-xl font-bold text-fg">
                 Sing main panggah?
               </h2>
-              <p className="text-sm text-zinc-500">
+              <p className="text-sm text-fg-subtle">
                 Pilih panggah lek wonge tetep, ganti lek enek sing arep diganti.
               </p>
             </div>
@@ -288,7 +288,7 @@ export default function FinishedScreen() {
                   startGame(players);
                   setIsRematchModalOpen(false);
                 }}
-                className="w-full py-3 rounded-xl font-bold text-zinc-950 bg-amber-500 hover:bg-amber-400 transition-colors"
+                className="w-full py-3 rounded-xl font-bold text-on-accent bg-accent hover:bg-accent-hover transition-colors"
               >
                 Panggah
               </button>
@@ -312,7 +312,7 @@ export default function FinishedScreen() {
                     });
                     setIsRematchModalOpen(false);
                   }}
-                  className="flex-1 py-3 rounded-xl font-bold text-zinc-300 bg-zinc-800 hover:bg-zinc-700 transition-colors"
+                  className="flex-1 py-3 rounded-xl font-bold text-fg-soft bg-surface-2 hover:bg-surface-3 transition-colors"
                 >
                   Ganti
                 </button>
@@ -322,7 +322,7 @@ export default function FinishedScreen() {
                     resetGame();
                     setIsRematchModalOpen(false);
                   }}
-                  className="flex-1 py-3 rounded-xl font-bold text-white bg-rose-600 hover:bg-rose-500 transition-colors"
+                  className="flex-1 py-3 rounded-xl font-bold text-fg bg-danger-solid hover:bg-danger-solid transition-colors"
                 >
                   Bubar
                 </button>
@@ -339,7 +339,7 @@ export default function FinishedScreen() {
         <div
           ref={receiptRef}
           className={cn(
-            "bg-zinc-950 flex flex-col relative overflow-hidden box-border",
+            "bg-bg flex flex-col relative overflow-hidden box-border",
             "mx-auto",
             isWideReceipt ? "w-125" : "w-107.5",
             isUltraCompactReceipt
@@ -349,8 +349,6 @@ export default function FinishedScreen() {
                 : "p-8"
           )}
         >
-          <div className="absolute -top-20 -right-10 w-55 h-55 bg-amber-500/20 rounded-full blur-[70px] pointer-events-none" />
-          <div className="absolute -bottom-20 -left-10 w-55 h-55 bg-rose-500/20 rounded-full blur-[70px] pointer-events-none" />
 
           <div className="relative z-10 flex flex-col items-center w-full">
             <div
@@ -369,21 +367,21 @@ export default function FinishedScreen() {
 
               <h1
                 className={cn(
-                  "font-black tracking-widest text-transparent bg-clip-text bg-linear-to-r from-amber-400 to-rose-500 text-center",
+                  "font-black tracking-widest text-center text-accent",
                   isCompactReceipt ? "text-xl" : "text-2xl"
                 )}
               >
                 IPJNU JENGKENG
               </h1>
 
-              <p className="text-zinc-500 text-xs mt-1 text-center">
+              <p className="text-fg-subtle text-xs mt-1 text-center">
                 {rounds.length} Mainan
               </p>
             </div>
 
             <div
               className={cn(
-                "w-full max-w-full bg-zinc-900/60 rounded-2xl border border-zinc-800 mb-6 box-border",
+                "w-full max-w-full bg-surface/60 rounded-2xl border border-line mb-6 box-border",
                 isUltraCompactReceipt
                   ? "p-2"
                   : isCompactReceipt
@@ -393,7 +391,7 @@ export default function FinishedScreen() {
             >
               <table
                 className={cn(
-                  "w-full table-fixed text-white border-collapse",
+                  "w-full table-fixed text-fg border-collapse",
                   isUltraCompactReceipt
                     ? "text-[8px]"
                     : isCompactReceipt
@@ -402,7 +400,7 @@ export default function FinishedScreen() {
                 )}
               >
                 <thead>
-                  <tr className="border-b border-zinc-700">
+                  <tr className="border-b border-line-strong">
                     {players.map((p) => (
                       <th
                         key={p.id}
@@ -426,11 +424,11 @@ export default function FinishedScreen() {
                     return (
                       <tr
                         key={r.roundNumber}
-                        className={!isLastRow ? "border-b border-zinc-800/50" : ""}
+                        className={!isLastRow ? "border-b border-line/50" : ""}
                       >
                         {players.map((p) => {
                           const score = r.scores[p.id];
-                          let colorClass = "text-zinc-300";
+                          let colorClass = "text-fg-soft";
 
                           if (isLastRow) {
                             /**
@@ -440,17 +438,17 @@ export default function FinishedScreen() {
                              */
                             if (p.id === winner?.id) {
                               colorClass = cn(
-                                "text-amber-500 font-bold",
+                                "text-accent font-bold",
                                 isCompactReceipt ? "text-[10px]" : "text-sm"
                               );
                             } else if (p.id === loser?.id) {
                               colorClass = cn(
-                                "text-rose-500 font-bold",
+                                "text-danger font-bold",
                                 isCompactReceipt ? "text-[10px]" : "text-sm"
                               );
                             } else {
                               colorClass = cn(
-                                "text-zinc-100 font-bold",
+                                "text-fg font-bold",
                                 isCompactReceipt ? "text-[10px]" : "text-sm"
                               );
                             }
@@ -483,13 +481,13 @@ export default function FinishedScreen() {
               {needsLegend && (
                 <div
                   className={cn(
-                    "mt-3 pt-2 border-t border-dashed border-zinc-800 flex flex-wrap justify-center gap-x-3 gap-y-1 text-zinc-500",
+                    "mt-3 pt-2 border-t border-dashed border-line flex flex-wrap justify-center gap-x-3 gap-y-1 text-fg-subtle",
                     isUltraCompactReceipt ? "text-[7px]" : "text-[9px]"
                   )}
                 >
                   {players.map((p) => (
                     <span key={p.id} className="whitespace-nowrap">
-                      <span className="font-bold text-zinc-400">
+                      <span className="font-bold text-fg-muted">
                         {shortLabels[p.id]}
                       </span>
                       {" = "}
@@ -502,14 +500,14 @@ export default function FinishedScreen() {
 
             <div
               className={cn(
-                "w-full max-w-full border-t border-dashed border-zinc-700 grid grid-cols-2 box-border",
+                "w-full max-w-full border-t border-dashed border-line-strong grid grid-cols-2 box-border",
                 isCompactReceipt ? "pt-4 gap-3" : "pt-6 gap-4"
               )}
             >
               <div className="flex flex-col items-center text-center min-w-0">
                 <p
                   className={cn(
-                    "text-zinc-500 uppercase tracking-widest font-bold mb-2 text-center",
+                    "text-fg-subtle uppercase tracking-widest font-bold mb-2 text-center",
                     isCompactReceipt ? "text-[8px]" : "text-[10px]"
                   )}
                 >
@@ -519,13 +517,13 @@ export default function FinishedScreen() {
                 <div className="flex items-center justify-center gap-2 min-w-0 w-full">
                   <Trophy
                     className={cn(
-                      "text-amber-500 shrink-0",
+                      "text-accent shrink-0",
                       isCompactReceipt ? "w-5 h-5" : "w-6 h-6"
                     )}
                   />
                   <h2
                     className={cn(
-                      "font-black text-white truncate",
+                      "font-black text-fg truncate",
                       isCompactReceipt ? "text-lg" : "text-xl"
                     )}
                   >
@@ -535,7 +533,7 @@ export default function FinishedScreen() {
 
                 <p
                   className={cn(
-                    "text-amber-500 font-mono mt-1 font-bold text-center",
+                    "text-accent font-mono mt-1 font-bold text-center",
                     isCompactReceipt ? "text-base" : "text-lg"
                   )}
                 >
@@ -546,7 +544,7 @@ export default function FinishedScreen() {
               <div className="flex flex-col items-center text-center min-w-0">
                 <p
                   className={cn(
-                    "text-zinc-500 uppercase tracking-widest font-bold mb-2 text-center",
+                    "text-fg-subtle uppercase tracking-widest font-bold mb-2 text-center",
                     isCompactReceipt ? "text-[8px]" : "text-[10px]"
                   )}
                 >
@@ -556,13 +554,13 @@ export default function FinishedScreen() {
                 <div className="flex items-center justify-center gap-2 min-w-0 w-full">
                   <Skull
                     className={cn(
-                      "text-rose-500 shrink-0",
+                      "text-danger shrink-0",
                       isCompactReceipt ? "w-5 h-5" : "w-6 h-6"
                     )}
                   />
                   <h2
                     className={cn(
-                      "font-black text-white truncate",
+                      "font-black text-fg truncate",
                       isCompactReceipt ? "text-lg" : "text-xl"
                     )}
                   >
@@ -572,7 +570,7 @@ export default function FinishedScreen() {
 
                 <p
                   className={cn(
-                    "text-rose-500 font-mono mt-1 font-bold text-center",
+                    "text-danger font-mono mt-1 font-bold text-center",
                     isCompactReceipt ? "text-base" : "text-lg"
                   )}
                 >

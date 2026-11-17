@@ -104,31 +104,31 @@ export default function SetupScreen() {
   };
 
   return (
-    <div className="min-h-dvh flex flex-col items-center justify-center px-4 py-6 sm:px-6 md:px-8 bg-zinc-950 overflow-y-auto">
+    <div className="min-h-dvh flex flex-col items-center justify-center px-4 py-6 sm:px-6 md:px-8 bg-bg overflow-y-auto">
       <div className="w-full max-w-sm sm:max-w-md md:max-w-lg space-y-6 sm:space-y-8">
         <div className="flex justify-end">
           <button
             onClick={() => setIsHistoryOpen(true)}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-semibold text-zinc-300 bg-zinc-900 border border-zinc-800 hover:text-white"
+            className="flex items-center gap-1.5 px-4 min-h-11 rounded-full text-sm font-semibold text-fg-soft bg-surface border border-line hover:text-fg"
           >
-            <History className="w-4 h-4 text-amber-500" />
+            <History className="w-4 h-4 text-accent" />
             Riwayat
             {historyGames.length > 0 && (
-              <span className="font-mono text-xs text-zinc-500">{historyGames.length}</span>
+              <span className="font-mono text-xs text-fg-subtle">{historyGames.length}</span>
             )}
           </button>
         </div>
 
         <div className="text-center space-y-2">
-          <h1 className="text-4xl font-black tracking-tighter text-transparent bg-clip-text bg-linear-to-br from-amber-400 to-rose-500">
+          <h1 className="text-4xl font-black tracking-tighter text-accent">
             JENGKENG
           </h1>
-          <p className="text-zinc-400 text-sm">Digawe ngitung, ben gak mumet</p>
+          <p className="text-fg-muted text-sm">Digawe ngitung, ben gak mumet</p>
         </div>
 
-        <div className="space-y-4 bg-zinc-900/50 p-4 sm:p-6 rounded-3xl border border-zinc-800 shadow-xl shadow-black/50">
-          <div className="flex items-center gap-2 text-zinc-300 font-medium mb-4">
-            <Users className="w-5 h-5 text-amber-500" />
+        <div className="space-y-4 bg-surface/50 p-4 sm:p-6 rounded-2xl border border-line">
+          <div className="flex items-center gap-2 text-fg-soft font-medium mb-4">
+            <Users className="w-5 h-5 text-accent" />
             <span>Pemain</span>
           </div>
 
@@ -148,7 +148,7 @@ export default function SetupScreen() {
 
             return (
               <div key={index} className="flex flex-col gap-1">
-                <label className="text-xs text-zinc-500 ml-1">
+                <label className="text-xs text-fg-subtle ml-1">
                   Pemain {index + 1} {index >= 2 ? "(Opsional)" : "*"}
                 </label>
 
@@ -165,10 +165,10 @@ export default function SetupScreen() {
                     onChange={(e) => handleNameChange(index, e.target.value)}
                     onBlur={() => handleNameBlur(index)}
                     className={cn(
-                      "w-full bg-zinc-950 border rounded-xl pl-4 pr-16 py-3 sm:py-3.5 text-base text-white placeholder:text-zinc-700 focus:outline-none focus:ring-2 transition-all",
+                      "w-full bg-bg border rounded-xl pl-4 pr-16 py-3 sm:py-3.5 text-base text-fg placeholder:text-fg-subtle focus:outline-none focus:ring-2 transition-all",
                       isDuplicate
-                        ? "border-rose-500/60 focus:ring-rose-500/50"
-                        : "border-zinc-800 focus:ring-amber-500/50 focus:border-amber-500"
+                        ? "border-danger/60 focus:ring-danger/50"
+                        : "border-line focus:ring-accent/50 focus:border-accent"
                     )}
                   />
 
@@ -183,11 +183,11 @@ export default function SetupScreen() {
                   {finalized.length > 0 && (
                     <span className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1.5 pointer-events-none">
                       {willBeSpelled && (
-                        <span className="text-[10px] font-medium text-amber-500/80 bg-amber-500/10 px-1.5 py-0.5 rounded">
+                        <span className="text-[11px] font-medium text-accent bg-accent/10 px-1.5 py-0.5 rounded">
                           dieja
                         </span>
                       )}
-                      <span className="text-[11px] font-mono font-bold text-zinc-600 bg-zinc-900 px-2 py-1 rounded-md">
+                      <span className="text-[11px] font-mono font-bold text-fg-subtle bg-surface px-2 py-1 rounded-md">
                         {toShortLabel(finalized)}
                       </span>
                     </span>
@@ -197,17 +197,17 @@ export default function SetupScreen() {
             );
           })}
 
-          <p className="text-[11px] text-zinc-600 leading-relaxed pt-1">
+          <p className="text-xs text-fg-subtle leading-relaxed pt-1">
             Jeneng dowo oleh, nganggo spasi yo oleh. Sing ning kotak abu-abu kuwi
             inisial sing metu ning tabel. Huruf gedhene otomatis dirapèkke nek
             wis rampung ngetik. Nek jeneng cendhak lan huruf gedhe kabeh koyo{" "}
-            <span className="font-mono text-zinc-500">BGN</span>, kuwi dianggep
+            <span className="font-mono text-fg-subtle">BGN</span>, kuwi dianggep
             inisial: ora diowahi lan bakal diejaa per huruf.
           </p>
         </div>
 
         {errors.length > 0 && filledNames.length > 0 && (
-          <div className="bg-rose-500/10 border border-rose-500/20 text-rose-400 p-3 rounded-2xl text-sm flex gap-2">
+          <div className="bg-danger/10 border border-danger/20 text-danger p-3 rounded-2xl text-sm flex gap-2">
             <AlertCircle className="w-5 h-5 shrink-0" />
             <ul className="space-y-0.5">
               {errors.map((error) => (
@@ -223,8 +223,8 @@ export default function SetupScreen() {
           className={cn(
             "w-full flex items-center justify-center gap-2 py-4 rounded-2xl font-bold text-lg transition-all",
             isValid
-              ? "bg-linear-to-r from-amber-500 to-rose-600 text-white shadow-lg shadow-rose-500/20 active:scale-[0.98]"
-              : "bg-zinc-800 text-zinc-500 cursor-not-allowed"
+              ? "active:scale-[0.98] bg-accent text-on-accent hover:bg-accent-hover"
+              : "bg-surface-2 text-fg-subtle cursor-not-allowed"
           )}
         >
           <Play className="w-5 h-5 fill-current" />
