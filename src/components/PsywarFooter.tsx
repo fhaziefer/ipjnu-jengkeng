@@ -3,6 +3,7 @@
 import { useGameStore } from "@/store/useGameStore";
 import { useNow } from "@/hooks/useNow";
 import { useMemo } from "react";
+import { computeTotals, sortPlayersByTotal } from "@/lib/scoring";
 import { Flame } from "lucide-react";
 
 // ============================================================
@@ -38,20 +39,12 @@ export default function PsywarFooter() {
     gameStartTime,
   } = useGameStore();
 
-  const totals = useMemo(() => {
-    const acc: Record<string, number> = {};
-    players.forEach((p) => (acc[p.id] = 0));
-    rounds.forEach((r) => {
-      r.scores.forEach((s) => {
-        acc[s.playerId] += s.finalScore;
-      });
-    });
-    return acc;
-  }, [players, rounds]);
+  const totals = useMemo(() => computeTotals(players, rounds), [players, rounds]);
 
-  const sortedPlayers = useMemo(() => {
-    return [...players].sort((a, b) => totals[b.id] - totals[a.id]);
-  }, [players, totals]);
+  const sortedPlayers = useMemo(
+    () => sortPlayersByTotal(players, totals),
+    [players, totals]
+  );
 
   /**
    * Berapa ronde berturut-turut dia kena hukuman.

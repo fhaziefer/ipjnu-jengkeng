@@ -1,10 +1,12 @@
 "use client";
 
 import { useGameStore } from "@/store/useGameStore";
-import { RefreshCcw, Trophy, Skull, Share2, Loader2 } from "lucide-react";
+import { RefreshCcw, Trophy, Skull, Share2, Loader2, History } from "lucide-react";
 import { useMemo, useRef, useState } from "react";
 import { toPng } from "html-to-image";
 import { buildShortLabels } from "@/lib/playerName";
+import HistoryScreen from "./HistoryScreen";
+import { computeTotals, sortPlayersByTotal } from "@/lib/scoring";
 import { cn } from "@/lib/utils";
 
 type FileShareData = {
@@ -40,28 +42,16 @@ export default function FinishedScreen() {
 
   const [isExporting, setIsExporting] = useState(false);
   const [isRematchModalOpen, setIsRematchModalOpen] = useState(false);
+  const [isHistoryOpen, setIsHistoryOpen] = useState(false);
 
   const shortLabels = useMemo(() => buildShortLabels(players), [players]);
 
-  const totals = useMemo(() => {
-    const acc: Record<string, number> = {};
+  const totals = useMemo(() => computeTotals(players, rounds), [players, rounds]);
 
-    players.forEach((p) => {
-      acc[p.id] = 0;
-    });
-
-    rounds.forEach((r) => {
-      r.scores.forEach((s) => {
-        acc[s.playerId] += s.finalScore;
-      });
-    });
-
-    return acc;
-  }, [players, rounds]);
-
-  const sortedPlayers = useMemo(() => {
-    return [...players].sort((a, b) => totals[b.id] - totals[a.id]);
-  }, [players, totals]);
+  const sortedPlayers = useMemo(
+    () => sortPlayersByTotal(players, totals),
+    [players, totals]
+  );
 
   const winner = sortedPlayers[0];
 
@@ -254,8 +244,18 @@ export default function FinishedScreen() {
             <RefreshCcw className="w-5 h-5" />
             Main Maneh
           </button>
+
+          <button
+            onClick={() => setIsHistoryOpen(true)}
+            className="w-full flex items-center justify-center gap-2 py-3 rounded-2xl font-semibold text-zinc-400 hover:text-white transition-colors"
+          >
+            <History className="w-4 h-4" />
+            Riwayat
+          </button>
         </div>
       </div>
+
+      {isHistoryOpen && <HistoryScreen onClose={() => setIsHistoryOpen(false)} />}
 
       {/* ===================================================== */}
       {/* MODAL REMATCH (PANGGAH / GANTI / BUBAR) */}

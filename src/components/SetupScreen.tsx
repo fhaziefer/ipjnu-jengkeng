@@ -2,7 +2,10 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useGameStore } from "@/store/useGameStore";
-import { Users, Play, AlertCircle } from "lucide-react";
+import { useHistoryStore } from "@/store/useHistoryStore";
+import { suggestNames } from "@/lib/history";
+import HistoryScreen from "./HistoryScreen";
+import { Users, Play, AlertCircle, History } from "lucide-react";
 import {
   MAX_NAME_LENGTH,
   finalizePlayerName,
@@ -19,6 +22,11 @@ const SLOT_COUNT = 4;
 export default function SetupScreen() {
   const startGame = useGameStore((state) => state.startGame);
   const existingPlayers = useGameStore((state) => state.players);
+  const historyGames = useHistoryStore((state) => state.games);
+  const [isHistoryOpen, setIsHistoryOpen] = useState(false);
+
+  // Nama yang pernah main, buat autocomplete. Diurutkan dari yang paling sering.
+  const knownNames = useMemo(() => suggestNames(historyGames), [historyGames]);
 
   const [names, setNames] = useState<string[]>(() => {
     const slots = Array.from({ length: SLOT_COUNT }, () => "");
@@ -98,6 +106,19 @@ export default function SetupScreen() {
   return (
     <div className="min-h-dvh flex flex-col items-center justify-center px-4 py-6 sm:px-6 md:px-8 bg-zinc-950 overflow-y-auto">
       <div className="w-full max-w-sm sm:max-w-md md:max-w-lg space-y-6 sm:space-y-8">
+        <div className="flex justify-end">
+          <button
+            onClick={() => setIsHistoryOpen(true)}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-semibold text-zinc-300 bg-zinc-900 border border-zinc-800 hover:text-white"
+          >
+            <History className="w-4 h-4 text-amber-500" />
+            Riwayat
+            {historyGames.length > 0 && (
+              <span className="font-mono text-xs text-zinc-500">{historyGames.length}</span>
+            )}
+          </button>
+        </div>
+
         <div className="text-center space-y-2">
           <h1 className="text-4xl font-black tracking-tighter text-transparent bg-clip-text bg-linear-to-br from-amber-400 to-rose-500">
             JENGKENG
@@ -117,6 +138,14 @@ export default function SetupScreen() {
               finalized.length > 0 && duplicateKeys.has(playerNameKey(finalized));
             const willBeSpelled = finalized.length > 0 && shouldSpell(finalized);
 
+            const takenElsewhere = new Set(
+              names
+                .filter((_, otherIndex) => otherIndex !== index)
+                .map((other) => playerNameKey(other))
+            );
+            const listId = `nama-riwayat-${index}`;
+            const options = knownNames.filter((known) => !takenElsewhere.has(playerNameKey(known)));
+
             return (
               <div key={index} className="flex flex-col gap-1">
                 <label className="text-xs text-zinc-500 ml-1">
@@ -129,6 +158,7 @@ export default function SetupScreen() {
                     inputMode="text"
                     autoCapitalize="words"
                     autoComplete="off"
+                    list={listId}
                     maxLength={MAX_NAME_LENGTH}
                     placeholder="Jeneng (misal: Mas Bagong)"
                     value={name}
@@ -141,6 +171,12 @@ export default function SetupScreen() {
                         : "border-zinc-800 focus:ring-amber-500/50 focus:border-amber-500"
                     )}
                   />
+
+                  <datalist id={listId}>
+                    {options.map((known) => (
+                      <option key={known} value={known} />
+                    ))}
+                  </datalist>
 
                   {/* Preview label pendek yang nanti muncul di header tabel,
                       plus penanda kalau nama ini akan dieja per huruf. */}
@@ -195,6 +231,8 @@ export default function SetupScreen() {
           Mulai Jengkeng
         </button>
       </div>
+
+      {isHistoryOpen && <HistoryScreen onClose={() => setIsHistoryOpen(false)} />}
     </div>
   );
 }
