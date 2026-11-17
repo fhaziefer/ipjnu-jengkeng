@@ -154,7 +154,7 @@ export default function AddRoundModal({
                 </div>
 
                 <div className="flex items-center gap-1.5 sm:gap-2 md:gap-3">
-                  <div className="w-14 sm:w-16 md:w-20 shrink-0">
+                  <div className="w-12 sm:w-16 md:w-20 shrink-0">
                     <input
                       type="text"
                       inputMode="none"
@@ -164,13 +164,13 @@ export default function AddRoundModal({
                       className={cn(
                         "w-full h-11 sm:h-12 bg-bg border border-line rounded-xl px-1 text-center text-base sm:text-lg focus:outline-none transition-all select-none font-mono",
                         scores[p.id] === "0"
-                          ? "text-accent font-bold text-[11px] tracking-widest"
+                          ? "text-fg font-bold text-[11px] tracking-widest"
                           : "text-fg"
                       )}
                     />
                   </div>
 
-                  <div className="flex flex-1 gap-1.5 shrink-0">
+                  <div className="flex flex-1 gap-1 sm:gap-1.5 shrink-0">
                     {SHORTCUTS.map((val) => (
                       <button
                         key={val}
@@ -179,7 +179,7 @@ export default function AddRoundModal({
                         className={cn(
                           "flex-1 h-11 sm:h-12 md:h-14 rounded-lg sm:rounded-[10px] font-bold transition-colors flex items-center justify-center border active:scale-95 px-0 min-w-0",
                           val === "LEG"
-                            ? "text-[11px] sm:text-xs text-on-accent border-accent bg-accent hover:bg-accent-hover"
+                            ? "text-[11px] sm:text-xs text-fg-soft border-line-control bg-transparent hover:bg-surface-2"
                             : "text-xs sm:text-sm md:text-base " +
                             ((val as number) < 0
                               ? "bg-danger/10 hover:bg-danger/10 text-danger border-danger/20"
@@ -213,7 +213,7 @@ export default function AddRoundModal({
           <div className="border border-line rounded-2xl overflow-hidden">
             <button
               onClick={() => setIsGepukOpen(!isGepukOpen)}
-              className="w-full flex items-center justify-between p-4 bg-bg text-accent font-bold"
+              className="w-full flex items-center justify-between p-4 bg-bg text-fg font-bold"
             >
               <div className="flex items-center gap-2">
                 <ShieldAlert className="w-5 h-5" />

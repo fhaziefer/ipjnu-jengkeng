@@ -147,7 +147,7 @@ export default function TieBreakModal() {
         <div className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center bg-black/90 p-0 sm:p-4">
             <div className="bg-surface w-full sm:max-w-md rounded-t-3xl sm:rounded-2xl border border-line overflow-hidden max-h-[92dvh] flex flex-col">
                 <div className="bg-bg p-6 text-center border-b border-line space-y-2">
-                    <div className="flex items-center justify-center gap-2 text-accent">
+                    <div className="flex items-center justify-center gap-2 text-fg">
                         <Dices className="w-6 h-6" />
                         <h2 className="text-xl font-black text-fg">Bijine Podo</h2>
                         <Dices className="w-6 h-6" />
@@ -163,7 +163,7 @@ export default function TieBreakModal() {
 
                 <div className="p-4 sm:p-6 space-y-3 overflow-y-auto">
                     {respinNotice && (
-                        <div className="bg-accent/10 border border-accent/30 text-accent rounded-2xl p-3 text-center text-sm font-medium">
+                        <div className="bg-fg/10 border border-line-strong text-fg rounded-2xl p-3 text-center text-sm font-medium">
                             Angkane podo maneh. Spin ulang sing podo wae.
                         </div>
                     )}
@@ -189,8 +189,8 @@ export default function TieBreakModal() {
                                                 : "bg-bg/50 border-line"
                                 )}
                             >
-                                <div className="w-11 h-11 shrink-0 rounded-full flex items-center justify-center bg-accent text-on-accent hover:bg-accent-hover">
-                                    <span className="font-black text-sm text-on-accent">
+                                <div className="w-11 h-11 shrink-0 rounded-full flex items-center justify-center bg-surface-3 text-fg">
+                                    <span className="font-black text-sm text-fg">
                                         {shortLabels[playerId]}
                                     </span>
                                 </div>
@@ -201,7 +201,7 @@ export default function TieBreakModal() {
                                 </span>
 
                                 {isThisRolling ? (
-                                    <span className="w-24 text-center font-mono text-3xl font-black text-accent tabular-nums">
+                                    <span className="w-24 text-center font-mono text-3xl font-black text-fg tabular-nums">
                                         {rollingValue}
                                     </span>
                                 ) : hasSpun ? (

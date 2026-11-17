@@ -5,7 +5,7 @@ export default function SplashScreen() {
         <div className="fixed inset-0 z-9999 flex min-h-dvh flex-col items-center justify-center overflow-hidden bg-bg px-6 text-center">
 
             <div className="relative z-10 flex flex-1 flex-col items-center justify-center">
-                <div className="mb-6 flex h-28 w-28 items-center justify-center rounded-2xl border border-accent/20 bg-surface/70">
+                <div className="mb-6 flex h-28 w-28 items-center justify-center rounded-2xl border border-line-strong bg-surface/70">
                     <img
                         src="/icon.svg"
                         alt="Jengkeng Logo"
@@ -13,7 +13,7 @@ export default function SplashScreen() {
                     />
                 </div>
 
-                <h1 className="text-4xl font-black tracking-tighter text-accent">
+                <h1 className="text-4xl font-black tracking-tighter text-fg">
                     JENGKENG
                 </h1>
 
@@ -22,9 +22,9 @@ export default function SplashScreen() {
                 </p>
 
                 <div className="mt-8 flex items-center justify-center gap-2">
-                    <span className="h-2 w-2 animate-bounce rounded-full bg-accent [animation-delay:-0.3s]" />
-                    <span className="h-2 w-2 animate-bounce rounded-full bg-accent [animation-delay:-0.15s]" />
-                    <span className="h-2 w-2 animate-bounce rounded-full bg-accent" />
+                    <span className="h-2 w-2 animate-bounce rounded-full bg-fg-muted [animation-delay:-0.3s]" />
+                    <span className="h-2 w-2 animate-bounce rounded-full bg-fg-muted [animation-delay:-0.15s]" />
+                    <span className="h-2 w-2 animate-bounce rounded-full bg-fg-muted" />
                 </div>
             </div>
 

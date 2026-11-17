@@ -41,7 +41,7 @@ export default function InstallPrompt() {
 
     return (
         <div className="fixed bottom-[calc(1rem+env(safe-area-inset-bottom))] sm:bottom-6 left-1/2 -translate-x-1/2 z-[100] w-full max-w-sm sm:max-w-md px-4">
-            <div className="bg-surface border border-accent/30 rounded-2xl p-5 flex flex-col gap-3 relative">
+            <div className="bg-surface border border-line-strong rounded-2xl p-5 flex flex-col gap-3 relative">
                 <button
                     onClick={handleDismiss}
                     aria-label="Tutup"
@@ -59,7 +59,7 @@ export default function InstallPrompt() {
                     <div className="bg-bg rounded-xl p-3 text-sm flex flex-col gap-2 text-fg-soft mt-1 border border-line">
                         <div className="flex items-center gap-2">
                             <span>1. Pencet ikon</span>
-                            <Share className="w-4 h-4 text-accent" />
+                            <Share className="w-4 h-4 text-fg" />
                             <span>nang menu.</span>
                         </div>
                         <div className="flex items-center gap-2">

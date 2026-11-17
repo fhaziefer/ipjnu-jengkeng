@@ -113,7 +113,7 @@ export default function FinishedScreen() {
       const dataUrl = await toPng(node, {
         quality: 1,
         pixelRatio: 2,
-        backgroundColor: "#09090b",
+        backgroundColor: "#121417",
         cacheBust: true,
         width: exportWidth,
         height: exportHeight,
@@ -151,15 +151,15 @@ export default function FinishedScreen() {
       {/* ===================================================== */}
       <div className="w-full max-w-sm sm:max-w-md md:max-w-lg space-y-5 sm:space-y-8 relative z-10">
         <div className="text-center space-y-4">
-          <div className="inline-flex items-center justify-center w-20 h-20 sm:w-24 sm:h-24 rounded-full mb-3 sm:mb-4 bg-accent text-on-accent hover:bg-accent-hover">
-            <Trophy className="w-12 h-12 text-on-accent" />
+          <div className="inline-flex items-center justify-center w-20 h-20 sm:w-24 sm:h-24 rounded-full mb-3 sm:mb-4 bg-fg text-bg">
+            <Trophy className="w-12 h-12 text-bg" />
           </div>
 
           <h1 className="text-4xl font-black text-fg">Sreeet</h1>
 
           <div className="space-y-1">
             <p className="text-fg-muted text-sm">Pengarit Handal 👑</p>
-            <p className="text-accent font-bold text-2xl px-4 break-words">
+            <p className="text-fg font-bold text-2xl px-4 break-words">
               {winner?.name}
             </p>
           </div>
@@ -176,7 +176,7 @@ export default function FinishedScreen() {
               const isLoser = player.id === loser?.id;
 
               let scoreColor = "text-fg";
-              if (isWinner) scoreColor = "text-accent";
+              if (isWinner) scoreColor = "text-fg";
               else if (isLoser) scoreColor = "text-danger";
 
               return (
@@ -269,7 +269,7 @@ export default function FinishedScreen() {
             className="bg-surface w-full max-w-sm sm:max-w-md rounded-2xl border border-line overflow-hidden p-5 sm:p-6 text-center space-y-6"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex justify-center text-accent">
+            <div className="flex justify-center text-fg">
               <RefreshCcw className="w-12 h-12" />
             </div>
 
@@ -367,7 +367,7 @@ export default function FinishedScreen() {
 
               <h1
                 className={cn(
-                  "font-black tracking-widest text-center text-accent",
+                  "font-black tracking-widest text-center text-fg",
                   isCompactReceipt ? "text-xl" : "text-2xl"
                 )}
               >
@@ -438,7 +438,7 @@ export default function FinishedScreen() {
                              */
                             if (p.id === winner?.id) {
                               colorClass = cn(
-                                "text-accent font-bold",
+                                "text-fg font-bold",
                                 isCompactReceipt ? "text-[10px]" : "text-sm"
                               );
                             } else if (p.id === loser?.id) {
@@ -517,7 +517,7 @@ export default function FinishedScreen() {
                 <div className="flex items-center justify-center gap-2 min-w-0 w-full">
                   <Trophy
                     className={cn(
-                      "text-accent shrink-0",
+                      "text-fg shrink-0",
                       isCompactReceipt ? "w-5 h-5" : "w-6 h-6"
                     )}
                   />
@@ -533,7 +533,7 @@ export default function FinishedScreen() {
 
                 <p
                   className={cn(
-                    "text-accent font-mono mt-1 font-bold text-center",
+                    "text-fg font-mono mt-1 font-bold text-center",
                     isCompactReceipt ? "text-base" : "text-lg"
                   )}
                 >

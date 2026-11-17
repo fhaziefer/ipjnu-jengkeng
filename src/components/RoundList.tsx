@@ -115,9 +115,9 @@ export default function RoundList() {
                     "relative overflow-hidden flex items-center justify-center transition-colors",
                     isLastRow ? "py-4 sm:py-5 md:py-6" : "py-2.5 sm:py-3 md:py-4",
                     "bg-bg",
-                    !hasSpecialEffect && isMax && "bg-accent/10",
+                    !hasSpecialEffect && isMax && "bg-fg/10",
                     !hasSpecialEffect && isMin && "bg-danger/10",
-                    !hasSpecialEffect && isShooter && "border-2 border-accent",
+                    !hasSpecialEffect && isShooter && "border-2 border-fg",
                     !hasSpecialEffect && isVictim && "border-2 border-danger"
                   )}
                 >
@@ -125,14 +125,14 @@ export default function RoundList() {
                   {hasSpecialEffect && (
                     <SpinBorder
                       tone={isJustHitGod ? "god" : "hell"}
-                      tint={isMax ? "bg-accent/10" : isMin ? "bg-danger/10" : undefined}
+                      tint={isMax ? "bg-fg/10" : isMin ? "bg-danger/10" : undefined}
                     />
                   )}
                   <span
                     className={cn(
                       "relative z-10 font-mono transition-all",
-                      isLastRow ? "text-base sm:text-lg md:text-xl font-bold" : "text-xs sm:text-sm md:text-base",
-                      isMax ? "text-accent" : isMin ? "text-danger" : "text-fg"
+                      isLastRow ? "text-xl sm:text-2xl font-bold" : "text-sm md:text-base",
+                      isMax ? "text-fg font-bold" : isMin ? "text-danger" : "text-fg-soft"
                     )}
                   >
                     {score} {isShooter && "👊🏻"} {isVictim && "🤕"}
