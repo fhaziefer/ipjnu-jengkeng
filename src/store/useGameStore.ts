@@ -10,6 +10,9 @@ import {
   type TieOutcome,
 } from '@/lib/scoring';
 import { migrateGameState } from './migrations';
+import { buildGameRecord } from '@/lib/history';
+import { requestPersistentStorage } from '@/lib/storage';
+import { useHistoryStore } from './useHistoryStore';
 
 // Aturan skor murni ada di src/lib/scoring.ts. Re-export supaya import lama tetap jalan.
 export { SPIN_MIN, SPIN_MAX, drawSpin, evaluateTieResults } from '@/lib/scoring';
@@ -295,9 +298,26 @@ export const useGameStore = create<GameState>()(
       },
 
       finishGame: () => {
+        const state = get();
+
         // Jangan biarkan permainan ditutup sementara hukumannya masih menggantung.
-        if (get().pendingTieBreak) return;
+        if (state.pendingTieBreak) return;
+        if (state.gameStatus === 'finished') return;
+
         set({ gameStatus: 'finished' });
+
+        // Catat ke riwayat SEKARANG, bukan di layar skor akhir: tombol
+        // Panggah/Ganti/Bubar bisa mengosongkan state kapan saja setelah ini.
+        // Gagal menyimpan (mis. kuota localStorage penuh) tidak boleh
+        // menggagalkan penutupan permainan.
+        try {
+          const record = buildGameRecord(state, Date.now());
+          if (record && useHistoryStore.getState().recordGame(record)) {
+            requestPersistentStorage();
+          }
+        } catch (error) {
+          console.error('[jengkeng] gagal mencatat riwayat', error);
+        }
       },
 
       resetGame: () => {

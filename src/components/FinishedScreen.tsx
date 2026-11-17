@@ -1,10 +1,11 @@
 "use client";
 
 import { useGameStore } from "@/store/useGameStore";
-import { RefreshCcw, Trophy, Skull, Share2, Loader2 } from "lucide-react";
+import { RefreshCcw, Trophy, Skull, Share2, Loader2, History } from "lucide-react";
 import { useMemo, useRef, useState } from "react";
 import { toPng } from "html-to-image";
 import { buildShortLabels } from "@/lib/playerName";
+import HistoryScreen from "./HistoryScreen";
 import { computeTotals, sortPlayersByTotal } from "@/lib/scoring";
 import { cn } from "@/lib/utils";
 
@@ -41,6 +42,7 @@ export default function FinishedScreen() {
 
   const [isExporting, setIsExporting] = useState(false);
   const [isRematchModalOpen, setIsRematchModalOpen] = useState(false);
+  const [isHistoryOpen, setIsHistoryOpen] = useState(false);
 
   const shortLabels = useMemo(() => buildShortLabels(players), [players]);
 
@@ -242,8 +244,18 @@ export default function FinishedScreen() {
             <RefreshCcw className="w-5 h-5" />
             Main Maneh
           </button>
+
+          <button
+            onClick={() => setIsHistoryOpen(true)}
+            className="w-full flex items-center justify-center gap-2 py-3 rounded-2xl font-semibold text-zinc-400 hover:text-white transition-colors"
+          >
+            <History className="w-4 h-4" />
+            Riwayat
+          </button>
         </div>
       </div>
+
+      {isHistoryOpen && <HistoryScreen onClose={() => setIsHistoryOpen(false)} />}
 
       {/* ===================================================== */}
       {/* MODAL REMATCH (PANGGAH / GANTI / BUBAR) */}

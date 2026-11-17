@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { useGameStore } from "./useGameStore";
+import { useHistoryStore } from "./useHistoryStore";
 
 const players = [
   { id: "a", name: "Ani" },
@@ -34,6 +35,7 @@ const get = () => useGameStore.getState();
 beforeEach(() => {
   vi.useFakeTimers();
   vi.setSystemTime(1_000_000);
+  useHistoryStore.getState().clearHistory();
   get().resetGame();
   get().startGame(players);
 });
@@ -185,5 +187,81 @@ describe("persist", () => {
     const raw = localStorage.getItem("jengkeng-score-storage");
     expect(raw).not.toBeNull();
     expect(JSON.parse(raw as string).version).toBe(1);
+  });
+});
+
+describe("finishGame -> riwayat", () => {
+  const history = () => useHistoryStore.getState().games;
+
+  it("mencatat satu game saat SRET", () => {
+    play({ a: 10, b: 5, c: 0 });
+    play({ a: 10, b: 5, c: 0 });
+    get().finishGame();
+
+    expect(get().gameStatus).toBe("finished");
+    expect(history()).toHaveLength(1);
+    expect(history()[0]).toMatchObject({ winnerKey: "ani", loserKey: "cici", id: "1000000" });
+    expect(history()[0].rounds).toHaveLength(2);
+  });
+
+  it("tidak mencatat dua kali kalau finishGame terpanggil lagi", () => {
+    play({ a: 10, b: 5, c: 0 });
+    get().finishGame();
+    get().finishGame();
+    expect(history()).toHaveLength(1);
+  });
+
+  it("tidak mencatat selama tie-break menggantung", () => {
+    play({ a: 10, b: 0, c: 0 });
+    get().finishGame();
+    expect(history()).toHaveLength(0);
+  });
+
+  it("game tanpa ronde tidak masuk riwayat", () => {
+    get().finishGame();
+    expect(get().gameStatus).toBe("finished");
+    expect(history()).toHaveLength(0);
+  });
+
+  it("riwayat selamat setelah Panggah, Ganti, dan Bubar", () => {
+    play({ a: 10, b: 5, c: 0 });
+    get().finishGame();
+
+    get().startGame(players); // Panggah
+    expect(history()).toHaveLength(1);
+    get().resetGame(); // Bubar
+    expect(history()).toHaveLength(1);
+  });
+
+  it("game kedua dengan pemain yang sama dicatat terpisah", () => {
+    play({ a: 10, b: 5, c: 0 });
+    get().finishGame();
+    get().startGame(players);
+    play({ a: 0, b: 5, c: 10 });
+    get().finishGame();
+    expect(history().map((g) => g.winnerKey)).toEqual(["ani", "cici"]);
+  });
+
+  it("gagal menyimpan riwayat tidak menggagalkan penutupan game", () => {
+    play({ a: 10, b: 5, c: 0 });
+    const spy = vi.spyOn(useHistoryStore.getState(), "recordGame").mockImplementation(() => {
+      throw new Error("QuotaExceededError");
+    });
+    const log = vi.spyOn(console, "error").mockImplementation(() => {});
+
+    get().finishGame();
+    expect(get().gameStatus).toBe("finished");
+
+    spy.mockRestore();
+    log.mockRestore();
+  });
+
+  it("menulis ke key riwayat sendiri, terpisah dari store game", () => {
+    play({ a: 10, b: 5, c: 0 });
+    get().finishGame();
+    const raw = JSON.parse(localStorage.getItem("jengkeng-history") as string);
+    expect(raw.version).toBe(1);
+    expect(raw.state.games).toHaveLength(1);
+    expect(JSON.parse(localStorage.getItem("jengkeng-score-storage") as string).state.games).toBeUndefined();
   });
 });
