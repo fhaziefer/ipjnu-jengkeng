@@ -5,6 +5,7 @@ import { useGameStore } from "@/store/useGameStore";
 import { CheckCircle2, AlertTriangle, RotateCcw } from "lucide-react";
 import { buildShortLabels } from "@/lib/playerName";
 import { speak } from "@/lib/speech";
+import { computeTotals, sortPlayersByTotal } from "@/lib/scoring";
 import { cn } from "@/lib/utils";
 import RoundList from "./RoundList";
 import PsywarFooter from "./PsywarFooter";
@@ -49,16 +50,7 @@ export default function DashboardScreen() {
     }
   }, [players.length]);
 
-  const totals = useMemo(() => {
-    const acc: Record<string, number> = {};
-    players.forEach((p) => (acc[p.id] = 0));
-    rounds.forEach((r) => {
-      r.scores.forEach((s) => {
-        acc[s.playerId] += s.finalScore;
-      });
-    });
-    return acc;
-  }, [players, rounds]);
+  const totals = useMemo(() => computeTotals(players, rounds), [players, rounds]);
 
   /**
    * 💩 diambil dari store, BUKAN dari posisi terakhir hasil sort.
@@ -68,9 +60,7 @@ export default function DashboardScreen() {
    * apa yang diumumkan TTS.
    */
   const playerRanks = useMemo(() => {
-    const sortedIds = [...players]
-      .sort((a, b) => totals[b.id] - totals[a.id])
-      .map((p) => p.id);
+    const sortedIds = sortPlayersByTotal(players, totals).map((p) => p.id);
 
     const ranks: Record<string, string> = {};
 

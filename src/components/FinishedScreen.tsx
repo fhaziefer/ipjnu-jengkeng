@@ -5,6 +5,7 @@ import { RefreshCcw, Trophy, Skull, Share2, Loader2 } from "lucide-react";
 import { useMemo, useRef, useState } from "react";
 import { toPng } from "html-to-image";
 import { buildShortLabels } from "@/lib/playerName";
+import { computeTotals, sortPlayersByTotal } from "@/lib/scoring";
 import { cn } from "@/lib/utils";
 
 type FileShareData = {
@@ -43,25 +44,12 @@ export default function FinishedScreen() {
 
   const shortLabels = useMemo(() => buildShortLabels(players), [players]);
 
-  const totals = useMemo(() => {
-    const acc: Record<string, number> = {};
+  const totals = useMemo(() => computeTotals(players, rounds), [players, rounds]);
 
-    players.forEach((p) => {
-      acc[p.id] = 0;
-    });
-
-    rounds.forEach((r) => {
-      r.scores.forEach((s) => {
-        acc[s.playerId] += s.finalScore;
-      });
-    });
-
-    return acc;
-  }, [players, rounds]);
-
-  const sortedPlayers = useMemo(() => {
-    return [...players].sort((a, b) => totals[b.id] - totals[a.id]);
-  }, [players, totals]);
+  const sortedPlayers = useMemo(
+    () => sortPlayersByTotal(players, totals),
+    [players, totals]
+  );
 
   const winner = sortedPlayers[0];
 

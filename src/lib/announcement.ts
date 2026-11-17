@@ -1,5 +1,6 @@
 import type { Player, Round, ShootRecord } from "@/store/useGameStore";
 import { toSpeechName } from "./playerName";
+import { computeTotals } from "./scoring";
 
 /**
  * Semua teks pengumuman dibangun di sini, bukan di dalam komponen.
@@ -30,19 +31,6 @@ function scoreWord(score: number): string {
     return score < 0 ? `minus ${Math.abs(score)}` : score.toString();
 }
 
-function accumulate(players: Player[], rounds: Round[]): Record<string, number> {
-    const totals: Record<string, number> = {};
-    players.forEach((p) => (totals[p.id] = 0));
-
-    rounds.forEach((r) => {
-        r.scores.forEach((s) => {
-            if (totals[s.playerId] !== undefined) totals[s.playerId] += s.finalScore;
-        });
-    });
-
-    return totals;
-}
-
 /**
  * Pengumuman lengkap untuk satu ronde.
  *
@@ -58,8 +46,8 @@ export function buildRoundAnnouncement(
     const round = rounds[roundIndex];
     if (!round) return "";
 
-    const totalsBefore = accumulate(players, rounds.slice(0, roundIndex));
-    const totalsAfter = accumulate(players, rounds.slice(0, roundIndex + 1));
+    const totalsBefore = computeTotals(players, rounds.slice(0, roundIndex));
+    const totalsAfter = computeTotals(players, rounds.slice(0, roundIndex + 1));
 
     let text = "Biji sak iki. ";
     const nyewuNames: string[] = [];
