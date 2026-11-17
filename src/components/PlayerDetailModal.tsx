@@ -109,9 +109,9 @@ export default function PlayerDetailModal({ playerId, onClose }: PlayerDetailMod
         {/* Header */}
         <div className="bg-bg p-6 flex items-center justify-between border-b border-line gap-3">
           <div className="flex items-center gap-3 min-w-0">
-            <div className="w-12 h-12 shrink-0 rounded-full flex items-center justify-center bg-accent text-on-accent hover:bg-accent-hover">
+            <div className="w-12 h-12 shrink-0 rounded-full flex items-center justify-center bg-surface-3 text-fg">
               {/* Inisial, bukan nama. Nama panjang jebol dari lingkaran 48px. */}
-              <span className="font-black text-sm text-on-accent">
+              <span className="font-black text-sm text-fg">
                 {shortLabels[player.id]}
               </span>
             </div>
@@ -135,7 +135,7 @@ export default function PlayerDetailModal({ playerId, onClose }: PlayerDetailMod
           <h3 className="text-xs font-bold text-fg-subtle uppercase tracking-widest mb-1">Riwayat Gepukan</h3>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
             <div className="bg-bg p-4 rounded-2xl border border-line">
-              <div className="flex items-center gap-2 text-accent mb-2">
+              <div className="flex items-center gap-2 text-fg mb-2">
                 <span className="text-xs font-bold uppercase tracking-wider">👊🏻 Gepuk</span>
               </div>
               <p className="text-2xl font-black text-fg">{stats.timesShooter}x</p>
@@ -148,12 +148,12 @@ export default function PlayerDetailModal({ playerId, onClose }: PlayerDetailMod
               <p className="text-2xl font-black text-fg">{stats.timesVictim}x</p>
             </div>
 
-            <div className="bg-accent/10 p-4 rounded-2xl border border-accent/20">
-              <div className="flex items-center gap-2 text-accent mb-2">
+            <div className="bg-fg/10 p-4 rounded-2xl border border-line-strong">
+              <div className="flex items-center gap-2 text-fg mb-2">
                 <Coins className="w-4 h-4" />
                 <span className="text-xs font-bold uppercase tracking-wider">Gepukan</span>
               </div>
-              <p className="text-2xl font-black text-accent">+{stats.pointsGained}</p>
+              <p className="text-2xl font-black text-fg">+{stats.pointsGained}</p>
             </div>
 
             <div className="bg-danger/10 p-4 rounded-2xl border border-danger/20">
@@ -193,17 +193,17 @@ export default function PlayerDetailModal({ playerId, onClose }: PlayerDetailMod
               <p className="text-2xl font-black text-fg">{jkStats.atBottom}x</p>
             </div>
 
-            <div className="bg-accent/5 p-4 rounded-2xl border border-accent/30">
-              <div className="flex items-center gap-2 text-accent mb-2">
+            <div className="bg-fg/5 p-4 rounded-2xl border border-line-strong">
+              <div className="flex items-center gap-2 text-fg mb-2">
                 <Dices className="w-4 h-4" />
                 <span className="text-xs font-bold uppercase tracking-wider">Lolos Spin</span>
               </div>
-              <p className="text-2xl font-black text-accent">{jkStats.escaped}x</p>
+              <p className="text-2xl font-black text-fg">{jkStats.escaped}x</p>
             </div>
           </div>
 
           {jkStats.escaped > 0 && (
-            <p className="text-xs text-accent/80 bg-accent/5 border border-accent/20 rounded-xl px-3 py-2">
+            <p className="text-xs text-fg-soft bg-fg/5 border border-line-strong rounded-xl px-3 py-2">
               Ning dasar {jkStats.atBottom}x, tapi mung {jkStats.punished}x jengkeng.
               Untunge ora umum 🎲.
             </p>

@@ -111,7 +111,7 @@ export default function SetupScreen() {
             onClick={() => setIsHistoryOpen(true)}
             className="flex items-center gap-1.5 px-4 min-h-11 rounded-full text-sm font-semibold text-fg-soft bg-surface border border-line hover:text-fg"
           >
-            <History className="w-4 h-4 text-accent" />
+            <History className="w-4 h-4 text-fg" />
             Riwayat
             {historyGames.length > 0 && (
               <span className="font-mono text-xs text-fg-subtle">{historyGames.length}</span>
@@ -120,7 +120,7 @@ export default function SetupScreen() {
         </div>
 
         <div className="text-center space-y-2">
-          <h1 className="text-4xl font-black tracking-tighter text-accent">
+          <h1 className="text-4xl font-black tracking-tighter text-fg">
             JENGKENG
           </h1>
           <p className="text-fg-muted text-sm">Digawe ngitung, ben gak mumet</p>
@@ -128,7 +128,7 @@ export default function SetupScreen() {
 
         <div className="space-y-4 bg-surface/50 p-4 sm:p-6 rounded-2xl border border-line">
           <div className="flex items-center gap-2 text-fg-soft font-medium mb-4">
-            <Users className="w-5 h-5 text-accent" />
+            <Users className="w-5 h-5 text-fg" />
             <span>Pemain</span>
           </div>
 
@@ -168,7 +168,7 @@ export default function SetupScreen() {
                       "w-full bg-bg border rounded-xl pl-4 pr-16 py-3 sm:py-3.5 text-base text-fg placeholder:text-fg-subtle focus:outline-none focus:ring-2 transition-all",
                       isDuplicate
                         ? "border-danger/60 focus:ring-danger/50"
-                        : "border-line focus:ring-accent/50 focus:border-accent"
+                        : "border-line-control focus:ring-accent/50 focus:border-accent"
                     )}
                   />
 
@@ -183,7 +183,7 @@ export default function SetupScreen() {
                   {finalized.length > 0 && (
                     <span className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1.5 pointer-events-none">
                       {willBeSpelled && (
-                        <span className="text-[11px] font-medium text-accent bg-accent/10 px-1.5 py-0.5 rounded">
+                        <span className="text-[11px] font-medium text-fg bg-fg/10 px-1.5 py-0.5 rounded">
                           dieja
                         </span>
                       )}

@@ -3,7 +3,7 @@
 import { SpinBorder } from "./SpinBorder";
 import { useState, useMemo } from "react";
 import { useGameStore } from "@/store/useGameStore";
-import { CheckCircle2, AlertTriangle, RotateCcw } from "lucide-react";
+import { Undo2, CheckCircle2, AlertTriangle, RotateCcw } from "lucide-react";
 import { buildShortLabels } from "@/lib/playerName";
 import { speak } from "@/lib/speech";
 import { computeTotals, sortPlayersByTotal } from "@/lib/scoring";
@@ -89,7 +89,7 @@ export default function DashboardScreen() {
   return (
     <div className="h-dvh flex flex-col bg-bg relative overflow-hidden w-full max-w-[480px] sm:max-w-xl md:max-w-2xl lg:max-w-3xl mx-auto">
       <header className="flex items-center justify-between px-4 py-3 sm:px-5 sm:py-4 bg-bg border-b border-line shrink-0">
-        <h1 className="text-xl font-black text-accent">
+        <h1 className="text-xl font-black text-fg">
           JENGKENG
         </h1>
         <button
@@ -131,7 +131,7 @@ export default function DashboardScreen() {
               )}
             >
               {/* Tembus +1000 (nyewu) = cincin emas berputar, tembus -1000 = cincin merah */}
-              {isGodTier && <SpinBorder tone="god" tint="bg-accent/10" />}
+              {isGodTier && <SpinBorder tone="god" tint="bg-fg/10" />}
               {isHellTier && <SpinBorder tone="hell" tint="bg-danger/10" />}
               <span className="relative z-10 text-sm sm:text-base md:text-lg font-black text-fg truncate max-w-full px-1">
                 {shortLabels[p.id]}
@@ -153,13 +153,15 @@ export default function DashboardScreen() {
             disabled={isTieBreakPending}
             onClick={() => setIsUndoModalOpen(true)}
             className={cn(
-              "flex-1 flex items-center justify-center py-3.5 sm:py-4 rounded-xl font-bold transition-all border",
+              "shrink-0 size-12 sm:size-14 flex items-center justify-center rounded-xl transition-all border",
               isTieBreakPending
-                ? "bg-surface text-fg-subtle border-line cursor-not-allowed"
-                : "bg-surface-2 text-fg-soft border-line-strong hover:bg-surface-3 hover:text-fg active:scale-95"
+                ? "text-fg-subtle border-line cursor-not-allowed"
+                : "bg-transparent text-fg-soft border-line-control hover:bg-surface-2 hover:text-fg active:scale-95"
             )}
+            aria-label="Salah Ngitung"
+            title="Salah Ngitung"
           >
-            <span>Salah Ngitung</span>
+            <Undo2 className="w-5 h-5" />
           </button>
         )}
         <button
@@ -207,7 +209,7 @@ export default function DashboardScreen() {
             className="bg-surface w-full max-w-sm rounded-2xl border border-line overflow-hidden p-6 text-center space-y-6"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex justify-center text-accent">
+            <div className="flex justify-center text-fg">
               <AlertTriangle className="w-12 h-12" />
             </div>
             <div className="space-y-2">
@@ -275,7 +277,7 @@ export default function DashboardScreen() {
                   Edit Nilai
                 </button>
               ) : (
-                <div className="w-full py-3 rounded-xl font-medium text-accent/50 border border-accent/20 bg-accent/5 flex items-center justify-center gap-2">
+                <div className="w-full py-3 rounded-xl font-medium text-fg-subtle border border-line-strong bg-fg/5 flex items-center justify-center gap-2">
                   <AlertTriangle className="w-4 h-4" />
                   <span className="text-sm">Maksimal edit cuma pisan!</span>
                 </div>

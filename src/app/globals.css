@@ -9,28 +9,29 @@
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 
-  /* Permukaan, dari yang paling dasar */
-  --color-bg: #09090b;
-  --color-surface: #18181b;
-  --color-surface-2: #27272a;
-  --color-surface-3: #3f3f46;
+  /* Permukaan, dari yang paling dasar (diturunkan dari bg #121417) */
+  --color-bg: #121417;
+  --color-surface: #1a1d21;
+  --color-surface-2: #22262b;
+  --color-surface-3: #2d3238;
 
-  /* Garis */
-  --color-line: #27272a;
-  --color-line-strong: #3f3f46;
+  /* Garis. line-control untuk batas input/tombol outline (kontras >= 3:1). */
+  --color-line: #262a30;
+  --color-line-strong: #3a4048;
+  --color-line-control: #626a75;
 
-  /* Teks. fg-subtle sengaja diterangkan: zinc-500/600 lama gagal kontras 4.5:1. */
-  --color-fg: #fafafa;
-  --color-fg-soft: #d4d4d8;
-  --color-fg-muted: #a1a1aa;
-  --color-fg-subtle: #94949d;
+  /* Teks. fg-subtle jangan dipakai di atas surface-3 (4.2:1). */
+  --color-fg: #f5f5f5;
+  --color-fg-soft: #d9dce1;
+  --color-fg-muted: #a9afb8;
+  --color-fg-subtle: #8e949e;
 
-  /* Satu-satunya aksen. Dipakai untuk aksi utama dan yang menang. */
-  --color-accent: #f59e0b;
-  --color-accent-hover: #fbbf24;
-  --color-on-accent: #09090b;
+  /* Orange = AKSI (tombol utama, fokus, pilihan) dan cincin +1000. Bukan status. */
+  --color-accent: #ff5a1f;
+  --color-accent-hover: #ff7440;
+  --color-on-accent: #121417;
 
-  /* Semantik: kalah, hukuman, hapus. Bukan dekorasi. */
+  /* Semantik: kalah, hukuman, hapus. Pengecualian di luar palet biner. */
   --color-danger: #fb7185;
   --color-danger-solid: #e11d48;
   --color-danger-solid-hover: #f43f5e;

@@ -122,7 +122,7 @@ export default function PsywarFooter() {
         ) : (
           <p className="text-fg-soft text-sm">
             <strong className="text-fg">{displayLastPlace.name}</strong> 💩 butuh{" "}
-            <strong className="text-accent">{gap}</strong> poin nyalip{" "}
+            <strong className="text-fg">{gap}</strong> poin nyalip{" "}
             <strong className="text-fg">{nearestAbove.name}</strong> 😭.
           </p>
         )}

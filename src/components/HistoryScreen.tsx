@@ -81,7 +81,7 @@ export default function HistoryScreen({ onClose }: HistoryScreenProps) {
       <div className="w-full max-w-sm sm:max-w-md md:max-w-lg mx-auto px-4 py-5 space-y-5">
         <header className="flex items-center justify-between">
           <h1 className="flex items-center gap-2 text-xl font-black text-fg">
-            <History className="w-5 h-5 text-accent" />
+            <History className="w-5 h-5 text-fg" />
             Riwayat
           </h1>
           <button
@@ -321,7 +321,7 @@ function GameCard({
           <span className="font-bold text-fg truncate">
             {winner?.name} <span aria-label="menang">👑</span>
           </span>
-          <span className="font-mono text-accent shrink-0">{winner?.total}</span>
+          <span className="font-mono text-fg shrink-0">{winner?.total}</span>
         </div>
         <div className="flex items-center justify-between gap-3">
           <span className="font-bold text-danger truncate">
