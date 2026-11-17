@@ -5,6 +5,7 @@ import { useGameStore } from "@/store/useGameStore";
 import { X, Plus, AlertCircle, ShieldAlert } from "lucide-react";
 import { buildShortLabels } from "@/lib/playerName";
 import { buildRoundAnnouncement } from "@/lib/announcement";
+import { getTemplates } from "@/store/useSettingsStore";
 import { speak } from "@/lib/speech";
 import { cn } from "@/lib/utils";
 
@@ -110,7 +111,8 @@ export default function AddRoundModal({
           state.players,
           state.rounds,
           state.shootRecords,
-          state.rounds.length - 1
+          state.rounds.length - 1,
+          getTemplates()
         )
       );
     }

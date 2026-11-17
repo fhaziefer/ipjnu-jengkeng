@@ -1,6 +1,7 @@
 import type { Player, Round, ShootRecord } from "@/store/useGameStore";
 import { toSpeechName } from "./playerName";
 import { computeTotals } from "./scoring";
+import { DEFAULT_TEMPLATES, renderTemplate, type TemplateKey } from "./speechTemplates";
 
 /**
  * Semua teks pengumuman dibangun di sini, bukan di dalam komponen.
@@ -8,19 +9,21 @@ import { computeTotals } from "./scoring";
  * Alasannya: pengumuman skor sekarang bisa dipicu dari dua tempat berbeda
  * (langsung setelah submit kalau tidak seri, atau setelah spin selesai kalau
  * seri). Kalau logikanya nempel di AddRoundModal, versi kedua pasti beda.
+ *
+ * Kalimatnya sendiri ada di `speechTemplates.ts` dan bisa diedit admin. Tanpa
+ * override, keluaran fungsi ini HARUS sama persis dengan versi sebelum template
+ * ada (dijaga tes terhadap salinan beku di `src/test/legacyAnnouncement.ts`).
  */
 
-const PENALTY_PSYWAR: Record<number, string> = {
-    100: "gawe godongan, ... remeh, remeh, remeh, ... sitik tok ...",
-    200: "gawe londo, lumayan keroso ... ha ha ha ...",
-    300: "gawe As, rodok ngelu, ... ha ha ha ...",
-    500: "gawe joker, ... biyuh biyuh biyuh ...",
-    1000:
-        "langsung gawe joker loro, ... wes wes wes, sret wae, ... lek gak isin tapi, ha ha ha ...",
-};
+export type Templates = Readonly<Record<TemplateKey, string>>;
 
-/** Diucapkan begitu ketahuan skor terendahnya seri, sebelum spinner muncul. */
-export const TIE_INTRO_TEXT = "Wah, bijine podo. ... Nyepin sek bolo ...";
+const PSYWAR_KEY: Record<number, TemplateKey> = {
+    100: "psywar100",
+    200: "psywar200",
+    300: "psywar300",
+    500: "psywar500",
+    1000: "psywar1000",
+};
 
 function nameOf(players: Player[], playerId: string | null): string {
     if (!playerId) return "";
@@ -29,6 +32,15 @@ function nameOf(players: Player[], playerId: string | null): string {
 
 function scoreWord(score: number): string {
     return score < 0 ? `minus ${Math.abs(score)}` : score.toString();
+}
+
+/**
+ * Satu potong pengumuman, selalu diakhiri satu spasi supaya potongan bisa
+ * disambung begitu saja. Potongan kosong (dibisukan admin) dilewati.
+ */
+function piece(template: string, vars: Readonly<Record<string, string>> = {}): string {
+    const text = renderTemplate(template, vars).trim();
+    return text ? `${text} ` : "";
 }
 
 /**
@@ -41,7 +53,8 @@ export function buildRoundAnnouncement(
     players: Player[],
     rounds: Round[],
     shootRecords: ShootRecord[],
-    roundIndex: number
+    roundIndex: number,
+    templates: Templates = DEFAULT_TEMPLATES
 ): string {
     const round = rounds[roundIndex];
     if (!round) return "";
@@ -49,7 +62,7 @@ export function buildRoundAnnouncement(
     const totalsBefore = computeTotals(players, rounds.slice(0, roundIndex));
     const totalsAfter = computeTotals(players, rounds.slice(0, roundIndex + 1));
 
-    let text = "Biji sak iki. ";
+    let text = piece(templates.roundHeader);
     const nyewuNames: string[] = [];
 
     players.forEach((p) => {
@@ -58,24 +71,30 @@ export function buildRoundAnnouncement(
 
         if (before < 1000 && after >= 1000) nyewuNames.push(toSpeechName(p.name));
 
-        text += `${toSpeechName(p.name)}, ${scoreWord(after)} ... `;
+        text += piece(templates.scoreLine, {
+            nama: toSpeechName(p.name),
+            skor: scoreWord(after),
+        });
     });
 
     const shoot = shootRecords.find((r) => r.roundId === round.roundId);
 
     if (shoot) {
-        const shooter = nameOf(players, shoot.shooterId);
-        const victim = nameOf(players, shoot.victimId);
-        const psywar =
-            PENALTY_PSYWAR[shoot.penaltyPoints] ?? `${shoot.penaltyPoints} poin ...`;
+        const psywarKey = PSYWAR_KEY[shoot.penaltyPoints];
+        const psywar = psywarKey
+            ? renderTemplate(templates[psywarKey], {}).trim()
+            : `${shoot.penaltyPoints} poin ...`;
 
-        text += `Woro woro! ... ${shooter} gepuk ${victim} ${psywar} `;
+        text += piece(templates.gepuk, {
+            penembak: nameOf(players, shoot.shooterId),
+            korban: nameOf(players, shoot.victimId),
+            psywar,
+            poin: String(shoot.penaltyPoints),
+        });
     }
 
     if (nyewuNames.length > 0) {
-        text += `Woro woro! ... ${nyewuNames.join(
-            " dan "
-        )} wes nyewu, ... ngarit tenan, ... beh beh beh ... `;
+        text += piece(templates.nyewu, { nama: nyewuNames.join(" dan ") });
     }
 
     if (players.length >= 2) {
@@ -83,7 +102,7 @@ export function buildRoundAnnouncement(
         const gap = sorted[sorted.length - 2] - sorted[sorted.length - 1];
 
         if (gap >= 500) {
-            text += `Woro woro! ... Jarake wes punjul 500, ... sret opo gak?? ... ha ha ha ... `;
+            text += piece(templates.gapWarning);
         }
     }
 
@@ -92,8 +111,10 @@ export function buildRoundAnnouncement(
             .map((id) => `${nameOf(players, id)} oleh ${round.tieBreak?.results[id]}`)
             .join(", ");
 
-        text += `Woro woro! ... Mau bijine podo, wes tak spin. ... ${spins} ... `;
-        text += `Sing jengkeng ${nameOf(players, round.resolvedLastPlaceId)} ... `;
+        text += piece(templates.tieResult, {
+            hasil_spin: spins,
+            nama: nameOf(players, round.resolvedLastPlaceId),
+        });
 
         return text;
     }
@@ -106,10 +127,9 @@ export function buildRoundAnnouncement(
         previousLastPlace &&
         round.resolvedLastPlaceId !== previousLastPlace
     ) {
-        text += `Woro woro! ... Sing jengkeng ganti ${nameOf(
-            players,
-            round.resolvedLastPlaceId
-        )} ... `;
+        text += piece(templates.lastPlaceChange, {
+            nama: nameOf(players, round.resolvedLastPlaceId),
+        });
     }
 
     return text;
