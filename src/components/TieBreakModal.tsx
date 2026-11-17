@@ -144,15 +144,15 @@ export default function TieBreakModal() {
     const remaining = candidates.filter((id) => results[id] === undefined);
 
     return (
-        <div className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center bg-black/90 backdrop-blur-sm p-0 sm:p-4 animate-in fade-in duration-200">
-            <div className="bg-zinc-900 w-full sm:max-w-md rounded-t-3xl sm:rounded-3xl border border-zinc-800 shadow-2xl overflow-hidden max-h-[92dvh] flex flex-col">
-                <div className="bg-zinc-950 p-6 text-center border-b border-zinc-800 space-y-2">
-                    <div className="flex items-center justify-center gap-2 text-amber-500">
+        <div className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center bg-black/90 p-0 sm:p-4">
+            <div className="bg-surface w-full sm:max-w-md rounded-t-3xl sm:rounded-2xl border border-line overflow-hidden max-h-[92dvh] flex flex-col">
+                <div className="bg-bg p-6 text-center border-b border-line space-y-2">
+                    <div className="flex items-center justify-center gap-2 text-accent">
                         <Dices className="w-6 h-6" />
-                        <h2 className="text-xl font-black text-white">Bijine Podo</h2>
+                        <h2 className="text-xl font-black text-fg">Bijine Podo</h2>
                         <Dices className="w-6 h-6" />
                     </div>
-                    <p className="text-sm text-zinc-500">
+                    <p className="text-sm text-fg-subtle">
                         {verdict
                             ? "Wes ketemu sopo sing apes."
                             : remaining.length > 0
@@ -163,7 +163,7 @@ export default function TieBreakModal() {
 
                 <div className="p-4 sm:p-6 space-y-3 overflow-y-auto">
                     {respinNotice && (
-                        <div className="bg-amber-500/10 border border-amber-500/30 text-amber-400 rounded-2xl p-3 text-center text-sm font-medium">
+                        <div className="bg-accent/10 border border-accent/30 text-accent rounded-2xl p-3 text-center text-sm font-medium">
                             Angkane podo maneh. Spin ulang sing podo wae.
                         </div>
                     )}
@@ -181,34 +181,34 @@ export default function TieBreakModal() {
                                 className={cn(
                                     "flex items-center gap-3 p-3 rounded-2xl border transition-colors",
                                     isLoser
-                                        ? "bg-rose-500/10 border-rose-500/50"
+                                        ? "bg-danger/10 border-danger/50"
                                         : verdict
-                                            ? "bg-zinc-950/50 border-zinc-800 opacity-50"
+                                            ? "bg-bg/50 border-line opacity-50"
                                             : hasSpun || isThisRolling
-                                                ? "bg-zinc-950 border-zinc-700"
-                                                : "bg-zinc-950/50 border-zinc-800"
+                                                ? "bg-bg border-line-strong"
+                                                : "bg-bg/50 border-line"
                                 )}
                             >
-                                <div className="w-11 h-11 shrink-0 rounded-full bg-linear-to-br from-amber-400 to-rose-500 flex items-center justify-center">
-                                    <span className="font-black text-sm text-zinc-950">
+                                <div className="w-11 h-11 shrink-0 rounded-full flex items-center justify-center bg-accent text-on-accent hover:bg-accent-hover">
+                                    <span className="font-black text-sm text-on-accent">
                                         {shortLabels[playerId]}
                                     </span>
                                 </div>
 
-                                <span className="flex-1 min-w-0 truncate font-bold text-white">
+                                <span className="flex-1 min-w-0 truncate font-bold text-fg">
                                     {player?.name}
                                     {isLoser && " 💩"}
                                 </span>
 
                                 {isThisRolling ? (
-                                    <span className="w-24 text-center font-mono text-3xl font-black text-amber-400 tabular-nums">
+                                    <span className="w-24 text-center font-mono text-3xl font-black text-accent tabular-nums">
                                         {rollingValue}
                                     </span>
                                 ) : hasSpun ? (
                                     <span
                                         className={cn(
                                             "w-24 text-center font-mono text-3xl font-black tabular-nums",
-                                            isLoser ? "text-rose-500" : "text-white"
+                                            isLoser ? "text-danger" : "text-fg"
                                         )}
                                     >
                                         {value}
@@ -221,8 +221,8 @@ export default function TieBreakModal() {
                                         className={cn(
                                             "w-24 py-2.5 rounded-xl font-black text-sm transition-all",
                                             isLocked || isRolling
-                                                ? "bg-zinc-800 text-zinc-600 cursor-not-allowed"
-                                                : "bg-linear-to-r from-amber-500 to-rose-600 text-white shadow-lg shadow-rose-500/20 active:scale-95"
+                                                ? "bg-surface-2 text-fg-subtle cursor-not-allowed"
+                                                : "active:scale-95 bg-accent text-on-accent hover:bg-accent-hover"
                                         )}
                                     >
                                         SPIN
@@ -233,31 +233,31 @@ export default function TieBreakModal() {
                     })}
 
                     {verdict && loser && (
-                        <div className="bg-rose-500/10 border border-rose-500/30 rounded-2xl p-4 text-center space-y-1 animate-in fade-in zoom-in duration-300">
-                            <p className="text-[10px] font-bold text-rose-400/70 uppercase tracking-widest">
+                        <div className="bg-danger/10 border border-danger/30 rounded-2xl p-4 text-center space-y-1">
+                            <p className="text-[11px] font-bold text-danger/80 uppercase tracking-widest">
                                 Sing Jengkeng
                             </p>
-                            <p className="text-2xl font-black text-rose-400 break-words">
+                            <p className="text-2xl font-black text-danger break-words">
                                 {loser.name} 💩
                             </p>
                         </div>
                     )}
                 </div>
 
-                <div className="p-4 sm:p-6 border-t border-zinc-800 bg-zinc-950 shrink-0">
+                <div className="p-4 sm:p-6 border-t border-line bg-bg shrink-0">
                     {verdict ? (
                         /* Ditutup manual, bukan pakai timer. Kalau auto-close,
                            yang lagi noleh bentar kelewat dan nggak bisa balik. */
                         <button
                             type="button"
                             onClick={() => setVerdict(null)}
-                            className="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl font-bold text-white bg-linear-to-r from-amber-500 to-rose-600 shadow-lg shadow-rose-500/20 active:scale-[0.98] transition-all"
+                            className="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl font-bold active:scale-[0.98] transition-all bg-accent text-on-accent hover:bg-accent-hover"
                         >
                             Wes, Lanjut
                             <ArrowRight className="w-4 h-4" />
                         </button>
                     ) : (
-                        <p className="text-xs text-zinc-600 flex items-center justify-center gap-1.5 text-center">
+                        <p className="text-xs text-fg-subtle flex items-center justify-center gap-1.5 text-center">
                             <Skull className="w-3.5 h-3.5 shrink-0" />
                             Bijine ora owah. Iki mung mutusi sopo sing jengkeng.
                         </p>

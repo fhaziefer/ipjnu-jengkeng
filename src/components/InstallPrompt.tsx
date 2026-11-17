@@ -40,36 +40,37 @@ export default function InstallPrompt() {
     if (!showPrompt || isStandalone) return null;
 
     return (
-        <div className="fixed bottom-[calc(1rem+env(safe-area-inset-bottom))] sm:bottom-6 left-1/2 -translate-x-1/2 z-[100] w-full max-w-sm sm:max-w-md px-4 animate-in slide-in-from-bottom-10 fade-in duration-500">
-            <div className="bg-zinc-900 border border-amber-500/30 rounded-2xl p-5 shadow-2xl shadow-amber-500/10 flex flex-col gap-3 relative">
+        <div className="fixed bottom-[calc(1rem+env(safe-area-inset-bottom))] sm:bottom-6 left-1/2 -translate-x-1/2 z-[100] w-full max-w-sm sm:max-w-md px-4">
+            <div className="bg-surface border border-accent/30 rounded-2xl p-5 flex flex-col gap-3 relative">
                 <button
                     onClick={handleDismiss}
-                    className="absolute top-3 right-3 p-1 bg-zinc-800 rounded-full text-zinc-400 hover:text-white transition-colors"
+                    aria-label="Tutup"
+                    className="absolute top-3 right-3 p-1 bg-surface-2 rounded-full text-fg-muted hover:text-fg transition-colors before:absolute before:-inset-3 before:content-['']"
                 >
                     <X className="w-4 h-4" />
                 </button>
 
-                <h3 className="font-bold text-white text-lg pr-6">Buka tanpo rikuh!</h3>
-                <p className="text-sm text-zinc-400">
+                <h3 className="font-bold text-fg text-lg pr-6">Buka tanpo rikuh!</h3>
+                <p className="text-sm text-fg-muted">
                     Ben ngitunge penak, install aplikasi iki nang Home Screen HP mu.
                 </p>
 
                 {isIOS ? (
-                    <div className="bg-zinc-950 rounded-xl p-3 text-sm flex flex-col gap-2 text-zinc-300 mt-1 border border-zinc-800">
+                    <div className="bg-bg rounded-xl p-3 text-sm flex flex-col gap-2 text-fg-soft mt-1 border border-line">
                         <div className="flex items-center gap-2">
                             <span>1. Pencet ikon</span>
-                            <Share className="w-4 h-4 text-blue-500" />
+                            <Share className="w-4 h-4 text-accent" />
                             <span>nang menu.</span>
                         </div>
                         <div className="flex items-center gap-2">
                             <span>2. Pilih</span>
-                            <strong className="text-white">Add to Home Screen</strong>
-                            <PlusSquare className="w-4 h-4 text-zinc-400" />
+                            <strong className="text-fg">Add to Home Screen</strong>
+                            <PlusSquare className="w-4 h-4 text-fg-muted" />
                         </div>
                     </div>
                 ) : (
-                    <div className="bg-zinc-950 rounded-xl p-3 text-sm text-zinc-300 mt-1 border border-zinc-800 leading-relaxed">
-                        Pencet menu titik telu (⋮) nang pojok nduwur browser, terus pilih <strong className="text-white">Add to Home screen</strong> atau <strong className="text-white">Install app</strong>.
+                    <div className="bg-bg rounded-xl p-3 text-sm text-fg-soft mt-1 border border-line leading-relaxed">
+                        Pencet menu titik telu (⋮) nang pojok nduwur browser, terus pilih <strong className="text-fg">Add to Home screen</strong> atau <strong className="text-fg">Install app</strong>.
                     </div>
                 )}
             </div>

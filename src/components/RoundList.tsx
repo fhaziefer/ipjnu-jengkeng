@@ -1,5 +1,6 @@
 "use client";
 
+import { SpinBorder } from "./SpinBorder";
 import { useGameStore } from "@/store/useGameStore";
 import { useMemo } from "react";
 import { cn } from "@/lib/utils";
@@ -76,13 +77,13 @@ export default function RoundList() {
   if (rounds.length === 0) {
     return (
       <div className="flex-1 flex flex-col items-center justify-center p-8 text-center space-y-4 opacity-50 overflow-y-auto">
-        <p className="text-zinc-500 text-sm">Nembe Mulai, durung itungan.</p>
+        <p className="text-fg-subtle text-sm">Nembe Mulai, durung itungan.</p>
       </div>
     );
   }
 
   return (
-    <div className="flex-1 overflow-y-auto bg-zinc-950 flex flex-col">
+    <div className="flex-1 overflow-y-auto bg-bg flex flex-col">
       {cumulativeRounds.map((round, rowIndex) => {
         const isLastRow = rowIndex === cumulativeRounds.length - 1;
 
@@ -90,7 +91,7 @@ export default function RoundList() {
           <div
             key={round.roundId}
             className={cn(
-              "grid gap-[1px] bg-zinc-900 border-b border-zinc-900 shrink-0",
+              "grid gap-[1px] bg-surface border-b border-line shrink-0",
               gridColsClass
             )}
           >
@@ -111,56 +112,27 @@ export default function RoundList() {
                 <div
                   key={`${round.roundId}-${p.id}`}
                   className={cn(
-                    "relative flex items-center justify-center transition-colors overflow-hidden",
+                    "relative overflow-hidden flex items-center justify-center transition-colors",
                     isLastRow ? "py-4 sm:py-5 md:py-6" : "py-2.5 sm:py-3 md:py-4",
-                    // Kalau gak ada efek muter, pasang warna background dan border normal
-                    !hasSpecialEffect && "bg-zinc-950",
-                    !hasSpecialEffect && isMax && "bg-amber-500/10",
-                    !hasSpecialEffect && isMin && "bg-rose-500/10",
-                    !hasSpecialEffect && isShooter && "border-2 border-amber-500",
-                    !hasSpecialEffect && isVictim && "border-2 border-rose-500"
+                    "bg-bg",
+                    !hasSpecialEffect && isMax && "bg-accent/10",
+                    !hasSpecialEffect && isMin && "bg-danger/10",
+                    !hasSpecialEffect && isShooter && "border-2 border-accent",
+                    !hasSpecialEffect && isVictim && "border-2 border-danger"
                   )}
                 >
-                  
-                  {/* EFEK ANIMASI KHUSUS SAAT PERTAMA KALI NYENTUH 1000 / -1000 */}
+                  {/* Pertama kali tembus +1000 / -1000 di ronde ini: cincin berputar */}
                   {hasSpecialEffect && (
-                    <>
-                      {/* Gradient berputar */}
-                      <div 
-                        className={cn(
-                          "absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[200%] h-[200%] animate-[spin_2s_linear_infinite] z-0",
-                          isJustHitGod 
-                            ? "bg-[conic-gradient(transparent_25%,#fbbf24_50%,transparent_75%,#fbbf24_100%)]" 
-                            : "bg-[conic-gradient(transparent_25%,#f43f5e_50%,transparent_75%,#f43f5e_100%)]"
-                        )} 
-                      />
-                      {/* Tutupan tengah biar jadinya cuma border (2px) */}
-                      <div className="absolute inset-[2px] bg-zinc-950 z-0" />
-                      
-                      {/* Lapis warna heatmap sesuai status (Max/Min) di balik teks */}
-                      <div className={cn(
-                        "absolute inset-[2px] z-0",
-                        isMax && "bg-amber-500/10",
-                        isMin && "bg-rose-500/10"
-                      )} />
-                      
-                      {/* Efek Glow */}
-                      <div 
-                        className={cn(
-                          "absolute inset-0 z-0 pointer-events-none",
-                          isJustHitGod 
-                            ? "shadow-[inset_0_0_15px_rgba(251,191,36,0.3)]" 
-                            : "shadow-[inset_0_0_15px_rgba(244,63,94,0.3)]"
-                        )} 
-                      />
-                    </>
+                    <SpinBorder
+                      tone={isJustHitGod ? "god" : "hell"}
+                      tint={isMax ? "bg-accent/10" : isMin ? "bg-danger/10" : undefined}
+                    />
                   )}
-
                   <span
                     className={cn(
                       "relative z-10 font-mono transition-all",
                       isLastRow ? "text-base sm:text-lg md:text-xl font-bold" : "text-xs sm:text-sm md:text-base",
-                      isMax ? "text-amber-400" : isMin ? "text-rose-400" : "text-zinc-100"
+                      isMax ? "text-accent" : isMin ? "text-danger" : "text-fg"
                     )}
                   >
                     {score} {isShooter && "👊🏻"} {isVictim && "🤕"}

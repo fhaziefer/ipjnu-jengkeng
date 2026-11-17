@@ -120,18 +120,19 @@ export default function AddRoundModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end justify-center bg-black/80 backdrop-blur-sm sm:items-center p-0 sm:p-4 animate-in fade-in duration-200"
+      className="fixed inset-0 z-50 flex items-end justify-center bg-black/75 sm:items-center p-0 sm:p-4"
       onClick={onClose}
     >
       <div
-        className="bg-zinc-900 w-full sm:max-w-lg md:max-w-2xl rounded-t-3xl sm:rounded-3xl border border-zinc-800 shadow-2xl flex flex-col max-h-[92dvh] sm:max-h-[90dvh]"
+        className="bg-surface w-full sm:max-w-lg md:max-w-2xl rounded-t-3xl sm:rounded-2xl border border-line flex flex-col max-h-[92dvh] sm:max-h-[90dvh]"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-center justify-between p-6 border-b border-zinc-800">
-          <h2 className="text-xl font-bold text-white">Wayahe Ngitung</h2>
+        <div className="flex items-center justify-between p-6 border-b border-line">
+          <h2 className="text-xl font-bold text-fg">Wayahe Ngitung</h2>
           <button
             onClick={onClose}
-            className="p-2 bg-zinc-800 rounded-full text-zinc-400 hover:text-white transition-colors"
+            aria-label="Tutup"
+            className="size-11 inline-flex items-center justify-center bg-surface-2 rounded-full text-fg-muted hover:text-fg transition-colors"
           >
             <X className="w-5 h-5" />
           </button>
@@ -144,10 +145,10 @@ export default function AddRoundModal({
                 {/* Nama pindah ke baris sendiri. Di slot 32px yang lama,
                     "Mas Bagong" cuma kebaca "M...". */}
                 <div className="flex items-baseline gap-2 px-0.5 min-w-0">
-                  <span className="font-bold text-sm sm:text-base text-zinc-200 truncate">
+                  <span className="font-bold text-sm sm:text-base text-fg truncate">
                     {p.name}
                   </span>
-                  <span className="text-[10px] font-mono text-zinc-600 shrink-0">
+                  <span className="text-[11px] font-mono text-fg-subtle shrink-0">
                     {shortLabels[p.id]}
                   </span>
                 </div>
@@ -161,28 +162,28 @@ export default function AddRoundModal({
                       placeholder="0"
                       value={scores[p.id] === "0" ? "LEG" : scores[p.id]}
                       className={cn(
-                        "w-full h-10 sm:h-12 bg-zinc-950 border border-zinc-800 rounded-xl px-1 text-center text-base sm:text-lg focus:outline-none transition-all select-none font-mono",
+                        "w-full h-11 sm:h-12 bg-bg border border-line rounded-xl px-1 text-center text-base sm:text-lg focus:outline-none transition-all select-none font-mono",
                         scores[p.id] === "0"
-                          ? "text-amber-500 font-bold text-[10px] sm:text-[11px] tracking-widest"
-                          : "text-white"
+                          ? "text-accent font-bold text-[11px] tracking-widest"
+                          : "text-fg"
                       )}
                     />
                   </div>
 
-                  <div className="flex flex-1 gap-1 shrink-0">
+                  <div className="flex flex-1 gap-1.5 shrink-0">
                     {SHORTCUTS.map((val) => (
                       <button
                         key={val}
                         type="button"
                         onClick={() => handleShortcut(p.id, val)}
                         className={cn(
-                          "flex-1 h-10 sm:h-12 md:h-14 rounded-lg sm:rounded-[10px] font-bold transition-colors flex items-center justify-center border active:scale-95 px-0 min-w-0",
+                          "flex-1 h-11 sm:h-12 md:h-14 rounded-lg sm:rounded-[10px] font-bold transition-colors flex items-center justify-center border active:scale-95 px-0 min-w-0",
                           val === "LEG"
-                            ? "text-[9px] sm:text-[10px] bg-linear-to-r from-amber-400 to-amber-500 text-zinc-950 border-amber-500 shadow-md"
-                            : "text-[10px] sm:text-sm md:text-base " +
+                            ? "text-[11px] sm:text-xs text-on-accent border-accent bg-accent hover:bg-accent-hover"
+                            : "text-xs sm:text-sm md:text-base " +
                             ((val as number) < 0
-                              ? "bg-rose-950/40 hover:bg-rose-900/60 text-rose-400 border-rose-900/50"
-                              : "bg-zinc-800 hover:bg-zinc-700 text-zinc-300 border-zinc-700")
+                              ? "bg-danger/10 hover:bg-danger/10 text-danger border-danger/20"
+                              : "bg-surface-2 hover:bg-surface-3 text-fg-soft border-line-strong")
                         )}
                       >
                         {val === "LEG"
@@ -199,7 +200,7 @@ export default function AddRoundModal({
           </div>
 
           {validationErrors.length > 0 && (
-            <div className="bg-rose-500/10 border border-rose-500/20 text-rose-400 p-3 rounded-xl text-sm flex gap-2">
+            <div className="bg-danger/10 border border-danger/20 text-danger p-3 rounded-xl text-sm flex gap-2">
               <AlertCircle className="w-5 h-5 shrink-0" />
               <ul className="list-disc pl-4">
                 {validationErrors.map((err, i) => (
@@ -209,10 +210,10 @@ export default function AddRoundModal({
             </div>
           )}
 
-          <div className="border border-zinc-800 rounded-2xl overflow-hidden">
+          <div className="border border-line rounded-2xl overflow-hidden">
             <button
               onClick={() => setIsGepukOpen(!isGepukOpen)}
-              className="w-full flex items-center justify-between p-4 bg-zinc-950 text-amber-500 font-bold"
+              className="w-full flex items-center justify-between p-4 bg-bg text-accent font-bold"
             >
               <div className="flex items-center gap-2">
                 <ShieldAlert className="w-5 h-5" />
@@ -227,10 +228,10 @@ export default function AddRoundModal({
             </button>
 
             {isGepukOpen && (
-              <div className="p-4 bg-zinc-900 space-y-4 border-t border-zinc-800">
+              <div className="p-4 bg-surface space-y-4 border-t border-line">
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <label className="block text-center text-xs text-zinc-500 font-medium">
+                    <label className="block text-center text-xs text-fg-subtle font-medium">
                       Sing Gepuk
                     </label>
                     <div className="grid grid-cols-2 gap-1.5">
@@ -245,8 +246,8 @@ export default function AddRoundModal({
                           className={cn(
                             "py-2 px-1 sm:px-2 rounded-xl text-xs sm:text-sm font-bold transition-all border truncate",
                             shooterId === p.id
-                              ? "bg-amber-500 text-zinc-950 border-amber-500 shadow-md shadow-amber-500/20 active:scale-95"
-                              : "bg-zinc-950 text-zinc-400 border-zinc-800 hover:border-zinc-600 hover:text-white active:scale-95"
+                              ? "bg-accent text-on-accent border-accent active:scale-95"
+                              : "bg-bg text-fg-muted border-line hover:border-line-strong hover:text-fg active:scale-95"
                           )}
                         >
                           {shortLabels[p.id]}
@@ -256,7 +257,7 @@ export default function AddRoundModal({
                   </div>
 
                   <div className="space-y-2">
-                    <label className="block text-center text-xs text-zinc-500 font-medium">
+                    <label className="block text-center text-xs text-fg-subtle font-medium">
                       Sing Digepuk
                     </label>
                     <div className="grid grid-cols-2 gap-1.5">
@@ -275,12 +276,12 @@ export default function AddRoundModal({
                             className={cn(
                               "py-2 px-1 sm:px-2 rounded-xl text-xs sm:text-sm font-bold transition-all border truncate",
                               isDisabled
-                                ? "opacity-20 cursor-not-allowed bg-zinc-950 border-zinc-800 text-zinc-600"
+                                ? "opacity-20 cursor-not-allowed bg-bg border-line text-fg-subtle"
                                 : "active:scale-95",
                               !isDisabled && victimId === p.id
-                                ? "bg-rose-500 text-white border-rose-500 shadow-md shadow-rose-500/20"
+                                ? "bg-danger-solid text-fg border-danger"
                                 : !isDisabled
-                                  ? "bg-zinc-950 text-zinc-400 border-zinc-800 hover:border-zinc-600 hover:text-white"
+                                  ? "bg-bg text-fg-muted border-line hover:border-line-strong hover:text-fg"
                                   : ""
                             )}
                           >
@@ -293,7 +294,7 @@ export default function AddRoundModal({
                 </div>
 
                 <div className="space-y-2 pt-2">
-                  <label className="block text-center text-xs text-zinc-500 font-medium">
+                  <label className="block text-center text-xs text-fg-subtle font-medium">
                     Pilih Gepukane
                   </label>
                   <div className="grid grid-cols-2 gap-2">
@@ -306,8 +307,8 @@ export default function AddRoundModal({
                           "py-3 px-3 rounded-xl text-sm font-bold transition-all border active:scale-95",
                           opt.value === 1000 && "col-span-2",
                           penaltyPoints === opt.value
-                            ? "bg-amber-500 text-zinc-950 border-amber-500 shadow-md shadow-amber-500/20"
-                            : "bg-zinc-950 text-zinc-400 border-zinc-800 hover:border-zinc-600 hover:text-white"
+                            ? "bg-accent text-on-accent border-accent"
+                            : "bg-bg text-fg-muted border-line hover:border-line-strong hover:text-fg"
                         )}
                       >
                         {opt.label}
@@ -320,15 +321,15 @@ export default function AddRoundModal({
           </div>
         </div>
 
-        <div className="p-6 border-t border-zinc-800 bg-zinc-950 shrink-0">
+        <div className="p-6 border-t border-line bg-bg shrink-0">
           <button
             onClick={handleSubmit}
             disabled={!isValid}
             className={cn(
               "w-full py-4 rounded-2xl font-bold text-lg transition-all",
               isValid
-                ? "bg-linear-to-r from-amber-500 to-rose-600 text-white shadow-lg shadow-rose-500/20 active:scale-[0.98]"
-                : "bg-zinc-800 text-zinc-500 cursor-not-allowed"
+                ? "active:scale-[0.98] bg-accent text-on-accent hover:bg-accent-hover"
+                : "bg-surface-2 text-fg-subtle cursor-not-allowed"
             )}
           >
             Oke Josjis

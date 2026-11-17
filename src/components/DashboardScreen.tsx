@@ -1,5 +1,6 @@
 "use client";
 
+import { SpinBorder } from "./SpinBorder";
 import { useState, useMemo } from "react";
 import { useGameStore } from "@/store/useGameStore";
 import { CheckCircle2, AlertTriangle, RotateCcw } from "lucide-react";
@@ -86,22 +87,22 @@ export default function DashboardScreen() {
   }, [players, totals, rounds.length, currentLastPlacePlayerId]);
 
   return (
-    <div className="h-dvh flex flex-col bg-zinc-950 relative overflow-hidden w-full max-w-[480px] sm:max-w-xl md:max-w-2xl lg:max-w-3xl mx-auto sm:shadow-2xl">
-      <header className="flex items-center justify-between px-4 py-3 sm:px-5 sm:py-4 bg-zinc-950 border-b border-zinc-900 shrink-0">
-        <h1 className="text-xl font-black text-transparent bg-clip-text bg-linear-to-br from-amber-400 to-rose-500">
+    <div className="h-dvh flex flex-col bg-bg relative overflow-hidden w-full max-w-[480px] sm:max-w-xl md:max-w-2xl lg:max-w-3xl mx-auto">
+      <header className="flex items-center justify-between px-4 py-3 sm:px-5 sm:py-4 bg-bg border-b border-line shrink-0">
+        <h1 className="text-xl font-black text-accent">
           JENGKENG
         </h1>
         <button
           disabled={isTieBreakPending}
           onClick={() => {
-            speak("Mosok sret tenan? ... yo gak opo opo, lek gak isin, ha ha ha.");
+            speak("Mosok sret tenan? ... yo gak opo opo, lek isin, ha ha.");
             setIsFinishModalOpen(true);
           }}
           className={cn(
-            "flex items-center gap-1.5 px-3 py-1.5 font-bold rounded-full border transition-transform",
+            "flex items-center gap-1.5 px-4 min-h-11 font-bold rounded-full border transition-transform",
             isTieBreakPending
-              ? "bg-zinc-900 text-zinc-700 border-zinc-800 cursor-not-allowed"
-              : "bg-rose-500/10 text-rose-500 border-rose-500/20 active:scale-95"
+              ? "bg-surface text-fg-subtle border-line cursor-not-allowed"
+              : "bg-danger/10 text-danger border-danger/20 active:scale-95"
           )}
         >
           <CheckCircle2 className="w-4 h-4" />
@@ -111,7 +112,7 @@ export default function DashboardScreen() {
 
       <div
         className={cn(
-          "shrink-0 z-10 bg-zinc-950/90 backdrop-blur-md border-b border-zinc-800 grid gap-px",
+          "shrink-0 z-10 bg-bg/90 border-b border-line grid gap-px",
           gridColsClass
         )}
       >
@@ -119,38 +120,20 @@ export default function DashboardScreen() {
           const score = totals[p.id] || 0;
           const isGodTier = score >= 1000;
           const isHellTier = score <= -1000;
-          const hasSpecialEffect = isGodTier || isHellTier;
 
           return (
             <button
               key={p.id}
               onClick={() => setSelectedPlayerId(p.id)}
               title={p.name}
-              className="relative flex flex-col items-center justify-center py-3 sm:py-4 md:py-5 bg-zinc-950 active:bg-zinc-900 transition-colors overflow-hidden group min-w-0"
-            >
-              {hasSpecialEffect && (
-                <>
-                  <div
-                    className={cn(
-                      "absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[200%] h-[200%] animate-[spin_2s_linear_infinite] z-0",
-                      isGodTier
-                        ? "bg-[conic-gradient(transparent_25%,#fbbf24_50%,transparent_75%,#fbbf24_100%)]"
-                        : "bg-[conic-gradient(transparent_25%,#f43f5e_50%,transparent_75%,#f43f5e_100%)]"
-                    )}
-                  />
-                  <div className="absolute inset-0.5 bg-zinc-950 z-0" />
-                  <div
-                    className={cn(
-                      "absolute inset-0 z-0 pointer-events-none",
-                      isGodTier
-                        ? "shadow-[inset_0_0_15px_rgba(251,191,36,0.3)]"
-                        : "shadow-[inset_0_0_15px_rgba(244,63,94,0.3)]"
-                    )}
-                  />
-                </>
+              className={cn(
+                "relative overflow-hidden flex flex-col items-center justify-center py-3 sm:py-4 md:py-5 min-h-11 bg-bg active:bg-surface transition-colors min-w-0"
               )}
-
-              <span className="relative z-10 text-sm sm:text-base md:text-lg font-black text-white truncate max-w-full px-1">
+            >
+              {/* Tembus +1000 (nyewu) = cincin emas berputar, tembus -1000 = cincin merah */}
+              {isGodTier && <SpinBorder tone="god" tint="bg-accent/10" />}
+              {isHellTier && <SpinBorder tone="hell" tint="bg-danger/10" />}
+              <span className="relative z-10 text-sm sm:text-base md:text-lg font-black text-fg truncate max-w-full px-1">
                 {shortLabels[p.id]}
               </span>
               <span className="relative z-10 text-lg sm:text-xl md:text-2xl">
@@ -170,10 +153,10 @@ export default function DashboardScreen() {
             disabled={isTieBreakPending}
             onClick={() => setIsUndoModalOpen(true)}
             className={cn(
-              "flex-1 flex items-center justify-center py-3.5 sm:py-4 rounded-xl font-bold shadow-xl transition-all border",
+              "flex-1 flex items-center justify-center py-3.5 sm:py-4 rounded-xl font-bold transition-all border",
               isTieBreakPending
-                ? "bg-zinc-900 text-zinc-700 border-zinc-800 cursor-not-allowed"
-                : "bg-zinc-800 text-zinc-300 border-zinc-700 hover:bg-zinc-700 hover:text-white active:scale-95"
+                ? "bg-surface text-fg-subtle border-line cursor-not-allowed"
+                : "bg-surface-2 text-fg-soft border-line-strong hover:bg-surface-3 hover:text-fg active:scale-95"
             )}
           >
             <span>Salah Ngitung</span>
@@ -183,10 +166,10 @@ export default function DashboardScreen() {
           disabled={isTieBreakPending}
           onClick={() => setIsAddRoundOpen(true)}
           className={cn(
-            "flex-1 flex items-center justify-center py-3.5 sm:py-4 rounded-xl font-bold shadow-xl transition-all",
+            "flex-1 flex items-center justify-center py-3.5 sm:py-4 rounded-xl font-bold transition-all",
             isTieBreakPending
-              ? "bg-zinc-800 text-zinc-600 cursor-not-allowed"
-              : "bg-linear-to-r from-amber-500 to-rose-600 text-white shadow-rose-500/30 active:scale-95"
+              ? "bg-surface-2 text-fg-subtle cursor-not-allowed"
+              : "active:scale-95 bg-accent text-on-accent hover:bg-accent-hover"
           )}
         >
           <span>Wayahe Ngitung</span>
@@ -217,23 +200,23 @@ export default function DashboardScreen() {
 
       {isFinishModalOpen && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-in fade-in duration-200"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4"
           onClick={() => setIsFinishModalOpen(false)}
         >
           <div
-            className="bg-zinc-900 w-full max-w-sm rounded-3xl border border-zinc-800 shadow-2xl overflow-hidden p-6 text-center space-y-6"
+            className="bg-surface w-full max-w-sm rounded-2xl border border-line overflow-hidden p-6 text-center space-y-6"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex justify-center text-amber-500">
+            <div className="flex justify-center text-accent">
               <AlertTriangle className="w-12 h-12" />
             </div>
             <div className="space-y-2">
-              <h2 className="text-xl font-bold text-white">Sret tenan??</h2>
+              <h2 className="text-xl font-bold text-fg">Sret tenan??</h2>
             </div>
             <div className="flex gap-3">
               <button
                 onClick={() => setIsFinishModalOpen(false)}
-                className="flex-1 py-3 rounded-xl font-bold text-zinc-300 bg-zinc-800 hover:bg-zinc-700 transition-colors"
+                className="flex-1 py-3 rounded-xl font-bold text-fg-soft bg-surface-2 hover:bg-surface-3 transition-colors"
               >
                 Gak Sido
               </button>
@@ -242,7 +225,7 @@ export default function DashboardScreen() {
                   setIsFinishModalOpen(false);
                   finishGame();
                 }}
-                className="flex-1 py-3 rounded-xl font-bold text-white bg-rose-600 hover:bg-rose-500 transition-colors"
+                className="flex-1 py-3 rounded-xl font-bold text-fg bg-danger-solid hover:bg-danger-solid transition-colors"
               >
                 Sret Wae
               </button>
@@ -253,21 +236,21 @@ export default function DashboardScreen() {
 
       {isUndoModalOpen && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-in fade-in duration-200"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4"
           onClick={() => setIsUndoModalOpen(false)}
         >
           <div
-            className="bg-zinc-900 w-full max-w-sm rounded-3xl border border-zinc-800 shadow-2xl overflow-hidden p-6 text-center space-y-6"
+            className="bg-surface w-full max-w-sm rounded-2xl border border-line overflow-hidden p-6 text-center space-y-6"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex justify-center text-zinc-400">
+            <div className="flex justify-center text-fg-muted">
               <RotateCcw className="w-12 h-12" />
             </div>
             <div className="space-y-2">
-              <h2 className="text-xl font-bold text-white">
+              <h2 className="text-xl font-bold text-fg">
                 Edit Itungan Keri Dhewe?
               </h2>
-              <p className="text-sm text-zinc-500">
+              <p className="text-sm text-fg-subtle">
                 Pilih edit nek cuma salah input angka/gepukan.
               </p>
             </div>
@@ -287,12 +270,12 @@ export default function DashboardScreen() {
                     setIsUndoModalOpen(false);
                     setIsAddRoundOpen(true);
                   }}
-                  className="w-full py-3 rounded-xl font-bold text-zinc-950 bg-amber-500 hover:bg-amber-400 transition-colors"
+                  className="w-full py-3 rounded-xl font-bold text-on-accent bg-accent hover:bg-accent-hover transition-colors"
                 >
                   Edit Nilai
                 </button>
               ) : (
-                <div className="w-full py-3 rounded-xl font-medium text-amber-500/50 border border-amber-500/20 bg-amber-500/5 flex items-center justify-center gap-2">
+                <div className="w-full py-3 rounded-xl font-medium text-accent/50 border border-accent/20 bg-accent/5 flex items-center justify-center gap-2">
                   <AlertTriangle className="w-4 h-4" />
                   <span className="text-sm">Maksimal edit cuma pisan!</span>
                 </div>
@@ -301,7 +284,7 @@ export default function DashboardScreen() {
               <div className="flex gap-3">
                 <button
                   onClick={() => setIsUndoModalOpen(false)}
-                  className="flex-1 py-3 rounded-xl font-bold text-zinc-300 bg-zinc-800 hover:bg-zinc-700 transition-colors"
+                  className="flex-1 py-3 rounded-xl font-bold text-fg-soft bg-surface-2 hover:bg-surface-3 transition-colors"
                 >
                   Gak Sido
                 </button>
@@ -310,7 +293,7 @@ export default function DashboardScreen() {
                     undoLastRound();
                     setIsUndoModalOpen(false);
                   }}
-                  className="flex-1 py-3 rounded-xl font-bold text-white bg-rose-600 hover:bg-rose-500 transition-colors"
+                  className="flex-1 py-3 rounded-xl font-bold text-fg bg-danger-solid hover:bg-danger-solid transition-colors"
                 >
                   Busek Total
                 </button>

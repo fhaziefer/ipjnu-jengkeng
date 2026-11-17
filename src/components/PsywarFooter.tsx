@@ -67,8 +67,8 @@ export default function PsywarFooter() {
 
   if (rounds.length === 0 || sortedPlayers.length < 2) {
     return (
-      <div className="shrink-0 px-4 pt-3 pb-[calc(6.5rem+env(safe-area-inset-bottom))] sm:pb-28 border-t border-zinc-800 bg-zinc-950 text-center z-10">
-        <p className="text-zinc-500 text-sm">
+      <div className="shrink-0 px-4 pt-3 pb-[calc(6.5rem+env(safe-area-inset-bottom))] sm:pb-28 border-t border-line bg-bg text-center z-10">
+        <p className="text-fg-subtle text-sm">
           0 Mainan | <GameDurationText startTime={gameStartTime} />
         </p>
       </div>
@@ -95,9 +95,9 @@ export default function PsywarFooter() {
   const gap = totals[nearestAbove.id] - totals[displayLastPlace.id];
 
   return (
-    <div className="shrink-0 px-4 sm:px-5 pt-3 sm:pt-4 pb-[calc(6.5rem+env(safe-area-inset-bottom))] sm:pb-28 border-t border-zinc-800 bg-zinc-950 space-y-3 sm:space-y-4 z-10 relative shadow-[0_-10px_40px_rgba(0,0,0,0.5)]">
+    <div className="shrink-0 px-4 sm:px-5 pt-3 sm:pt-4 pb-[calc(6.5rem+env(safe-area-inset-bottom))] sm:pb-28 border-t border-line bg-bg space-y-3 sm:space-y-4 z-10 relative">
 
-      <div className="flex items-center justify-center gap-4 text-xs text-zinc-500 font-mono">
+      <div className="flex items-center justify-center gap-4 text-xs text-fg-subtle font-mono">
         <span>{rounds.length} Mainan</span>
         <span>•</span>
         <span className="flex items-center gap-1">
@@ -105,30 +105,30 @@ export default function PsywarFooter() {
         </span>
       </div>
 
-      <div className="bg-zinc-900/50 border border-dashed border-zinc-700 rounded-2xl p-3 sm:p-4 text-center space-y-2 sm:space-y-3">
-        <div className="flex items-center justify-center gap-2 text-rose-400 font-medium text-sm">
+      <div className="bg-surface/50 border border-dashed border-line-strong rounded-2xl p-3 sm:p-4 text-center space-y-2 sm:space-y-3">
+        <div className="flex items-center justify-center gap-2 text-danger font-medium text-sm">
           <Flame className="w-4 h-4" />
           <span>Woro-woro</span>
           <Flame className="w-4 h-4" />
         </div>
 
         {gap === 0 ? (
-          <p className="text-zinc-300 text-sm">
-            <strong className="text-white">{displayLastPlace.name}</strong> 💩 bijine
+          <p className="text-fg-soft text-sm">
+            <strong className="text-fg">{displayLastPlace.name}</strong> 💩 bijine
             podo persis karo{" "}
-            <strong className="text-white">{nearestAbove.name}</strong>, mung
+            <strong className="text-fg">{nearestAbove.name}</strong>, mung
             kalah spin 🎲.
           </p>
         ) : (
-          <p className="text-zinc-300 text-sm">
-            <strong className="text-white">{displayLastPlace.name}</strong> 💩 butuh{" "}
-            <strong className="text-amber-400">{gap}</strong> poin nyalip{" "}
-            <strong className="text-white">{nearestAbove.name}</strong> 😭.
+          <p className="text-fg-soft text-sm">
+            <strong className="text-fg">{displayLastPlace.name}</strong> 💩 butuh{" "}
+            <strong className="text-accent">{gap}</strong> poin nyalip{" "}
+            <strong className="text-fg">{nearestAbove.name}</strong> 😭.
           </p>
         )}
 
         {consecutiveRounds > 0 && (
-          <p className="text-rose-500 text-xs bg-rose-500/10 py-2 px-3 rounded-xl inline-block">
+          <p className="text-danger text-xs bg-danger/10 py-2 px-3 rounded-xl inline-block">
             {displayLastPlace.name} jengkeng <strong>{consecutiveRounds} mainan</strong>{" "}
             <StuckDurationText since={lastPlaceSinceTimestamp} />
           </p>

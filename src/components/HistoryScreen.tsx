@@ -77,23 +77,23 @@ export default function HistoryScreen({ onClose }: HistoryScreenProps) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-zinc-950 overflow-y-auto">
+    <div className="fixed inset-0 z-50 bg-bg overflow-y-auto">
       <div className="w-full max-w-sm sm:max-w-md md:max-w-lg mx-auto px-4 py-5 space-y-5">
         <header className="flex items-center justify-between">
-          <h1 className="flex items-center gap-2 text-xl font-black text-white">
-            <History className="w-5 h-5 text-amber-500" />
+          <h1 className="flex items-center gap-2 text-xl font-black text-fg">
+            <History className="w-5 h-5 text-accent" />
             Riwayat
           </h1>
           <button
             onClick={onClose}
             aria-label="Tutup riwayat"
-            className="p-2 rounded-full text-zinc-400 hover:text-white bg-zinc-900 border border-zinc-800"
+            className="size-11 inline-flex items-center justify-center rounded-full text-fg-muted hover:text-fg bg-surface border border-line"
           >
             <X className="w-5 h-5" />
           </button>
         </header>
 
-        <div className="grid grid-cols-3 gap-1 p-1 rounded-xl bg-zinc-900 border border-zinc-800" role="tablist">
+        <div className="grid grid-cols-3 gap-1 p-1 rounded-xl bg-surface border border-line" role="tablist">
           {TABS.map((t) => (
             <button
               key={t.id}
@@ -101,8 +101,8 @@ export default function HistoryScreen({ onClose }: HistoryScreenProps) {
               aria-selected={tab === t.id}
               onClick={() => setTab(t.id)}
               className={cn(
-                "py-2 rounded-lg text-sm font-semibold transition-colors",
-                tab === t.id ? "bg-zinc-800 text-white" : "text-zinc-500 hover:text-zinc-300"
+                "min-h-11 rounded-lg text-sm font-semibold transition-colors",
+                tab === t.id ? "bg-surface-2 text-fg" : "text-fg-subtle hover:text-fg-soft"
               )}
             >
               {t.label}
@@ -116,8 +116,8 @@ export default function HistoryScreen({ onClose }: HistoryScreenProps) {
             className={cn(
               "text-sm rounded-xl px-3 py-2 border",
               notice.kind === "ok"
-                ? "text-emerald-400 bg-emerald-500/10 border-emerald-500/20"
-                : "text-rose-400 bg-rose-500/10 border-rose-500/20"
+                ? "text-success bg-success/10 border-success/20"
+                : "text-danger bg-danger/10 border-danger/20"
             )}
           >
             {notice.text}
@@ -127,7 +127,7 @@ export default function HistoryScreen({ onClose }: HistoryScreenProps) {
         {tab === "game" && (
           <section className="space-y-3">
             {newestFirst.length === 0 && (
-              <p className="text-center text-sm text-zinc-500 py-12">
+              <p className="text-center text-sm text-fg-subtle py-12">
                 Durung enek riwayat. Rampungno siji game (SRET), mengko metu nang kene.
               </p>
             )}
@@ -157,7 +157,7 @@ export default function HistoryScreen({ onClose }: HistoryScreenProps) {
         {tab === "statistik" && (
           <section className="space-y-4">
             {stats.overall.games === 0 ? (
-              <p className="text-center text-sm text-zinc-500 py-12">
+              <p className="text-center text-sm text-fg-subtle py-12">
                 Statistik muncul setelah ada game yang selesai.
               </p>
             ) : (
@@ -170,8 +170,8 @@ export default function HistoryScreen({ onClose }: HistoryScreenProps) {
                 </dl>
 
                 {stats.players.map((p) => (
-                  <article key={p.key} className="rounded-2xl bg-zinc-900/50 border border-zinc-800 p-4 space-y-3">
-                    <h2 className="font-bold text-white text-lg">{p.name}</h2>
+                  <article key={p.key} className="rounded-2xl bg-surface/50 border border-line p-4 space-y-3">
+                    <h2 className="font-bold text-fg text-lg">{p.name}</h2>
                     <dl className="grid grid-cols-3 gap-2 text-center">
                       <Stat label="Main" value={p.games} compact />
                       <Stat label="Menang 👑" value={p.wins} compact />
@@ -182,7 +182,7 @@ export default function HistoryScreen({ onClose }: HistoryScreenProps) {
                       <Stat label="Skor terbaik" value={p.bestTotal} compact />
                       <Stat label="Skor terburuk" value={p.worstTotal} compact />
                     </dl>
-                    <p className="text-[11px] text-zinc-600">
+                    <p className="text-xs text-fg-subtle">
                       Jengkeng beruntun: sekarang / rekor. Gepuk: nggepuk / digepuk.
                     </p>
                   </article>
@@ -194,12 +194,12 @@ export default function HistoryScreen({ onClose }: HistoryScreenProps) {
 
         {tab === "cadangan" && (
           <section className="space-y-4">
-            <div className="rounded-2xl bg-zinc-900/50 border border-zinc-800 p-4 space-y-3">
-              <p className="text-sm text-zinc-300">
+            <div className="rounded-2xl bg-surface/50 border border-line p-4 space-y-3">
+              <p className="text-sm text-fg-soft">
                 Riwayat disimpan di HP ini saja, di browser yang dipakai main. Ganti HP, hapus data browser,
                 atau pindah alamat web, riwayatnya ikut hilang. Unduh cadangan sesekali.
               </p>
-              <p className="text-xs text-zinc-500">
+              <p className="text-xs text-fg-subtle">
                 Di iPhone, buka lewat ikon di layar utama (Tambah ke Layar Utama). Di Safari biasa, data bisa
                 dihapus kalau situs ini tidak dibuka seminggu.
               </p>
@@ -208,7 +208,7 @@ export default function HistoryScreen({ onClose }: HistoryScreenProps) {
             <button
               onClick={handleExport}
               disabled={games.length === 0}
-              className="w-full flex items-center justify-center gap-2 py-3 rounded-2xl font-bold bg-amber-500 text-zinc-950 disabled:bg-zinc-800 disabled:text-zinc-500 disabled:cursor-not-allowed"
+              className="w-full flex items-center justify-center gap-2 py-3 rounded-2xl font-bold bg-accent text-on-accent disabled:bg-surface-2 disabled:text-fg-subtle disabled:cursor-not-allowed"
             >
               <Download className="w-5 h-5" />
               Unduh cadangan ({games.length} game)
@@ -227,7 +227,7 @@ export default function HistoryScreen({ onClose }: HistoryScreenProps) {
             />
             <button
               onClick={() => fileInput.current?.click()}
-              className="w-full flex items-center justify-center gap-2 py-3 rounded-2xl font-bold bg-zinc-800 text-white hover:bg-zinc-700"
+              className="w-full flex items-center justify-center gap-2 py-3 rounded-2xl font-bold bg-surface-2 text-fg hover:bg-surface-3"
             >
               <Upload className="w-5 h-5" />
               Pulihkan dari berkas
@@ -235,14 +235,14 @@ export default function HistoryScreen({ onClose }: HistoryScreenProps) {
 
             {games.length > 0 &&
               (confirmClear ? (
-                <div className="rounded-2xl border border-rose-500/30 bg-rose-500/10 p-4 space-y-3">
-                  <p className="text-sm text-rose-300">
+                <div className="rounded-2xl border border-danger/30 bg-danger/10 p-4 space-y-3">
+                  <p className="text-sm text-danger">
                     Hapus semua {games.length} game? Ini tidak bisa dibatalkan.
                   </p>
                   <div className="flex gap-2">
                     <button
                       onClick={() => setConfirmClear(false)}
-                      className="flex-1 py-2 rounded-xl bg-zinc-800 text-zinc-300 font-semibold"
+                      className="flex-1 py-2 rounded-xl bg-surface-2 text-fg-soft font-semibold"
                     >
                       Batal
                     </button>
@@ -252,7 +252,7 @@ export default function HistoryScreen({ onClose }: HistoryScreenProps) {
                         setConfirmClear(false);
                         setNotice({ kind: "ok", text: "Riwayat dikosongkan." });
                       }}
-                      className="flex-1 py-2 rounded-xl bg-rose-600 text-white font-semibold"
+                      className="flex-1 py-2 rounded-xl bg-danger-solid text-fg font-semibold"
                     >
                       Hapus semua
                     </button>
@@ -261,7 +261,7 @@ export default function HistoryScreen({ onClose }: HistoryScreenProps) {
               ) : (
                 <button
                   onClick={() => setConfirmClear(true)}
-                  className="w-full py-3 rounded-2xl font-semibold text-rose-400 border border-rose-500/20 hover:bg-rose-500/10"
+                  className="w-full py-3 rounded-2xl font-semibold text-danger border border-danger/20 hover:bg-danger/10"
                 >
                   Hapus semua riwayat
                 </button>
@@ -275,9 +275,9 @@ export default function HistoryScreen({ onClose }: HistoryScreenProps) {
 
 function Stat({ label, value, compact }: { label: string; value: string | number; compact?: boolean }) {
   return (
-    <div className={cn("rounded-xl bg-zinc-950 border border-zinc-800/60", compact ? "p-2" : "p-3")}>
-      <dt className="text-[11px] text-zinc-500 leading-tight">{label}</dt>
-      <dd className={cn("font-mono font-semibold text-white", compact ? "text-base" : "text-xl")}>{value}</dd>
+    <div className={cn("rounded-xl bg-bg border border-line/60", compact ? "p-2" : "p-3")}>
+      <dt className="text-xs text-fg-subtle leading-tight">{label}</dt>
+      <dd className={cn("font-mono font-semibold text-fg", compact ? "text-base" : "text-xl")}>{value}</dd>
     </div>
   );
 }
@@ -306,58 +306,58 @@ function GameCard({
   const ranked = [...game.players].sort((a, b) => b.total - a.total);
 
   return (
-    <article className="rounded-2xl bg-zinc-900/50 border border-zinc-800 overflow-hidden">
+    <article className="rounded-2xl bg-surface/50 border border-line overflow-hidden">
       <button
         onClick={onToggle}
         aria-expanded={isOpen}
-        className="w-full text-left p-4 space-y-2 hover:bg-zinc-900"
+        className="w-full text-left p-4 space-y-2 hover:bg-surface"
       >
         <div className="flex items-center justify-between gap-2">
-          <span className="text-xs text-zinc-500">{formatDate(game.finishedAt)}</span>
-          <ChevronDown className={cn("w-4 h-4 text-zinc-500 transition-transform", isOpen && "rotate-180")} />
+          <span className="text-xs text-fg-subtle">{formatDate(game.finishedAt)}</span>
+          <ChevronDown className={cn("w-4 h-4 text-fg-subtle transition-transform", isOpen && "rotate-180")} />
         </div>
 
         <div className="flex items-center justify-between gap-3">
-          <span className="font-bold text-white truncate">
+          <span className="font-bold text-fg truncate">
             {winner?.name} <span aria-label="menang">👑</span>
           </span>
-          <span className="font-mono text-amber-500 shrink-0">{winner?.total}</span>
+          <span className="font-mono text-accent shrink-0">{winner?.total}</span>
         </div>
         <div className="flex items-center justify-between gap-3">
-          <span className="font-bold text-rose-300 truncate">
+          <span className="font-bold text-danger truncate">
             {loser?.name} <span aria-label="jengkeng">💩</span>
           </span>
-          <span className="font-mono text-rose-400 shrink-0">{loser?.total}</span>
+          <span className="font-mono text-danger shrink-0">{loser?.total}</span>
         </div>
 
-        <p className="text-[11px] text-zinc-600">
+        <p className="text-xs text-fg-subtle">
           {game.rounds.length} ronde · {formatDuration(game.finishedAt - game.startedAt)}
           {game.tieBreaks > 0 && ` · ${game.tieBreaks}x spin`}
         </p>
       </button>
 
       {isOpen && (
-        <div className="border-t border-zinc-800 p-4 space-y-4">
+        <div className="border-t border-line p-4 space-y-4">
           <ol className="space-y-1.5">
             {ranked.map((p, i) => (
               <li key={p.key} className="flex items-center justify-between text-sm">
-                <span className="text-zinc-300">
-                  <span className="text-zinc-600 font-mono mr-2">#{i + 1}</span>
+                <span className="text-fg-soft">
+                  <span className="text-fg-subtle font-mono mr-2">#{i + 1}</span>
                   {p.name}
                 </span>
-                <span className="font-mono text-white">{p.total}</span>
+                <span className="font-mono text-fg">{p.total}</span>
               </li>
             ))}
           </ol>
 
           {game.shoots.length > 0 && (
             <div className="space-y-1">
-              <p className="text-xs font-semibold text-zinc-500">Gepuk</p>
-              <ul className="space-y-1 text-sm text-zinc-400">
+              <p className="text-xs font-semibold text-fg-subtle">Gepuk</p>
+              <ul className="space-y-1 text-sm text-fg-muted">
                 {game.shoots.map((s, i) => (
                   <li key={i}>
                     {game.players[s.shooter].name} gepuk {game.players[s.victim].name} {s.points}{" "}
-                    <span className="text-zinc-600">(ronde {s.round + 1})</span>
+                    <span className="text-fg-subtle">(ronde {s.round + 1})</span>
                   </li>
                 ))}
               </ul>
@@ -366,17 +366,17 @@ function GameCard({
 
           {isConfirmingDelete ? (
             <div className="flex gap-2">
-              <button onClick={onCancelDelete} className="flex-1 py-2 rounded-xl bg-zinc-800 text-zinc-300 text-sm font-semibold">
+              <button onClick={onCancelDelete} className="flex-1 py-2 rounded-xl bg-surface-2 text-fg-soft text-sm font-semibold">
                 Batal
               </button>
-              <button onClick={onDelete} className="flex-1 py-2 rounded-xl bg-rose-600 text-white text-sm font-semibold">
+              <button onClick={onDelete} className="flex-1 py-2 rounded-xl bg-danger-solid text-fg text-sm font-semibold">
                 Hapus game ini
               </button>
             </div>
           ) : (
             <button
               onClick={onAskDelete}
-              className="flex items-center gap-1.5 text-xs text-zinc-500 hover:text-rose-400"
+              className="flex items-center gap-1.5 text-xs text-fg-subtle hover:text-danger"
             >
               <Trash2 className="w-3.5 h-3.5" />
               Hapus game ini
