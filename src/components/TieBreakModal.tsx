@@ -4,7 +4,8 @@ import { useEffect, useRef, useState } from "react";
 import { Dices, Skull, ArrowRight } from "lucide-react";
 import { useGameStore, drawSpin, evaluateTieResults } from "@/store/useGameStore";
 import { buildShortLabels } from "@/lib/playerName";
-import { buildRoundAnnouncement, TIE_INTRO_TEXT } from "@/lib/announcement";
+import { buildRoundAnnouncement } from "@/lib/announcement";
+import { getTemplates } from "@/store/useSettingsStore";
 import { speak } from "@/lib/speech";
 import { cn } from "@/lib/utils";
 
@@ -57,7 +58,7 @@ export default function TieBreakModal() {
 
         setIsLocked(true);
         setVerdict(null);
-        speak(TIE_INTRO_TEXT, { onEnd: () => setIsLocked(false) });
+        speak(getTemplates().tieIntro, { onEnd: () => setIsLocked(false) });
     }, [pendingRoundId]);
 
     useEffect(() => {
@@ -129,7 +130,8 @@ export default function TieBreakModal() {
                             state.players,
                             state.rounds,
                             state.shootRecords,
-                            state.rounds.length - 1
+                            state.rounds.length - 1,
+                            getTemplates()
                         )
                     );
                 }

@@ -1,5 +1,6 @@
 "use client";
 
+import { getTemplates } from "@/store/useSettingsStore";
 import { SpinBorder } from "./SpinBorder";
 import { useState, useMemo } from "react";
 import { useGameStore } from "@/store/useGameStore";
@@ -95,7 +96,7 @@ export default function DashboardScreen() {
         <button
           disabled={isTieBreakPending}
           onClick={() => {
-            speak("Mosok sret tenan? ... yo gak opo opo, lek isin, ha ha.");
+            speak(getTemplates().sretConfirm);
             setIsFinishModalOpen(true);
           }}
           className={cn(

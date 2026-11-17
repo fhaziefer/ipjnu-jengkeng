@@ -5,7 +5,8 @@ import { useGameStore } from "@/store/useGameStore";
 import { useHistoryStore } from "@/store/useHistoryStore";
 import { suggestNames } from "@/lib/history";
 import HistoryScreen from "./HistoryScreen";
-import { Users, Play, AlertCircle, History } from "lucide-react";
+import SettingsScreen from "./SettingsScreen";
+import { Users, Play, AlertCircle, History, Settings } from "lucide-react";
 import {
   MAX_NAME_LENGTH,
   finalizePlayerName,
@@ -24,6 +25,7 @@ export default function SetupScreen() {
   const existingPlayers = useGameStore((state) => state.players);
   const historyGames = useHistoryStore((state) => state.games);
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
   // Nama yang pernah main, buat autocomplete. Diurutkan dari yang paling sering.
   const knownNames = useMemo(() => suggestNames(historyGames), [historyGames]);
@@ -106,7 +108,14 @@ export default function SetupScreen() {
   return (
     <div className="min-h-dvh flex flex-col items-center justify-center px-4 py-6 sm:px-6 md:px-8 bg-bg overflow-y-auto">
       <div className="w-full max-w-sm sm:max-w-md md:max-w-lg space-y-6 sm:space-y-8">
-        <div className="flex justify-end">
+        <div className="flex justify-end gap-2">
+          <button
+            onClick={() => setIsSettingsOpen(true)}
+            aria-label="Pengaturan"
+            className="size-11 inline-flex items-center justify-center rounded-full text-fg-soft bg-surface border border-line hover:text-fg"
+          >
+            <Settings className="w-4 h-4" />
+          </button>
           <button
             onClick={() => setIsHistoryOpen(true)}
             className="flex items-center gap-1.5 px-4 min-h-11 rounded-full text-sm font-semibold text-fg-soft bg-surface border border-line hover:text-fg"
@@ -233,6 +242,7 @@ export default function SetupScreen() {
       </div>
 
       {isHistoryOpen && <HistoryScreen onClose={() => setIsHistoryOpen(false)} />}
+      {isSettingsOpen && <SettingsScreen onClose={() => setIsSettingsOpen(false)} />}
     </div>
   );
 }
