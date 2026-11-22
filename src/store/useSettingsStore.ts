@@ -8,20 +8,32 @@ import {
     type TemplateOverrides,
     type TemplateValidation,
 } from "@/lib/speechTemplates";
+import {
+    LAST_PLACE_STREAK_ROUNDS,
+    sanitizeStreakThreshold,
+    validateStreakThreshold,
+    type StreakThresholdValidation,
+} from "@/lib/lastPlaceAlert";
 
 /**
  * Pengaturan app, SENGAJA di store terpisah dari game dan riwayat.
  *
  * Key sendiri (`jengkeng-settings`) berarti game yang sedang berjalan dan
  * riwayat tidak tersentuh sama sekali oleh fitur ini. Yang disimpan hanya
- * kalimat TTS yang DIUBAH admin; default tetap di kode.
+ * kalimat TTS yang DIUBAH admin, dan ambang ronde beruntun. Default tetap di
+ * kode. Pengaturan ini lokal di HP; hanya kalimat yang ikut dicadangkan online.
  */
 
 interface SettingsState {
     overrides: TemplateOverrides;
+    /** Berapa ronde berturut-turut jadi juru kunci sebelum TTS "beruntun" bunyi. */
+    streakThreshold: number;
     /** Mengembalikan hasil validasi; yang tidak valid tidak disimpan. */
     setOverride: (key: TemplateKey, text: string) => TemplateValidation;
     resetOverride: (key: TemplateKey) => void;
+    setStreakThreshold: (value: number) => StreakThresholdValidation;
+    resetStreakThreshold: () => void;
+    /** Kalimat dan ambang kembali ke bawaan. */
     resetAll: () => void;
 }
 
@@ -44,6 +56,7 @@ export const useSettingsStore = create<SettingsState>()(
     persist(
         (set, get) => ({
             overrides: {},
+            streakThreshold: LAST_PLACE_STREAK_ROUNDS,
 
             setOverride: (key, text) => {
                 const check = validateTemplate(key, text);
@@ -57,18 +70,32 @@ export const useSettingsStore = create<SettingsState>()(
                 set({ overrides: next });
             },
 
-            resetAll: () => set({ overrides: {} }),
+            setStreakThreshold: (value) => {
+                const check = validateStreakThreshold(value);
+                if (check.ok) set({ streakThreshold: check.value });
+                return check;
+            },
+
+            resetStreakThreshold: () => set({ streakThreshold: LAST_PLACE_STREAK_ROUNDS }),
+
+            resetAll: () => set({ overrides: {}, streakThreshold: LAST_PLACE_STREAK_ROUNDS }),
         }),
         {
             name: SETTINGS_STORAGE_KEY,
             version: 1,
-            partialize: (state) => ({ overrides: state.overrides }),
-            merge: (persisted, current) => ({
-                ...current,
-                overrides: sanitizeOverrides(
-                    (persisted as { overrides?: unknown } | undefined)?.overrides
-                ),
+            partialize: (state) => ({
+                overrides: state.overrides,
+                streakThreshold: state.streakThreshold,
             }),
+            // Data lama (hanya `overrides`) tetap terbaca: ambang yang tidak ada jatuh ke bawaan.
+            merge: (persisted, current) => {
+                const p = persisted as { overrides?: unknown; streakThreshold?: unknown } | undefined;
+                return {
+                    ...current,
+                    overrides: sanitizeOverrides(p?.overrides),
+                    streakThreshold: sanitizeStreakThreshold(p?.streakThreshold),
+                };
+            },
         }
     )
 );

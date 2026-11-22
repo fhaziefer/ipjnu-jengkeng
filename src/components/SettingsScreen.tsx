@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Delete, Lock, RotateCcw, Settings, Volume2, X } from "lucide-react";
+import { Delete, Lock, Minus, Plus, RotateCcw, Settings, Volume2, X } from "lucide-react";
 import { useSettingsStore } from "@/store/useSettingsStore";
 import { ADMIN_PIN_LENGTH, isAdminPin } from "@/lib/adminPin";
 import {
@@ -14,6 +14,12 @@ import {
   type TemplateGroup,
 } from "@/lib/speechTemplates";
 import { cancelSpeech, primeVoices, speak } from "@/lib/speech";
+import {
+  LAST_PLACE_STREAK_ROUNDS,
+  MAX_STREAK_ROUNDS,
+  MIN_STREAK_ROUNDS,
+  validateStreakThreshold,
+} from "@/lib/lastPlaceAlert";
 import { cn } from "@/lib/utils";
 
 const GROUPS: Array<{ id: TemplateGroup; title: string; note: string }> = [
@@ -140,12 +146,15 @@ function PinGate({ onUnlock }: { onUnlock: () => void }) {
 function Editor() {
   const overrides = useSettingsStore((s) => s.overrides);
   const resetAll = useSettingsStore((s) => s.resetAll);
+  const streakThreshold = useSettingsStore((s) => s.streakThreshold);
   const [confirmingReset, setConfirmingReset] = useState(false);
 
   const effective = useMemo(() => resolveTemplates(overrides), [overrides]);
   // Catatan: TemplateEditor diberi key yang ikut nilai tersimpan, jadi setelah
   // Simpan / Bawaan / "kembalikan semua" editornya dimulai ulang dari nilai terbaru.
-  const changedCount = TEMPLATE_DEFS.filter((d) => effective[d.key] !== d.defaultText).length;
+  const changedCount =
+    TEMPLATE_DEFS.filter((d) => effective[d.key] !== d.defaultText).length +
+    (streakThreshold !== LAST_PLACE_STREAK_ROUNDS ? 1 : 0);
 
   return (
     <div className="space-y-6">
@@ -153,6 +162,8 @@ function Editor() {
         Ubah kalimat yang diucapkan. Kosongkan kolom untuk membisukan bagian itu. Perubahan baru
         berlaku setelah ditekan <strong className="text-fg">Simpan</strong>.
       </p>
+
+      <ThresholdCard key={`ambang:${streakThreshold}`} current={streakThreshold} />
 
       {GROUPS.map((group) => (
         <section key={group.id} className="space-y-3" aria-labelledby={`grup-${group.id}`}>
@@ -171,8 +182,8 @@ function Editor() {
       <section className="rounded-2xl border border-line bg-surface p-4 space-y-3">
         <p className="text-sm text-fg-soft">
           {changedCount === 0
-            ? "Semua kalimat masih bawaan."
-            : `${changedCount} kalimat sudah diubah dari bawaan.`}
+            ? "Semua pengaturan masih bawaan."
+            : `${changedCount} pengaturan sudah diubah dari bawaan.`}
         </p>
         {!confirmingReset ? (
           <button
@@ -203,6 +214,116 @@ function Editor() {
         )}
       </section>
     </div>
+  );
+}
+
+function ThresholdCard({ current }: { current: number }) {
+  const setStreakThreshold = useSettingsStore((s) => s.setStreakThreshold);
+  const resetStreakThreshold = useSettingsStore((s) => s.resetStreakThreshold);
+
+  const [draft, setDraft] = useState(String(current));
+
+  const parsed = draft.trim() === "" ? Number.NaN : Number(draft);
+  const check = validateStreakThreshold(parsed);
+  const dirty = draft !== String(current);
+  const isCustom = current !== LAST_PLACE_STREAK_ROUNDS;
+  const value = check.ok ? check.value : current;
+
+  const step = (delta: number) =>
+    setDraft(String(Math.min(MAX_STREAK_ROUNDS, Math.max(MIN_STREAK_ROUNDS, value + delta))));
+
+  const save = () => {
+    if (!check.ok || !dirty) return;
+    setStreakThreshold(check.value);
+  };
+
+  const iconButton =
+    "size-11 inline-flex items-center justify-center rounded-xl border border-line-control text-fg-soft hover:bg-surface-2 disabled:opacity-40 disabled:cursor-not-allowed";
+
+  return (
+    <section className="rounded-2xl border border-line bg-surface p-4 space-y-3" aria-labelledby="ambang-judul">
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <h2 id="ambang-judul" className="text-sm font-bold text-fg">
+            Ambang juru kunci beruntun
+          </h2>
+          <p className="text-xs text-fg-subtle">
+            Pengingat &quot;juru kunci beruntun&quot; bunyi saat orang yang sama jadi juru kunci sebanyak ini
+            ronde berturut-turut atau lebih. Makin kecil angkanya, makin cepat bunyi. Bawaan{" "}
+            {LAST_PLACE_STREAK_ROUNDS}. Tersimpan di HP ini.
+          </p>
+        </div>
+        <span className="shrink-0 text-[11px] font-medium text-fg-soft">
+          {dirty ? "Belum disimpan" : isCustom ? "Diubah" : ""}
+        </span>
+      </div>
+
+      <div className="flex items-center justify-center gap-3">
+        <button
+          type="button"
+          onClick={() => step(-1)}
+          disabled={value <= MIN_STREAK_ROUNDS}
+          aria-label="Kurangi ambang"
+          className={iconButton}
+        >
+          <Minus className="w-5 h-5" />
+        </button>
+        <label className="flex items-baseline gap-2">
+          <span className="sr-only">Jumlah ronde beruntun</span>
+          <input
+            id="ambang-streak"
+            type="text"
+            inputMode="numeric"
+            pattern="[0-9]*"
+            value={draft}
+            onChange={(e) => setDraft(e.target.value.replace(/\D/g, "").slice(0, 2))}
+            aria-invalid={!check.ok}
+            aria-describedby={check.ok ? undefined : "ambang-galat"}
+            className={cn(
+              "w-16 h-11 text-center rounded-xl bg-bg border text-xl font-mono font-semibold text-fg focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent",
+              check.ok ? "border-line-control" : "border-danger"
+            )}
+          />
+          <span className="text-sm text-fg-soft">ronde</span>
+        </label>
+        <button
+          type="button"
+          onClick={() => step(1)}
+          disabled={value >= MAX_STREAK_ROUNDS}
+          aria-label="Tambah ambang"
+          className={iconButton}
+        >
+          <Plus className="w-5 h-5" />
+        </button>
+      </div>
+
+      <p id="ambang-galat" role="alert" className={cn("text-center text-xs text-danger", check.ok && "sr-only")}>
+        {check.ok ? "" : check.error}
+      </p>
+
+      <div className="flex gap-2">
+        <button
+          type="button"
+          onClick={() => {
+            resetStreakThreshold();
+            setDraft(String(LAST_PLACE_STREAK_ROUNDS));
+          }}
+          disabled={!isCustom && !dirty}
+          className="inline-flex items-center gap-1.5 min-h-11 px-4 rounded-xl border border-line-control text-sm font-semibold text-fg-soft hover:bg-surface-2 disabled:opacity-40 disabled:cursor-not-allowed"
+        >
+          <RotateCcw className="w-4 h-4" />
+          Bawaan
+        </button>
+        <button
+          type="button"
+          onClick={save}
+          disabled={!check.ok || !dirty}
+          className="ml-auto min-h-11 px-5 rounded-xl bg-accent text-on-accent text-sm font-bold hover:bg-accent-hover disabled:bg-surface-2 disabled:text-fg-subtle disabled:cursor-not-allowed"
+        >
+          Simpan
+        </button>
+      </div>
+    </section>
   );
 }
 

@@ -62,4 +62,61 @@ describe("useSettingsStore", () => {
     await useSettingsStore.persist.rehydrate();
     expect(get().overrides).toEqual({ roundHeader: "Halo" });
   });
+
+  it("ambang awalnya 7; bisa diubah, ditolak kalau tidak valid, dan reset", () => {
+    expect(get().streakThreshold).toBe(7);
+    expect(get().setStreakThreshold(5)).toEqual({ ok: true, value: 5 });
+    expect(get().streakThreshold).toBe(5);
+
+    expect(get().setStreakThreshold(1).ok).toBe(false);
+    expect(get().setStreakThreshold(51).ok).toBe(false);
+    expect(get().setStreakThreshold(5.5).ok).toBe(false);
+    expect(get().streakThreshold).toBe(5);
+
+    get().resetStreakThreshold();
+    expect(get().streakThreshold).toBe(7);
+  });
+
+  it("resetAll mengembalikan kalimat DAN ambang", () => {
+    get().setOverride("roundHeader", "A");
+    get().setStreakThreshold(4);
+    get().resetAll();
+    expect(get().overrides).toEqual({});
+    expect(get().streakThreshold).toBe(7);
+  });
+
+  it("ambang tersimpan di jengkeng-settings bersama kalimat, versi tetap 1", () => {
+    get().setStreakThreshold(6);
+    const saved = JSON.parse(localStorage.getItem(SETTINGS_STORAGE_KEY) ?? "null");
+    expect(saved.state.streakThreshold).toBe(6);
+    expect(saved.state.overrides).toEqual({});
+    expect(saved.version).toBe(1);
+  });
+
+  it("rehydrate: data lama tanpa ambang tetap terbaca (ambang jatuh ke 7)", async () => {
+    localStorage.setItem(
+      SETTINGS_STORAGE_KEY,
+      JSON.stringify({ state: { overrides: { roundHeader: "Halo" } }, version: 1 })
+    );
+    await useSettingsStore.persist.rehydrate();
+    expect(get().overrides).toEqual({ roundHeader: "Halo" });
+    expect(get().streakThreshold).toBe(7);
+  });
+
+  it("rehydrate: ambang valid dipakai, ambang rusak/di luar rentang jatuh ke 7", async () => {
+    const load = async (value: unknown) => {
+      localStorage.setItem(
+        SETTINGS_STORAGE_KEY,
+        JSON.stringify({ state: { overrides: {}, streakThreshold: value }, version: 1 })
+      );
+      await useSettingsStore.persist.rehydrate();
+      return get().streakThreshold;
+    };
+    expect(await load(5)).toBe(5);
+    expect(await load(0)).toBe(7);
+    expect(await load(1)).toBe(7);
+    expect(await load(500)).toBe(7);
+    expect(await load("6")).toBe(7);
+    expect(await load(null)).toBe(7);
+  });
 });

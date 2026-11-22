@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import { useGameStore } from "@/store/useGameStore";
-import { getTemplates } from "@/store/useSettingsStore";
+import { getTemplates, useSettingsStore } from "@/store/useSettingsStore";
 import { renderTemplate } from "@/lib/speechTemplates";
 import { buildSretVars, buildStreakVars } from "@/lib/speechContext";
 import { countConsecutiveLastPlace } from "@/lib/scoring";
@@ -63,7 +63,11 @@ export default function LastPlaceAlert({ paused }: { paused: boolean }) {
         consecutiveRounds: countConsecutiveLastPlace(game.rounds, game.currentLastPlacePlayerId),
       };
 
-      const rounds = dueRounds(snapshot, readAnnounced("rounds"));
+      const rounds = dueRounds(
+        snapshot,
+        readAnnounced("rounds"),
+        useSettingsStore.getState().streakThreshold
+      );
       if (rounds) {
         // Ditandai SEBELUM bicara supaya dua pemicu berdekatan tidak menggandakan.
         writeAnnounced("rounds", rounds.mark);

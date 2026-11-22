@@ -15,12 +15,15 @@ import {
 import { downloadTextFile, requestPersistentStorage } from "@/lib/storage";
 import { cn } from "@/lib/utils";
 import BackupCard from "@/components/BackupCard";
+import HallOfFame from "@/components/HallOfFame";
+import Stat from "@/components/Stat";
 
-type Tab = "game" | "statistik" | "cadangan";
+type Tab = "game" | "statistik" | "rekor" | "cadangan";
 
 const TABS: Array<{ id: Tab; label: string }> = [
   { id: "game", label: "Game" },
   { id: "statistik", label: "Statistik" },
+  { id: "rekor", label: "Hall of Fame" },
   { id: "cadangan", label: "Cadangan" },
 ];
 
@@ -94,7 +97,7 @@ export default function HistoryScreen({ onClose }: HistoryScreenProps) {
           </button>
         </header>
 
-        <div className="grid grid-cols-3 gap-1 p-1 rounded-xl bg-surface border border-line" role="tablist">
+        <div className="grid grid-cols-4 gap-1 p-1 rounded-xl bg-surface border border-line" role="tablist">
           {TABS.map((t) => (
             <button
               key={t.id}
@@ -102,7 +105,7 @@ export default function HistoryScreen({ onClose }: HistoryScreenProps) {
               aria-selected={tab === t.id}
               onClick={() => setTab(t.id)}
               className={cn(
-                "min-h-11 rounded-lg text-sm font-semibold transition-colors",
+                "min-h-11 px-1 rounded-lg text-[13px] leading-tight font-semibold transition-colors",
                 tab === t.id ? "bg-surface-2 text-fg" : "text-fg-subtle hover:text-fg-soft"
               )}
             >
@@ -193,6 +196,8 @@ export default function HistoryScreen({ onClose }: HistoryScreenProps) {
           </section>
         )}
 
+        {tab === "rekor" && <HallOfFame games={games} />}
+
         {tab === "cadangan" && (
           <section className="space-y-4">
             <div className="rounded-2xl bg-surface/50 border border-line p-4 space-y-3">
@@ -272,15 +277,6 @@ export default function HistoryScreen({ onClose }: HistoryScreenProps) {
           </section>
         )}
       </div>
-    </div>
-  );
-}
-
-function Stat({ label, value, compact }: { label: string; value: string | number; compact?: boolean }) {
-  return (
-    <div className={cn("rounded-xl bg-bg border border-line/60", compact ? "p-2" : "p-3")}>
-      <dt className="text-xs text-fg-subtle leading-tight">{label}</dt>
-      <dd className={cn("font-mono font-semibold text-fg", compact ? "text-base" : "text-xl")}>{value}</dd>
     </div>
   );
 }

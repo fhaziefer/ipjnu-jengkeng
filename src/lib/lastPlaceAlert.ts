@@ -7,9 +7,9 @@ import type { GameStatus } from "@/store/useGameStore";
  *
  * 1. Waktu: orang yang SAMA jadi juru kunci 30 menit atau lebih. Sekali per
  *    rentetan.
- * 2. Ronde: orang yang SAMA jadi juru kunci 7 ronde berturut-turut atau lebih.
- *    Tiap ronde baru dari ke-7 dan seterusnya berbunyi sekali (ke-7, ke-8, ...),
- *    dengan jumlah ronde terkini.
+ * 2. Ronde: orang yang SAMA jadi juru kunci sebanyak ambang (bawaan 7, bisa
+ *    diatur di Pengaturan) ronde berturut-turut atau lebih. Tiap ronde baru dari
+ *    ambang dan seterusnya berbunyi sekali, dengan jumlah ronde terkini.
  *
  * Satu "rentetan" = pasangan (juru kunci, `lastPlaceSinceTimestamp`). Timestamp
  * itu sudah dihitung store: tetap selama orangnya sama, bergeser kalau orangnya
@@ -19,7 +19,29 @@ import type { GameStatus } from "@/store/useGameStore";
  */
 
 export const LAST_PLACE_ALERT_MS = 30 * 60 * 1000;
+/** Ambang ronde beruntun. Bawaan 7; bisa diubah admin di Pengaturan. */
 export const LAST_PLACE_STREAK_ROUNDS = 7;
+export const MIN_STREAK_ROUNDS = 2;
+export const MAX_STREAK_ROUNDS = 50;
+
+export type StreakThresholdValidation = { ok: true; value: number } | { ok: false; error: string };
+
+/** Hanya bilangan bulat dalam rentang yang wajar. Angka 1 akan bunyi di setiap ronde, jadi ditolak. */
+export function validateStreakThreshold(raw: unknown): StreakThresholdValidation {
+  if (typeof raw !== "number" || !Number.isInteger(raw)) {
+    return { ok: false, error: "Isi dengan bilangan bulat." };
+  }
+  if (raw < MIN_STREAK_ROUNDS || raw > MAX_STREAK_ROUNDS) {
+    return { ok: false, error: `Antara ${MIN_STREAK_ROUNDS} dan ${MAX_STREAK_ROUNDS} ronde.` };
+  }
+  return { ok: true, value: raw };
+}
+
+/** Data tersimpan yang rusak atau di luar rentang jatuh ke bawaan, tidak membuat app error. */
+export function sanitizeStreakThreshold(raw: unknown): number {
+  const check = validateStreakThreshold(raw);
+  return check.ok ? check.value : LAST_PLACE_STREAK_ROUNDS;
+}
 
 export interface AlertSnapshot {
   gameStatus: GameStatus;
@@ -85,9 +107,13 @@ function parseMark(mark: string | null): { streak: string; max: number } | null 
  * Akibatnya "Salah Ngitung" lalu input ulang (jumlah turun lalu naik lagi ke
  * angka yang sudah pernah diucapkan) tidak mengulang pengumuman yang sama.
  */
-export function dueRounds(s: AlertSnapshot, announcedMark: string | null): DueRounds | null {
+export function dueRounds(
+  s: AlertSnapshot,
+  announcedMark: string | null,
+  threshold: number = LAST_PLACE_STREAK_ROUNDS
+): DueRounds | null {
   if (isQuiet(s)) return null;
-  if (s.consecutiveRounds < LAST_PLACE_STREAK_ROUNDS) return null;
+  if (s.consecutiveRounds < threshold) return null;
 
   const streak = streakKey(s);
   if (streak === null) return null;

@@ -3,11 +3,15 @@ import {
   ANNOUNCED_STORAGE_KEYS,
   LAST_PLACE_ALERT_MS,
   LAST_PLACE_STREAK_ROUNDS,
+  MAX_STREAK_ROUNDS,
+  MIN_STREAK_ROUNDS,
   dueRounds,
   dueStreakKey,
   readAnnounced,
   resetAnnouncedForTests,
+  sanitizeStreakThreshold,
   streakKey,
+  validateStreakThreshold,
   writeAnnounced,
   type AlertSnapshot,
 } from "./lastPlaceAlert";
@@ -182,5 +186,55 @@ describe("dueRounds (juru kunci beruntun)", () => {
   it("penanda rusak/asing diperlakukan seperti belum pernah diumumkan", () => {
     expect(dueRounds(at(7), "rusak")).toEqual({ mark: `${streak}#7`, count: 7 });
     expect(dueRounds(at(7), `${streak}#abc`)).toEqual({ mark: `${streak}#7`, count: 7 });
+  });
+});
+
+describe("ambang bisa diatur", () => {
+  const at = (n: number) => snap({ consecutiveRounds: n });
+
+  it("dueRounds memakai ambang yang diberikan (mis. 5)", () => {
+    expect(dueRounds(at(4), null, 5)).toBeNull();
+    expect(dueRounds(at(5), null, 5)).toEqual({ mark: `player-3@${SINCE}#5`, count: 5 });
+  });
+
+  it("ambang dinaikkan: yang di bawah ambang baru diam, walau sudah di atas ambang lama", () => {
+    expect(dueRounds(at(7), null, 10)).toBeNull();
+    expect(dueRounds(at(10), null, 10)).not.toBeNull();
+  });
+
+  it("ambang diturunkan di tengah rentetan: langsung bunyi dengan jumlah terkini, tidak mengulang yang lama", () => {
+    // Sudah diumumkan sampai ronde 7 dengan ambang 7. Ambang jadi 5, rentetan sekarang 8.
+    expect(dueRounds(at(8), `player-3@${SINCE}#7`, 5)).toEqual({
+      mark: `player-3@${SINCE}#8`,
+      count: 8,
+    });
+    // Rentetan 6 dan sudah diumumkan sampai 7: tidak mengulang ronde yang sudah lewat.
+    expect(dueRounds(at(6), `player-3@${SINCE}#7`, 5)).toBeNull();
+  });
+
+  it("tanpa argumen ambang, bawaan 7", () => {
+    expect(dueRounds(at(6), null)).toBeNull();
+    expect(dueRounds(at(7), null)).not.toBeNull();
+  });
+});
+
+describe("validateStreakThreshold / sanitizeStreakThreshold", () => {
+  it("menerima bilangan bulat 2..50", () => {
+    for (const n of [MIN_STREAK_ROUNDS, 5, 6, 7, 20, MAX_STREAK_ROUNDS]) {
+      expect(validateStreakThreshold(n)).toEqual({ ok: true, value: n });
+    }
+  });
+
+  it("menolak 0, 1, di atas batas, pecahan, NaN, dan non-angka", () => {
+    for (const bad of [0, 1, -3, 51, 100, 5.5, Number.NaN, Infinity, "7", null, undefined]) {
+      expect(validateStreakThreshold(bad).ok, String(bad)).toBe(false);
+    }
+  });
+
+  it("sanitize: nilai rusak jatuh ke bawaan 7, nilai sah dipertahankan", () => {
+    expect(sanitizeStreakThreshold(5)).toBe(5);
+    expect(sanitizeStreakThreshold("5")).toBe(LAST_PLACE_STREAK_ROUNDS);
+    expect(sanitizeStreakThreshold(999)).toBe(LAST_PLACE_STREAK_ROUNDS);
+    expect(sanitizeStreakThreshold(undefined)).toBe(LAST_PLACE_STREAK_ROUNDS);
   });
 });
