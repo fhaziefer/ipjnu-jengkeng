@@ -40,3 +40,15 @@ export function buildTieIntroVars(
         .filter((name) => name !== "");
     return { kandidat_seri: joinSpeechNames(names) };
 }
+
+/** Untuk pengingat "juru kunci N ronde beruntun". */
+export function buildStreakVars(
+    players: Player[],
+    currentLastPlacePlayerId: string | null,
+    consecutiveRounds: number
+): Record<string, string> {
+    return {
+        ...buildSretVars(players, currentLastPlacePlayerId),
+        berapa_kali_terbawah: String(consecutiveRounds),
+    };
+}

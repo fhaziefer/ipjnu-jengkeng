@@ -114,3 +114,26 @@ describe("lastPlaceLong (juru kunci kelamaan)", () => {
     expect(renderTemplate("{nama_terburuk} ya", { nama_terburuk: "A$&B" })).toBe("A$&B ya");
   });
 });
+
+describe("lastPlaceStreak (juru kunci beruntun)", () => {
+  it("default memakai nama dan jumlah ronde", () => {
+    expect(
+      renderTemplate(DEFAULT_TEMPLATES.lastPlaceStreak, {
+        nama_terburuk: "Cici",
+        berapa_kali_terbawah: "7",
+      })
+    ).toBe("Cici wes jengkeng ping 7 njaluk sret ora? lek gak isin");
+  });
+
+  it("menerima dua placeholder-nya; yang lain ditolak", () => {
+    expect(
+      validateTemplate("lastPlaceStreak", "{nama_terburuk} ping {berapa_kali_terbawah}").ok
+    ).toBe(true);
+    expect(validateTemplate("lastPlaceStreak", "{nama} ping {berapa_kali}").ok).toBe(false);
+  });
+
+  it("boleh tanpa placeholder atau dikosongkan (dibisukan)", () => {
+    expect(validateTemplate("lastPlaceStreak", "Sret wae!").ok).toBe(true);
+    expect(validateTemplate("lastPlaceStreak", "")).toEqual({ ok: true, text: "" });
+  });
+});

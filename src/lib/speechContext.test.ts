@@ -1,5 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { NO_LAST_PLACE_WORD, buildSretVars, buildTieIntroVars, joinSpeechNames } from "./speechContext";
+import {
+  NO_LAST_PLACE_WORD,
+  buildSretVars,
+  buildStreakVars,
+  buildTieIntroVars,
+  joinSpeechNames,
+} from "./speechContext";
 
 const players = [
   { id: "a", name: "Mas Bagong" },
@@ -42,5 +48,19 @@ describe("buildTieIntroVars", () => {
 
   it("id yang tidak dikenal dilewati", () => {
     expect(buildTieIntroVars(players, ["b", "zzz"])).toEqual({ kandidat_seri: "Budi" });
+  });
+});
+
+describe("buildStreakVars", () => {
+  it("nama dieja seperti konfirmasi SRET dan jumlah jadi string", () => {
+    expect(buildStreakVars(players, "d", 7)).toEqual({
+      nama_terburuk: "Dodo",
+      berapa_kali_terbawah: "7",
+    });
+    expect(buildStreakVars(players, "c", 12).nama_terburuk).toBe("B. G. N");
+  });
+
+  it("juru kunci tidak ada: kalimat tidak bolong", () => {
+    expect(buildStreakVars(players, null, 7).nama_terburuk).toBe(NO_LAST_PLACE_WORD);
   });
 });

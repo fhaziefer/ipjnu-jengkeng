@@ -4,25 +4,42 @@ import { useEffect, useRef } from "react";
 import { useGameStore } from "@/store/useGameStore";
 import { getTemplates } from "@/store/useSettingsStore";
 import { renderTemplate } from "@/lib/speechTemplates";
-import { buildSretVars } from "@/lib/speechContext";
+import { buildSretVars, buildStreakVars } from "@/lib/speechContext";
+import { countConsecutiveLastPlace } from "@/lib/scoring";
 import { isSpeechAvailable, speak } from "@/lib/speech";
-import { dueStreakKey, readAnnouncedKey, writeAnnouncedKey } from "@/lib/lastPlaceAlert";
+import {
+  dueRounds,
+  dueStreakKey,
+  readAnnounced,
+  writeAnnounced,
+  type AlertSnapshot,
+} from "@/lib/lastPlaceAlert";
 
 /**
- * Pemicu pengingat juru kunci kelamaan. Tidak menampilkan apa pun dan TIDAK
- * memakai state, jadi tidak ikut me-render ulang Dashboard tiap tik.
+ * Pemicu pengingat juru kunci: kelamaan (30 menit) dan beruntun (7 ronde).
+ * Tidak menampilkan apa pun dan TIDAK memakai state, jadi tidak ikut
+ * me-render ulang Dashboard tiap tik.
  *
  * Dicek tiap beberapa detik dan saat tab aktif lagi (timer di tab latar
  * belakang ditahan browser, jadi tanpa ini alarm yang jatuh tempo saat layar
  * mati baru bunyi di tik berikutnya).
  *
- * Tidak memotong suara lain: `speak()` membatalkan ucapan yang sedang jalan,
- * jadi alarm menunggu kalau ada ucapan berlangsung atau ada modal terbuka
- * (`paused`). Kunci rentetan baru ditandai saat alarm benar-benar diucapkan,
- * jadi yang tertunda tetap bunyi nanti.
+ * Aturan bicara:
+ * - Tidak memotong suara lain: `speak()` membatalkan ucapan yang sedang jalan,
+ *   jadi alarm menunggu kalau ada ucapan berlangsung (termasuk pengumuman
+ *   ronde yang baru disubmit) atau ada modal terbuka (`paused`).
+ * - Paling banyak SATU alarm per pengecekan. Kalau dua jatuh tempo bersamaan,
+ *   yang kedua menunggu tik berikutnya, sesudah yang pertama selesai.
+ *   Ronde beruntun didahulukan karena terikat ke ronde yang baru saja jalan.
+ * - Penanda ditulis saat alarm benar-benar diucapkan, jadi yang tertunda
+ *   tetap bunyi nanti.
  */
 
 const CHECK_INTERVAL_MS = 5000;
+
+function speakTemplate(template: string, vars: Record<string, string>): void {
+  speak(renderTemplate(template, vars)); // teks kosong (dibisukan di Pengaturan) = diam
+}
 
 export default function LastPlaceAlert({ paused }: { paused: boolean }) {
   const pausedRef = useRef(paused);
@@ -37,27 +54,34 @@ export default function LastPlaceAlert({ paused }: { paused: boolean }) {
       if (isSpeechAvailable() && window.speechSynthesis.speaking) return;
 
       const game = useGameStore.getState();
-      const key = dueStreakKey(
-        {
-          gameStatus: game.gameStatus,
-          roundCount: game.rounds.length,
-          currentLastPlacePlayerId: game.currentLastPlacePlayerId,
-          lastPlaceSinceTimestamp: game.lastPlaceSinceTimestamp,
-          hasPendingTieBreak: game.pendingTieBreak !== null,
-        },
-        Date.now(),
-        readAnnouncedKey()
-      );
-      if (key === null) return;
+      const snapshot: AlertSnapshot = {
+        gameStatus: game.gameStatus,
+        roundCount: game.rounds.length,
+        currentLastPlacePlayerId: game.currentLastPlacePlayerId,
+        lastPlaceSinceTimestamp: game.lastPlaceSinceTimestamp,
+        hasPendingTieBreak: game.pendingTieBreak !== null,
+        consecutiveRounds: countConsecutiveLastPlace(game.rounds, game.currentLastPlacePlayerId),
+      };
 
-      // Ditandai SEBELUM bicara supaya dua pemicu berdekatan tidak menggandakan.
-      writeAnnouncedKey(key);
+      const rounds = dueRounds(snapshot, readAnnounced("rounds"));
+      if (rounds) {
+        // Ditandai SEBELUM bicara supaya dua pemicu berdekatan tidak menggandakan.
+        writeAnnounced("rounds", rounds.mark);
+        speakTemplate(
+          getTemplates().lastPlaceStreak,
+          buildStreakVars(game.players, game.currentLastPlacePlayerId, rounds.count)
+        );
+        return;
+      }
 
-      const text = renderTemplate(
-        getTemplates().lastPlaceLong,
-        buildSretVars(game.players, game.currentLastPlacePlayerId)
-      );
-      speak(text); // teks kosong (dibisukan di Pengaturan) = diam
+      const timeKey = dueStreakKey(snapshot, Date.now(), readAnnounced("time"));
+      if (timeKey !== null) {
+        writeAnnounced("time", timeKey);
+        speakTemplate(
+          getTemplates().lastPlaceLong,
+          buildSretVars(game.players, game.currentLastPlacePlayerId)
+        );
+      }
     };
 
     const interval = window.setInterval(check, CHECK_INTERVAL_MS);

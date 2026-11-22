@@ -3,7 +3,7 @@
 import { useGameStore } from "@/store/useGameStore";
 import { useNow } from "@/hooks/useNow";
 import { useMemo } from "react";
-import { computeTotals, sortPlayersByTotal } from "@/lib/scoring";
+import { computeTotals, countConsecutiveLastPlace, sortPlayersByTotal } from "@/lib/scoring";
 import { Flame } from "lucide-react";
 
 // ============================================================
@@ -54,16 +54,10 @@ export default function PsywarFooter() {
    * di tiap ronde, jadi tinggal dihitung mundur. Bonusnya: hasil spin ikut
    * terhitung dengan benar, yang tidak mungkin dilakukan versi lama.
    */
-  const consecutiveRounds = useMemo(() => {
-    if (!currentLastPlacePlayerId) return 0;
-
-    let count = 0;
-    for (let i = rounds.length - 1; i >= 0; i--) {
-      if (rounds[i].resolvedLastPlaceId !== currentLastPlacePlayerId) break;
-      count++;
-    }
-    return count;
-  }, [rounds, currentLastPlacePlayerId]);
+  const consecutiveRounds = useMemo(
+    () => countConsecutiveLastPlace(rounds, currentLastPlacePlayerId),
+    [rounds, currentLastPlacePlayerId]
+  );
 
   if (rounds.length === 0 || sortedPlayers.length < 2) {
     return (
