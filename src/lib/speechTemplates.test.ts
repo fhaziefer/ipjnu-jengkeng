@@ -90,3 +90,27 @@ describe("resolveTemplates", () => {
     expect(r.nyewu).toBe(DEFAULT_TEMPLATES.nyewu);
   });
 });
+
+describe("lastPlaceLong (juru kunci kelamaan)", () => {
+  it("default persis kalimat yang diminta", () => {
+    expect(
+      renderTemplate(DEFAULT_TEMPLATES.lastPlaceLong, { nama_terburuk: "Cici" })
+    ).toBe("Cici wes jengkeng luweh teko setengah jam, ndang njaluk sret wae, lek gak isin tapi");
+  });
+
+  it("hanya menerima {nama_terburuk}; yang lain ditolak", () => {
+    expect(validateTemplate("lastPlaceLong", "{nama_terburuk} kelamaan").ok).toBe(true);
+    const bad = validateTemplate("lastPlaceLong", "{nama} kelamaan");
+    expect(bad.ok).toBe(false);
+  });
+
+  it("boleh dikosongkan (dibisukan) dan placeholder boleh dipakai berulang", () => {
+    expect(validateTemplate("lastPlaceLong", "   ")).toEqual({ ok: true, text: "" });
+    expect(validateTemplate("lastPlaceLong", "{nama_terburuk}, {nama_terburuk}!").ok).toBe(true);
+    expect(resolveTemplates({ lastPlaceLong: "" }).lastPlaceLong).toBe("");
+  });
+
+  it("nama dengan karakter $ tidak ditafsirkan sebagai pola pengganti", () => {
+    expect(renderTemplate("{nama_terburuk} ya", { nama_terburuk: "A$&B" })).toBe("A$&B ya");
+  });
+});

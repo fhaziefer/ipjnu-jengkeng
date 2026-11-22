@@ -23,7 +23,8 @@ export type TemplateKey =
     | "nyewu"
     | "gapWarning"
     | "tieResult"
-    | "lastPlaceChange";
+    | "lastPlaceChange"
+    | "lastPlaceLong";
 
 export type TemplateGroup = "umum" | "ronde" | "gepuk";
 
@@ -51,6 +52,17 @@ export const TEMPLATE_DEFS: readonly TemplateDef[] = [
         label: "Konfirmasi SRET",
         help: "Saat tombol SRET ditekan. {nama_terburuk} = juru kunci saat ini (diisi \"kabeh\" kalau belum ada ronde).",
         defaultText: "Mosok sret tenan? ... yo gak opo opo, lek isin, ha ha.",
+        placeholders: ["nama_terburuk"],
+        maxLength: DEFAULT_MAX,
+        sample: { nama_terburuk: "Dodo" },
+    },
+    {
+        key: "lastPlaceLong",
+        group: "umum",
+        label: "Juru kunci kelamaan (30 menit)",
+        help: "Diucapkan sekali saat orang yang sama jadi juru kunci selama 30 menit atau lebih. {nama_terburuk} = juru kunci saat ini. Kosongkan untuk membisukan.",
+        defaultText:
+            "{nama_terburuk} wes jengkeng luweh teko setengah jam, ndang njaluk sret wae, lek gak isin tapi",
         placeholders: ["nama_terburuk"],
         maxLength: DEFAULT_MAX,
         sample: { nama_terburuk: "Dodo" },

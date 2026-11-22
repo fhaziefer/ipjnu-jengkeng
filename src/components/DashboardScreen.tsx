@@ -16,6 +16,7 @@ import PsywarFooter from "./PsywarFooter";
 import AddRoundModal, { type AddRoundEditData } from "./AddRoundModal";
 import PlayerDetailModal from "./PlayerDetailModal";
 import TieBreakModal from "./TieBreakModal";
+import LastPlaceAlert from "./LastPlaceAlert";
 
 export default function DashboardScreen() {
   const {
@@ -188,6 +189,9 @@ export default function DashboardScreen() {
 
       {/* Blocking. Tidak bisa ditutup sampai spin selesai. */}
       <TieBreakModal />
+
+      {/* Pengingat juru kunci 30 menit. Menunggu kalau ada modal yang sedang dipakai. */}
+      <LastPlaceAlert paused={isAddRoundOpen || isFinishModalOpen || isUndoModalOpen} />
 
       {isAddRoundOpen && (
         <AddRoundModal
