@@ -20,6 +20,30 @@ You can start editing the page by modifying `app/page.tsx`. The page auto-update
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
+## Cadangan online (Neon)
+
+Riwayat tetap *local-first* di HP. Salinannya dikirim diam-diam ke Neon (Postgres) supaya selamat kalau data browser terhapus. Kalau Neon belum disiapkan, app jalan normal dan kartu "Cadangan online" hanya menampilkan bahwa server belum bisa dihubungi.
+
+**Menyiapkan (sekali saja)**
+
+1. Vercel project → Storage / Marketplace → tambahkan **Neon**. Integrasi mengisi `DATABASE_URL` otomatis.
+2. Di pengaturan integrasi, aktifkan *Create database branch for deployment → Preview*, supaya preview tidak menulis ke database produksi.
+3. Redeploy. Tabel `backup_games` dan `backup_settings` dibuat sendiri saat request pertama (skema ada di `db/schema.sql`).
+
+**Cara kerjanya**
+
+- Kode cadangan tetap `0000` (satu device penghitung, kode ini bukan rahasia). Karena itu server **append-only** dan tidak punya endpoint hapus.
+- Dikirim 3 detik setelah app dibuka, saat koneksi kembali, saat tab aktif lagi, dan beberapa detik setelah game selesai. Gagal = diam, dicoba lagi nanti.
+- Pengirim hanya menulis ke store `jengkeng-sync`. Store game dan riwayat tidak pernah disentuh; hanya tombol **Pulihkan** (digerakkan user) yang menggabungkan riwayat dari server.
+- Batas server: 50 game per permintaan, 5000 game per kode, 512 KB per body.
+
+**Hapus cadangan di server** (tidak ada lewat HTTP, sengaja): jalankan di SQL Editor Neon
+
+```sql
+delete from backup_games;      -- semua game
+delete from backup_settings;   -- kalimat TTS
+```
+
 ## Learn More
 
 To learn more about Next.js, take a look at the following resources:

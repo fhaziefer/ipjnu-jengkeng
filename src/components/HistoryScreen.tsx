@@ -14,6 +14,7 @@ import {
 } from "@/lib/history";
 import { downloadTextFile, requestPersistentStorage } from "@/lib/storage";
 import { cn } from "@/lib/utils";
+import BackupCard from "@/components/BackupCard";
 
 type Tab = "game" | "statistik" | "cadangan";
 
@@ -196,14 +197,16 @@ export default function HistoryScreen({ onClose }: HistoryScreenProps) {
           <section className="space-y-4">
             <div className="rounded-2xl bg-surface/50 border border-line p-4 space-y-3">
               <p className="text-sm text-fg-soft">
-                Riwayat disimpan di HP ini saja, di browser yang dipakai main. Ganti HP, hapus data browser,
-                atau pindah alamat web, riwayatnya ikut hilang. Unduh cadangan sesekali.
+                Riwayat disimpan di HP ini, di browser yang dipakai main, dan salinannya dikirim otomatis ke
+                server cadangan (kartu di bawah). Unduh berkas sesekali sebagai lapis kedua.
               </p>
               <p className="text-xs text-fg-subtle">
                 Di iPhone, buka lewat ikon di layar utama (Tambah ke Layar Utama). Di Safari biasa, data bisa
                 dihapus kalau situs ini tidak dibuka seminggu.
               </p>
             </div>
+
+            <BackupCard onNotice={setNotice} />
 
             <button
               onClick={handleExport}
