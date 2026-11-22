@@ -85,6 +85,25 @@ export function computeLastPlaceSince(
 }
 
 /**
+ * Berapa ronde berturut-turut (dihitung mundur dari ronde terakhir) orang ini
+ * jadi juru kunci. Sumber tunggal: footer menampilkannya sebagai "N mainan"
+ * dan pengingat TTS memakainya sebagai ambang, jadi keduanya selalu sama.
+ */
+export function countConsecutiveLastPlace(
+  rounds: ReadonlyArray<Pick<Round, "resolvedLastPlaceId">>,
+  lastPlaceId: string | null
+): number {
+  if (!lastPlaceId) return 0;
+
+  let count = 0;
+  for (let i = rounds.length - 1; i >= 0; i--) {
+    if (rounds[i].resolvedLastPlaceId !== lastPlaceId) break;
+    count++;
+  }
+  return count;
+}
+
+/**
  * Undian 1..100 tanpa modulo bias.
  *
  * `Math.random() % 100` maupun `byte % 100` bikin angka 1..56 sedikit lebih

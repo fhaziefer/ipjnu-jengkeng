@@ -1,12 +1,14 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import {
-  ANNOUNCED_STORAGE_KEY,
+  ANNOUNCED_STORAGE_KEYS,
   LAST_PLACE_ALERT_MS,
+  LAST_PLACE_STREAK_ROUNDS,
+  dueRounds,
   dueStreakKey,
-  readAnnouncedKey,
-  resetAnnouncedKeyForTests,
+  readAnnounced,
+  resetAnnouncedForTests,
   streakKey,
-  writeAnnouncedKey,
+  writeAnnounced,
   type AlertSnapshot,
 } from "./lastPlaceAlert";
 
@@ -19,6 +21,7 @@ const snap = (over: Partial<AlertSnapshot> = {}): AlertSnapshot => ({
   currentLastPlacePlayerId: "player-3",
   lastPlaceSinceTimestamp: SINCE,
   hasPendingTieBreak: false,
+  consecutiveRounds: 1,
   ...over,
 });
 
@@ -84,14 +87,22 @@ describe("streakKey", () => {
   });
 });
 
-describe("kunci yang sudah diumumkan", () => {
-  beforeEach(() => resetAnnouncedKeyForTests());
+describe("penanda yang sudah diumumkan", () => {
+  beforeEach(() => resetAnnouncedForTests());
 
   it("tersimpan di localStorage dan terbaca lagi (reload tidak mengulang)", () => {
-    expect(readAnnouncedKey()).toBeNull();
-    writeAnnouncedKey("player-3@123");
-    expect(localStorage.getItem(ANNOUNCED_STORAGE_KEY)).toBe("player-3@123");
-    expect(readAnnouncedKey()).toBe("player-3@123");
+    expect(readAnnounced("time")).toBeNull();
+    writeAnnounced("time", "player-3@123");
+    expect(localStorage.getItem(ANNOUNCED_STORAGE_KEYS.time)).toBe("player-3@123");
+    expect(readAnnounced("time")).toBe("player-3@123");
+  });
+
+  it("dua alarm punya penanda sendiri-sendiri dan tidak saling menimpa", () => {
+    writeAnnounced("time", "player-3@123");
+    writeAnnounced("rounds", "player-3@123#7");
+    expect(readAnnounced("time")).toBe("player-3@123");
+    expect(readAnnounced("rounds")).toBe("player-3@123#7");
+    expect(ANNOUNCED_STORAGE_KEYS.time).not.toBe(ANNOUNCED_STORAGE_KEYS.rounds);
   });
 
   it("storage rusak/diblokir: tidak melempar, jatuh ke memori", () => {
@@ -109,10 +120,67 @@ describe("kunci yang sudah diumumkan", () => {
       configurable: true,
     });
     try {
-      expect(() => writeAnnouncedKey("player-1@9")).not.toThrow();
-      expect(readAnnouncedKey()).toBe("player-1@9");
+      expect(() => writeAnnounced("rounds", "player-1@9#7")).not.toThrow();
+      expect(readAnnounced("rounds")).toBe("player-1@9#7");
     } finally {
       Object.defineProperty(globalThis, "localStorage", { value: real, configurable: true });
     }
+  });
+});
+
+describe("dueRounds (juru kunci beruntun)", () => {
+  const streak = `player-3@${SINCE}`;
+  const at = (n: number, over: Partial<AlertSnapshot> = {}) => snap({ consecutiveRounds: n, ...over });
+
+  it("ambangnya 7", () => {
+    expect(LAST_PLACE_STREAK_ROUNDS).toBe(7);
+  });
+
+  it("6 ronde: diam; ronde ke-7: bunyi dengan jumlah 7", () => {
+    expect(dueRounds(at(6), null)).toBeNull();
+    expect(dueRounds(at(7), null)).toEqual({ mark: `${streak}#7`, count: 7 });
+  });
+
+  it("ronde ke-8, ke-9, dst.: tiap ronde baru bunyi sekali dengan jumlah terkini", () => {
+    const m7 = `${streak}#7`;
+    expect(dueRounds(at(8), m7)).toEqual({ mark: `${streak}#8`, count: 8 });
+    expect(dueRounds(at(9), `${streak}#8`)).toEqual({ mark: `${streak}#9`, count: 9 });
+  });
+
+  it("jumlah yang sama tidak bunyi dua kali (tik berikutnya, reload)", () => {
+    expect(dueRounds(at(7), `${streak}#7`)).toBeNull();
+    expect(dueRounds(at(8), `${streak}#8`)).toBeNull();
+  });
+
+  it("Salah Ngitung lalu input ulang: jumlah turun lalu naik lagi tidak mengulang", () => {
+    const m8 = `${streak}#8`;
+    expect(dueRounds(at(7), m8)).toBeNull(); // undo: 8 -> 7
+    expect(dueRounds(at(8), m8)).toBeNull(); // input ulang: 7 -> 8
+    expect(dueRounds(at(9), m8)).toEqual({ mark: `${streak}#9`, count: 9 }); // ronde baru sungguhan
+  });
+
+  it("rentetan baru dari orang yang sama (sempat lepas) boleh bunyi lagi di ke-7", () => {
+    const later = SINCE + 90 * MIN;
+    const s = at(7, { lastPlaceSinceTimestamp: later });
+    expect(dueRounds(s, `${streak}#12`)).toEqual({ mark: `player-3@${later}#7`, count: 7 });
+  });
+
+  it("juru kunci ganti: rentetan baru, harus 7 lagi dari awal", () => {
+    const s = at(3, { currentLastPlacePlayerId: "player-1", lastPlaceSinceTimestamp: SINCE + 5 * MIN });
+    expect(dueRounds(s, `${streak}#9`)).toBeNull();
+  });
+
+  it("diam kalau game tidak aktif, tanpa ronde, spin menggantung, atau juru kunci belum ada", () => {
+    expect(dueRounds(at(8, { gameStatus: "finished" }), null)).toBeNull();
+    expect(dueRounds(at(8, { gameStatus: "idle" }), null)).toBeNull();
+    expect(dueRounds(at(8, { roundCount: 0 }), null)).toBeNull();
+    expect(dueRounds(at(8, { hasPendingTieBreak: true }), null)).toBeNull();
+    expect(dueRounds(at(8, { currentLastPlacePlayerId: null }), null)).toBeNull();
+    expect(dueRounds(at(8, { lastPlaceSinceTimestamp: null }), null)).toBeNull();
+  });
+
+  it("penanda rusak/asing diperlakukan seperti belum pernah diumumkan", () => {
+    expect(dueRounds(at(7), "rusak")).toEqual({ mark: `${streak}#7`, count: 7 });
+    expect(dueRounds(at(7), `${streak}#abc`)).toEqual({ mark: `${streak}#7`, count: 7 });
   });
 });

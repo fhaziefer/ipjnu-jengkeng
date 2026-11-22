@@ -4,6 +4,7 @@ import {
   SPIN_MIN,
   computeLastPlaceSince,
   computeTotals,
+  countConsecutiveLastPlace,
   drawSpin,
   evaluateTieResults,
   findTiedForLast,
@@ -96,6 +97,34 @@ describe("computeLastPlaceSince", () => {
   it("berhenti begitu ada ronde dengan juru kunci lain", () => {
     const rounds = [round("200", {}, "c"), round("300", {}, "b")];
     expect(computeLastPlaceSince(rounds, "c", start)).toBe(start);
+  });
+});
+
+describe("countConsecutiveLastPlace", () => {
+  it("tanpa juru kunci atau tanpa ronde: 0", () => {
+    expect(countConsecutiveLastPlace([], "c")).toBe(0);
+    expect(countConsecutiveLastPlace([round("1", {}, "c")], null)).toBe(0);
+  });
+
+  it("menghitung mundur dari ronde terakhir sampai juru kunci lain", () => {
+    const rounds = [
+      round("1", {}, "c"),
+      round("2", {}, "b"),
+      round("3", {}, "c"),
+      round("4", {}, "c"),
+      round("5", {}, "c"),
+    ];
+    expect(countConsecutiveLastPlace(rounds, "c")).toBe(3);
+  });
+
+  it("ronde terakhir bukan dia: 0, walau dulu sering", () => {
+    const rounds = [round("1", {}, "c"), round("2", {}, "c"), round("3", {}, "b")];
+    expect(countConsecutiveLastPlace(rounds, "c")).toBe(0);
+  });
+
+  it("semua ronde dia: jumlah semua ronde", () => {
+    const rounds = Array.from({ length: 7 }, (_, i) => round(String(i + 1), {}, "c"));
+    expect(countConsecutiveLastPlace(rounds, "c")).toBe(7);
   });
 });
 

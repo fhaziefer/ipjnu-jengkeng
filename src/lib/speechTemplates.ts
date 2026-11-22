@@ -24,7 +24,8 @@ export type TemplateKey =
     | "gapWarning"
     | "tieResult"
     | "lastPlaceChange"
-    | "lastPlaceLong";
+    | "lastPlaceLong"
+    | "lastPlaceStreak";
 
 export type TemplateGroup = "umum" | "ronde" | "gepuk";
 
@@ -66,6 +67,17 @@ export const TEMPLATE_DEFS: readonly TemplateDef[] = [
         placeholders: ["nama_terburuk"],
         maxLength: DEFAULT_MAX,
         sample: { nama_terburuk: "Dodo" },
+    },
+    {
+        key: "lastPlaceStreak",
+        group: "umum",
+        label: "Juru kunci 7 ronde beruntun",
+        help: "Diucapkan tiap kali orang yang sama jadi juru kunci 7 ronde berturut-turut atau lebih (ronde ke-7, ke-8, dst.), sesudah pengumuman ronde selesai. {nama_terburuk} = juru kunci, {berapa_kali_terbawah} = sudah berapa ronde beruntun. Kosongkan untuk membisukan.",
+        defaultText:
+            "{nama_terburuk} wes jengkeng ping {berapa_kali_terbawah} njaluk sret ora? lek gak isin",
+        placeholders: ["nama_terburuk", "berapa_kali_terbawah"],
+        maxLength: DEFAULT_MAX,
+        sample: { nama_terburuk: "Dodo", berapa_kali_terbawah: "7" },
     },
     {
         key: "tieIntro",
