@@ -1,7 +1,8 @@
 import type { Player, Round, ShootRecord } from "@/store/useGameStore";
+import { angkaJawa } from "./angkaJawa";
 import { toSpeechName } from "./playerName";
 import { computeTotals } from "./scoring";
-import { DEFAULT_TEMPLATES, renderTemplate, type TemplateKey } from "./speechTemplates";
+import { DEFAULT_TEMPLATES, renderTemplate, type TemplateKey, type TemplateVars } from "./speechTemplates";
 
 /**
  * Semua teks pengumuman dibangun di sini, bukan di dalam komponen.
@@ -30,15 +31,11 @@ function nameOf(players: Player[], playerId: string | null): string {
     return toSpeechName(players.find((p) => p.id === playerId)?.name ?? "");
 }
 
-function scoreWord(score: number): string {
-    return score < 0 ? `minus ${Math.abs(score)}` : score.toString();
-}
-
 /**
  * Satu potong pengumuman, selalu diakhiri satu spasi supaya potongan bisa
  * disambung begitu saja. Potongan kosong (dibisukan admin) dilewati.
  */
-function piece(template: string, vars: Readonly<Record<string, string>> = {}): string {
+function piece(template: string, vars: TemplateVars = {}): string {
     const text = renderTemplate(template, vars).trim();
     return text ? `${text} ` : "";
 }
@@ -73,7 +70,7 @@ export function buildRoundAnnouncement(
 
         text += piece(templates.scoreLine, {
             nama: toSpeechName(p.name),
-            skor: scoreWord(after),
+            skor: after,
         });
     });
 
@@ -83,13 +80,13 @@ export function buildRoundAnnouncement(
         const psywarKey = PSYWAR_KEY[shoot.penaltyPoints];
         const psywar = psywarKey
             ? renderTemplate(templates[psywarKey], {}).trim()
-            : `${shoot.penaltyPoints} poin ...`;
+            : `${angkaJawa(shoot.penaltyPoints)} poin ...`;
 
         text += piece(templates.gepuk, {
             penembak: nameOf(players, shoot.shooterId),
             korban: nameOf(players, shoot.victimId),
             psywar,
-            poin: String(shoot.penaltyPoints),
+            poin: shoot.penaltyPoints,
         });
     }
 
@@ -108,7 +105,7 @@ export function buildRoundAnnouncement(
 
     if (round.tieBreak) {
         const spins = round.tieBreak.candidates
-            .map((id) => `${nameOf(players, id)} oleh ${round.tieBreak?.results[id]}`)
+            .map((id) => `${nameOf(players, id)} oleh ${angkaJawa(round.tieBreak?.results[id] ?? 0)}`)
             .join(", ");
 
         text += piece(templates.tieResult, {

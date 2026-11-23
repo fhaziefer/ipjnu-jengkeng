@@ -46,9 +46,9 @@ export function buildStreakVars(
     players: Player[],
     currentLastPlacePlayerId: string | null,
     consecutiveRounds: number
-): Record<string, string> {
+): Record<string, string | number> {
     return {
         ...buildSretVars(players, currentLastPlacePlayerId),
-        berapa_kali_terbawah: String(consecutiveRounds),
+        berapa_kali_terbawah: consecutiveRounds,
     };
 }
