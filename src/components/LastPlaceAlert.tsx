@@ -3,7 +3,7 @@
 import { useEffect, useRef } from "react";
 import { useGameStore } from "@/store/useGameStore";
 import { getTemplates, useSettingsStore } from "@/store/useSettingsStore";
-import { renderTemplate } from "@/lib/speechTemplates";
+import { renderTemplate, type TemplateVars } from "@/lib/speechTemplates";
 import { buildSretVars, buildStreakVars } from "@/lib/speechContext";
 import { countConsecutiveLastPlace } from "@/lib/scoring";
 import { isSpeechAvailable, speak } from "@/lib/speech";
@@ -37,7 +37,7 @@ import {
 
 const CHECK_INTERVAL_MS = 5000;
 
-function speakTemplate(template: string, vars: Record<string, string>): void {
+function speakTemplate(template: string, vars: TemplateVars): void {
   speak(renderTemplate(template, vars)); // teks kosong (dibisukan di Pengaturan) = diam
 }
 

@@ -105,8 +105,8 @@ describe("buildRoundAnnouncement dengan override", () => {
       nyewu: "{nama} tembus seribu ...",
     });
     const text = buildRoundAnnouncement(players, rounds, shoots, 0, t);
-    expect(text).toContain("Rekap! Mas Bagong punya 1005 biji ... Budi punya 10 biji ...");
-    expect(text).toContain("Awas! Mas Bagong nembak Cici 500 poin, mampus");
+    expect(text).toContain("Rekap! Mas Bagong punya sewu limo biji ... Budi punya sepuluh biji ...");
+    expect(text).toContain("Awas! Mas Bagong nembak Cici limangatus poin, mampus");
     expect(text).toContain("Mas Bagong tembus seribu ...");
     expect(text).not.toContain("Biji sak iki");
   });
@@ -114,7 +114,7 @@ describe("buildRoundAnnouncement dengan override", () => {
   it("bagian yang dikosongkan dibisukan, tanpa spasi ganda", () => {
     const t = resolveTemplates({ roundHeader: "", gepuk: "", nyewu: "", gapWarning: "" });
     const text = buildRoundAnnouncement(players, rounds, shoots, 0, t);
-    expect(text).toBe("Mas Bagong, 1005 ... Budi, 10 ... Cici, 10 ... ");
+    expect(text).toBe("Mas Bagong, sewu limo ... Budi, sepuluh ... Cici, sepuluh ... ");
     expect(text).not.toMatch(/\s{2,}/);
   });
 

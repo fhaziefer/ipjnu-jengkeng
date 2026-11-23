@@ -6,6 +6,7 @@
 import type { Player, Round, ShootRecord } from "@/store/useGameStore";
 import { toSpeechName } from "@/lib/playerName";
 import { computeTotals } from "@/lib/scoring";
+import { angkaJawa } from "@/lib/angkaJawa";
 
 /**
  * Semua teks pengumuman dibangun di sini, bukan di dalam komponen.
@@ -33,7 +34,7 @@ function nameOf(players: Player[], playerId: string | null): string {
 }
 
 function scoreWord(score: number): string {
-    return score < 0 ? `minus ${Math.abs(score)}` : score.toString();
+    return angkaJawa(score);
 }
 
 /**
@@ -72,7 +73,7 @@ export function legacyBuildRoundAnnouncement(
         const shooter = nameOf(players, shoot.shooterId);
         const victim = nameOf(players, shoot.victimId);
         const psywar =
-            PENALTY_PSYWAR[shoot.penaltyPoints] ?? `${shoot.penaltyPoints} poin ...`;
+            PENALTY_PSYWAR[shoot.penaltyPoints] ?? `${angkaJawa(shoot.penaltyPoints)} poin ...`;
 
         text += `Woro woro! ... ${shooter} gepuk ${victim} ${psywar} `;
     }
@@ -88,13 +89,13 @@ export function legacyBuildRoundAnnouncement(
         const gap = sorted[sorted.length - 2] - sorted[sorted.length - 1];
 
         if (gap >= 500) {
-            text += `Woro woro! ... Jarake wes punjul 500, ... sret opo gak?? ... ha ha ha ... `;
+            text += `Woro woro! ... Jarake wes punjul limangatus, ... sret opo gak?? ... ha ha ha ... `;
         }
     }
 
     if (round.tieBreak) {
         const spins = round.tieBreak.candidates
-            .map((id) => `${nameOf(players, id)} oleh ${round.tieBreak?.results[id]}`)
+            .map((id) => `${nameOf(players, id)} oleh ${angkaJawa(round.tieBreak?.results[id] ?? 0)}`)
             .join(", ");
 
         text += `Woro woro! ... Mau bijine podo, wes tak spin. ... ${spins} ... `;

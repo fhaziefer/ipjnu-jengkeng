@@ -22,7 +22,7 @@ describe("default template", () => {
     for (const def of TEMPLATE_DEFS) {
       const used = [...def.defaultText.matchAll(/\{(\w+)\}/g)].map((m) => m[1]);
       for (const name of used) expect(def.placeholders, def.key).toContain(name);
-      for (const name of def.placeholders) expect(def.sample[name], `${def.key}.${name}`).toBeTypeOf("string");
+      for (const name of def.placeholders) expect(def.sample[name], `${def.key}.${name}`).not.toBeUndefined();
     }
   });
 

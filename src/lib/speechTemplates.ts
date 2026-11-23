@@ -9,6 +9,8 @@
  * ditentukan per kalimat. Teks kosong berarti bagian itu dibisukan.
  */
 
+import { angkaJawa } from "./angkaJawa";
+
 export type TemplateKey =
     | "sretConfirm"
     | "tieIntro"
@@ -39,7 +41,7 @@ export interface TemplateDef {
     placeholders: readonly string[];
     maxLength: number;
     /** Isi contoh placeholder untuk tombol "Dengarkan". */
-    sample: Readonly<Record<string, string>>;
+    sample: TemplateVars;
 }
 
 /** Kalimat yang mengunci tombol sampai selesai diucapkan dibatasi lebih pendek. */
@@ -77,7 +79,7 @@ export const TEMPLATE_DEFS: readonly TemplateDef[] = [
             "{nama_terburuk} wes jengkeng ping {berapa_kali_terbawah} njaluk sret ora? lek gak isin",
         placeholders: ["nama_terburuk", "berapa_kali_terbawah"],
         maxLength: DEFAULT_MAX,
-        sample: { nama_terburuk: "Dodo", berapa_kali_terbawah: "7" },
+        sample: { nama_terburuk: "Dodo", berapa_kali_terbawah: 7 },
     },
     {
         key: "tieIntro",
@@ -107,7 +109,7 @@ export const TEMPLATE_DEFS: readonly TemplateDef[] = [
         defaultText: "{nama}, {skor} ...",
         placeholders: ["nama", "skor"],
         maxLength: DEFAULT_MAX,
-        sample: { nama: "Mas Bagong", skor: "150" },
+        sample: { nama: "Mas Bagong", skor: 150 },
     },
     {
         key: "nyewu",
@@ -124,7 +126,7 @@ export const TEMPLATE_DEFS: readonly TemplateDef[] = [
         group: "ronde",
         label: "Jarak 500 atau lebih",
         help: "Saat selisih skor terbawah dengan di atasnya sudah 500 atau lebih.",
-        defaultText: "Woro woro! ... Jarake wes punjul 500, ... sret opo gak?? ... ha ha ha ...",
+        defaultText: "Woro woro! ... Jarake wes punjul limangatus, ... sret opo gak?? ... ha ha ha ...",
         placeholders: [],
         maxLength: DEFAULT_MAX,
         sample: {},
@@ -138,7 +140,7 @@ export const TEMPLATE_DEFS: readonly TemplateDef[] = [
             "Woro woro! ... Mau bijine podo, wes tak spin. ... {hasil_spin} ... Sing jengkeng {nama} ...",
         placeholders: ["hasil_spin", "nama"],
         maxLength: DEFAULT_MAX,
-        sample: { hasil_spin: "Cici oleh 41, Dodo oleh 12", nama: "Dodo" },
+        sample: { hasil_spin: `Cici oleh ${angkaJawa(41)}, Dodo oleh ${angkaJawa(12)}`, nama: "Dodo" },
     },
     {
         key: "lastPlaceChange",
@@ -162,7 +164,7 @@ export const TEMPLATE_DEFS: readonly TemplateDef[] = [
             penembak: "Mas Bagong",
             korban: "Budi",
             psywar: "gawe godongan, ... remeh, remeh, remeh, ... sitik tok ...",
-            poin: "100",
+            poin: 100,
         },
     },
     {
@@ -279,8 +281,18 @@ export function validateTemplate(key: TemplateKey, raw: string): TemplateValidat
 }
 
 /** Isi placeholder. Memakai fungsi pengganti supaya `$` di nama tidak ditafsirkan. */
-export function renderTemplate(template: string, vars: Readonly<Record<string, string>>): string {
-    return template.replace(PLACEHOLDER, (_, name: string) => vars[name] ?? "");
+export type TemplateVars = Readonly<Record<string, string | number>>;
+
+/**
+ * Nilai bertipe number dibaca sebagai angka Jawa; string (nama, kalimat) apa adanya.
+ * Jadi nama pemain yang mengandung digit tidak ikut berubah.
+ */
+export function renderTemplate(template: string, vars: TemplateVars): string {
+    return template.replace(PLACEHOLDER, (_, name: string) => {
+        const value = vars[name];
+        if (value === undefined) return "";
+        return typeof value === "number" ? angkaJawa(value) : value;
+    });
 }
 
 export type TemplateOverrides = Partial<Record<TemplateKey, string>>;

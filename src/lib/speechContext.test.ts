@@ -52,10 +52,10 @@ describe("buildTieIntroVars", () => {
 });
 
 describe("buildStreakVars", () => {
-  it("nama dieja seperti konfirmasi SRET dan jumlah jadi string", () => {
+  it("nama dieja seperti konfirmasi SRET dan jumlah tetap number (dibaca Jawa oleh renderTemplate)", () => {
     expect(buildStreakVars(players, "d", 7)).toEqual({
       nama_terburuk: "Dodo",
-      berapa_kali_terbawah: "7",
+      berapa_kali_terbawah: 7,
     });
     expect(buildStreakVars(players, "c", 12).nama_terburuk).toBe("B. G. N");
   });
