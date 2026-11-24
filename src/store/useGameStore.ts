@@ -3,6 +3,7 @@ import { persist } from 'zustand/middleware';
 import {
   computeLastPlaceSince,
   computeTotals,
+  drawIndex,
   drawSpin,
   evaluateTieResults,
   findTiedForLast,
@@ -13,6 +14,7 @@ import { migrateGameState } from './migrations';
 import { buildGameRecord } from '@/lib/history';
 import { requestPersistentStorage } from '@/lib/storage';
 import { useHistoryStore } from './useHistoryStore';
+import { canResume, type AutoFinishInfo } from '@/lib/autoFinish';
 
 // Aturan skor murni ada di src/lib/scoring.ts. Re-export supaya import lama tetap jalan.
 export { SPIN_MIN, SPIN_MAX, drawSpin, evaluateTieResults } from '@/lib/scoring';
@@ -82,6 +84,12 @@ export interface GameState {
    * "Salah Ngitung" tidak berubah jadi tombol reroll.
    */
   carriedTieBreak: TieBreak | null;
+  /** Hasil undian giliran pertama. Null = belum diundi. Diundi sekali per game. */
+  firstTurnPlayerId: string | null;
+  /** Aktivitas terakhir (ronde, undo, spin). Dasar penutupan otomatis. */
+  lastActivityAt: number | null;
+  /** Terisi kalau game ditutup otomatis karena lama tanpa itungan. */
+  autoFinish: AutoFinishInfo | null;
 
   startGame: (players: Player[]) => void;
   addRound: (
@@ -94,7 +102,12 @@ export interface GameState {
   /** Dipanggil UI setelah semua kandidat spin dan hasilnya selesai di-reveal. */
   commitTieBreak: () => TieOutcome;
   undoLastRound: () => void;
-  finishGame: () => void;
+  /** Mengundi siapa yang mulai. Hanya sekali, sebelum ronde pertama. */
+  drawFirstTurn: () => string | null;
+  /** `auto` dipakai penutupan otomatis: `finishedAt` = aktivitas terakhir. */
+  finishGame: (options?: { auto?: { finishedAt: number } }) => void;
+  /** Membatalkan penutupan otomatis selama jendela lanjut masih terbuka. */
+  resumeGame: () => boolean;
   resetGame: () => void;
 }
 
@@ -108,6 +121,9 @@ const INITIAL_STATE = {
   shootRecords: [],
   pendingTieBreak: null,
   carriedTieBreak: null,
+  firstTurnPlayerId: null as string | null,
+  lastActivityAt: null as number | null,
+  autoFinish: null as AutoFinishInfo | null,
 };
 
 export const useGameStore = create<GameState>()(
@@ -121,6 +137,7 @@ export const useGameStore = create<GameState>()(
           gameStatus: 'active',
           gameStartTime: Date.now(),
           lastPlaceSinceTimestamp: Date.now(),
+          lastActivityAt: Date.now(),
           players,
         });
       },
@@ -172,6 +189,7 @@ export const useGameStore = create<GameState>()(
               : state.lastPlaceSinceTimestamp,
             pendingTieBreak: null,
             carriedTieBreak: null,
+            lastActivityAt: roundTimestamp,
           });
         };
 
@@ -199,6 +217,7 @@ export const useGameStore = create<GameState>()(
           shootRecords: newShootRecords,
           pendingTieBreak: { roundId, candidates: tiedForLast, results: {} },
           carriedTieBreak: null,
+          lastActivityAt: roundTimestamp,
         });
       },
 
@@ -216,6 +235,7 @@ export const useGameStore = create<GameState>()(
             ...pending,
             results: { ...pending.results, [playerId]: value },
           },
+          lastActivityAt: Date.now(),
         });
 
         return value;
@@ -261,6 +281,7 @@ export const useGameStore = create<GameState>()(
             ? Number.parseInt(pending.roundId, 10)
             : state.lastPlaceSinceTimestamp,
           pendingTieBreak: null,
+          lastActivityAt: Date.now(),
         });
 
         return outcome;
@@ -294,15 +315,32 @@ export const useGameStore = create<GameState>()(
               ? null
               : state.pendingTieBreak,
           carriedTieBreak: removed.tieBreak ?? null,
+          lastActivityAt: Date.now(),
         });
       },
 
-      finishGame: () => {
+      drawFirstTurn: () => {
+        const state = get();
+        if (state.gameStatus !== 'active') return null;
+        if (state.rounds.length > 0) return null;
+        if (state.firstTurnPlayerId) return null;
+        if (state.players.length === 0) return null;
+
+        const chosen = state.players[drawIndex(state.players.length)].id;
+        set({ firstTurnPlayerId: chosen, lastActivityAt: Date.now() });
+        return chosen;
+      },
+
+      finishGame: (options) => {
         const state = get();
 
         // Jangan biarkan permainan ditutup sementara hukumannya masih menggantung.
         if (state.pendingTieBreak) return;
-        if (state.gameStatus === 'finished') return;
+        if (state.gameStatus !== 'active') return;
+
+        const auto = options?.auto;
+        const finishedAt = auto ? auto.finishedAt : Date.now();
+        let recordId: string | null = null;
 
         set({ gameStatus: 'finished' });
 
@@ -311,13 +349,29 @@ export const useGameStore = create<GameState>()(
         // Gagal menyimpan (mis. kuota localStorage penuh) tidak boleh
         // menggagalkan penutupan permainan.
         try {
-          const record = buildGameRecord(state, Date.now());
+          const record = buildGameRecord(state, finishedAt);
           if (record && useHistoryStore.getState().recordGame(record)) {
+            recordId = record.id;
             requestPersistentStorage();
           }
         } catch (error) {
           console.error('[jengkeng] gagal mencatat riwayat', error);
         }
+
+        if (auto) set({ autoFinish: { detectedAt: Date.now(), recordId } });
+      },
+
+      resumeGame: () => {
+        const state = get();
+        if (!canResume(state.gameStatus, state.autoFinish, Date.now())) return false;
+
+        // Catatan riwayat dari penutupan otomatis dibuang; nanti dicatat ulang
+        // utuh saat game benar-benar selesai (id-nya sama: waktu mulai game).
+        const recordId = state.autoFinish?.recordId;
+        if (recordId) useHistoryStore.getState().deleteGame(recordId);
+
+        set({ gameStatus: 'active', autoFinish: null, lastActivityAt: Date.now() });
+        return true;
       },
 
       resetGame: () => {

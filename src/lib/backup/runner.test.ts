@@ -237,3 +237,36 @@ describe("restoreFromServer", () => {
     expect(useHistoryStore.getState().games).toHaveLength(1);
   });
 });
+
+describe("game yang ditutup otomatis ditahan dari cadangan", () => {
+  it("tidak dikirim selama masih bisa dilanjutkan, terkirim sesudah game baru dimulai", async () => {
+    const { useGameStore } = await import("@/store/useGameStore");
+    useHistoryStore.setState({ games: [game("100"), game("200")] });
+    useGameStore.setState({ gameStatus: "finished", autoFinish: { detectedAt: Date.now(), recordId: "200" } });
+
+    const storage = new MemoryBackupStorage();
+    const hash = (await import("./storage")).hashBackupCode("0000");
+    expect(await runBackupNow({ fetchImpl: serverFetch(storage).impl })).toBe("ok");
+    expect(await storage.countGames(hash)).toBe(1);
+    expect(useSyncStore.getState().doneIds).toEqual(["100"]);
+
+    useGameStore.getState().resetGame();
+    resetRunnerForTests();
+    expect(await runBackupNow({ fetchImpl: serverFetch(storage).impl })).toBe("ok");
+    expect(await storage.countGames(hash)).toBe(2);
+  });
+
+  it("lewat jendela lanjut: ikut terkirim walau layar selesai masih terbuka", async () => {
+    const { useGameStore } = await import("@/store/useGameStore");
+    const { RESUME_WINDOW_MS } = await import("@/lib/autoFinish");
+    useHistoryStore.setState({ games: [game("300")] });
+    useGameStore.setState({
+      gameStatus: "finished",
+      autoFinish: { detectedAt: Date.now() - RESUME_WINDOW_MS, recordId: "300" },
+    });
+    const storage = new MemoryBackupStorage();
+    expect(await runBackupNow({ fetchImpl: serverFetch(storage).impl })).toBe("ok");
+    expect(useSyncStore.getState().doneIds).toEqual(["300"]);
+    useGameStore.getState().resetGame();
+  });
+});

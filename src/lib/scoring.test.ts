@@ -3,6 +3,7 @@ import {
   SPIN_MAX,
   SPIN_MIN,
   computeLastPlaceSince,
+  drawIndex,
   computeTotals,
   countConsecutiveLastPlace,
   drawSpin,
@@ -186,5 +187,39 @@ describe("drawSpin", () => {
     });
     expect(drawSpin()).toBe(SPIN_MIN + 41);
     expect(queue).toEqual([]);
+  });
+});
+
+describe("drawIndex", () => {
+  it("selalu di rentang 0..n-1 untuk n 1..12", () => {
+    for (let n = 1; n <= 12; n++) {
+      for (let i = 0; i < 300; i++) {
+        const v = drawIndex(n);
+        expect(Number.isInteger(v) && v >= 0 && v < n).toBe(true);
+      }
+    }
+  });
+
+  it("adil: byte di atas batas kelipatan dibuang (n=3: 255 dibuang, 254 -> 2)", () => {
+    const queue = [255, 254];
+    vi.stubGlobal("crypto", {
+      getRandomValues: (buf: Uint8Array) => {
+        buf[0] = queue.shift() ?? 0;
+        return buf;
+      },
+    });
+    expect(drawIndex(3)).toBe(254 % 3);
+    vi.unstubAllGlobals();
+  });
+
+  it("semua pemain bisa terpilih (n=4, 4000 undian, tiap indeks muncul wajar)", () => {
+    const counts = [0, 0, 0, 0];
+    for (let i = 0; i < 4000; i++) counts[drawIndex(4)]++;
+    counts.forEach((c) => expect(c).toBeGreaterThan(800));
+  });
+
+  it("n tidak valid ditolak", () => {
+    expect(() => drawIndex(0)).toThrow();
+    expect(() => drawIndex(1.5)).toThrow();
   });
 });

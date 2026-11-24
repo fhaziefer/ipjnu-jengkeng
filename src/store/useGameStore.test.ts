@@ -265,3 +265,105 @@ describe("finishGame -> riwayat", () => {
     expect(JSON.parse(localStorage.getItem("jengkeng-score-storage") as string).state.games).toBeUndefined();
   });
 });
+
+describe("giliran pertama", () => {
+  it("diundi sekali sebelum ronde pertama; undian kedua ditolak", () => {
+    stubDraws([1]); // n=3, byte 1 -> indeks 1
+    expect(get().firstTurnPlayerId).toBeNull();
+    expect(get().drawFirstTurn()).toBe("b");
+    expect(get().firstTurnPlayerId).toBe("b");
+    expect(get().drawFirstTurn()).toBeNull();
+    expect(get().firstTurnPlayerId).toBe("b");
+  });
+
+  it("tidak bisa diundi sesudah ronde masuk", () => {
+    play({ a: 1, b: 2, c: 3 });
+    expect(get().drawFirstTurn()).toBeNull();
+    expect(get().firstTurnPlayerId).toBeNull();
+  });
+
+  it("game baru (Panggah) mengosongkan hasil undian", () => {
+    get().drawFirstTurn();
+    get().startGame(players);
+    expect(get().firstTurnPlayerId).toBeNull();
+  });
+});
+
+describe("lastActivityAt", () => {
+  it("diperbarui oleh mulai, ronde, undo, spin, dan commit seri", () => {
+    expect(get().lastActivityAt).toBe(1_000_000);
+    play({ a: 1, b: 2, c: 3 });
+    expect(get().lastActivityAt).toBe(1_001_000);
+    vi.advanceTimersByTime(5000);
+    get().undoLastRound();
+    expect(get().lastActivityAt).toBe(1_006_000);
+
+    stubDraws([10, 50]);
+    play({ a: 5, b: 5, c: 9 }); // seri a-b
+    expect(get().pendingTieBreak).not.toBeNull();
+    vi.advanceTimersByTime(2000);
+    get().spinTieBreak("a");
+    expect(get().lastActivityAt).toBe(1_009_000);
+    vi.advanceTimersByTime(2000);
+    get().spinTieBreak("b");
+    vi.advanceTimersByTime(2000);
+    get().commitTieBreak();
+    expect(get().lastActivityAt).toBe(1_013_000);
+  });
+});
+
+describe("tutup otomatis dan lanjutkan", () => {
+  it("auto: dicatat ke riwayat dengan waktu aktivitas terakhir, bukan waktu ditutup", () => {
+    play({ a: 1, b: 2, c: 3 });
+    const last = get().lastActivityAt!;
+    vi.advanceTimersByTime(45 * 60_000);
+    get().finishGame({ auto: { finishedAt: last } });
+
+    expect(get().gameStatus).toBe("finished");
+    const games = useHistoryStore.getState().games;
+    expect(games).toHaveLength(1);
+    expect(games[0].finishedAt).toBe(last);
+    expect(get().autoFinish).toEqual({ detectedAt: last + 45 * 60_000, recordId: games[0].id });
+  });
+
+  it("selesai manual tidak mengisi autoFinish", () => {
+    play({ a: 1, b: 2, c: 3 });
+    get().finishGame();
+    expect(get().autoFinish).toBeNull();
+    expect(get().resumeGame()).toBe(false);
+  });
+
+  it("lanjutkan: game aktif lagi, catatan riwayat dihapus, lalu selesai lagi tercatat utuh", () => {
+    play({ a: 1, b: 2, c: 3 });
+    get().finishGame({ auto: { finishedAt: get().lastActivityAt! } });
+    vi.advanceTimersByTime(10 * 60_000);
+
+    expect(get().resumeGame()).toBe(true);
+    expect(get().gameStatus).toBe("active");
+    expect(get().autoFinish).toBeNull();
+    expect(useHistoryStore.getState().games).toHaveLength(0);
+    expect(get().rounds).toHaveLength(1);
+
+    play({ a: 4, b: 5, c: 6 });
+    get().finishGame();
+    const games = useHistoryStore.getState().games;
+    expect(games).toHaveLength(1);
+    expect(games[0].rounds).toHaveLength(2);
+  });
+
+  it("lewat 3 jam tidak bisa dilanjutkan, riwayat tetap", () => {
+    play({ a: 1, b: 2, c: 3 });
+    get().finishGame({ auto: { finishedAt: get().lastActivityAt! } });
+    vi.advanceTimersByTime(3 * 3_600_000);
+    expect(get().resumeGame()).toBe(false);
+    expect(get().gameStatus).toBe("finished");
+    expect(useHistoryStore.getState().games).toHaveLength(1);
+  });
+
+  it("finishGame mengabaikan panggilan saat game tidak aktif", () => {
+    get().resetGame();
+    get().finishGame({ auto: { finishedAt: 1 } });
+    expect(get().gameStatus).toBe("idle");
+    expect(get().autoFinish).toBeNull();
+  });
+});

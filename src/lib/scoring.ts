@@ -104,6 +104,28 @@ export function countConsecutiveLastPlace(
 }
 
 /**
+ * Indeks acak 0..n-1 yang adil (rejection sampling, sama seperti drawSpin).
+ * Dipakai untuk mengundi siapa yang mulai giliran pertama.
+ */
+export function drawIndex(n: number): number {
+  if (!Number.isInteger(n) || n < 1) throw new RangeError("drawIndex butuh n >= 1");
+  if (n === 1) return 0;
+  const webCrypto = typeof globalThis !== "undefined" ? globalThis.crypto : undefined;
+
+  if (webCrypto?.getRandomValues && n <= 256) {
+    const limit = Math.floor(256 / n) * n;
+    const buffer = new Uint8Array(1);
+
+    for (let attempt = 0; attempt < 32; attempt++) {
+      webCrypto.getRandomValues(buffer);
+      if (buffer[0] < limit) return buffer[0] % n;
+    }
+  }
+
+  return Math.floor(Math.random() * n);
+}
+
+/**
  * Undian 1..100 tanpa modulo bias.
  *
  * `Math.random() % 100` maupun `byte % 100` bikin angka 1..56 sedikit lebih

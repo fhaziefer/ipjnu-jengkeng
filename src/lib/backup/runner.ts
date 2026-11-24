@@ -1,5 +1,7 @@
 import { isValidGameRecord } from "@/lib/history";
 import { useHistoryStore } from "@/store/useHistoryStore";
+import { useGameStore } from "@/store/useGameStore";
+import { heldBackupId } from "@/lib/autoFinish";
 import { useSettingsStore } from "@/store/useSettingsStore";
 import { useSyncStore } from "@/store/useSyncStore";
 import { fetchBackup, postBackup } from "./client";
@@ -17,6 +19,17 @@ import { runBackup } from "./sync";
 const COOLDOWN_AFTER_FAIL_MS = 60_000;
 /** Server belum dikonfigurasi (503): jangan ketuk terus-terusan. */
 const COOLDOWN_NOT_CONFIGURED_MS = 10 * 60_000;
+
+/**
+ * Game yang ditutup otomatis ditahan dulu selama masih bisa dilanjutkan:
+ * cadangan online tidak bisa ditimpa, jadi versi terpotong tidak boleh terkirim.
+ */
+function gamesToBackUp() {
+  const games = useHistoryStore.getState().games;
+  const game = useGameStore.getState();
+  const held = heldBackupId(game.gameStatus, game.autoFinish, Date.now());
+  return held ? games.filter((g) => g.id !== held) : games;
+}
 
 export type RunResult = "ok" | "nothing" | "failed" | "skipped";
 
@@ -45,7 +58,7 @@ async function runOnce(options: RunOptions): Promise<RunResult> {
   const sync = useSyncStore.getState();
   const outcome = await runBackup(
     {
-      games: useHistoryStore.getState().games,
+      games: gamesToBackUp(),
       doneIds: new Set(sync.doneIds),
       overrides: useSettingsStore.getState().overrides,
       syncedSettingsKey: sync.syncedSettingsKey,

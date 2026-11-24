@@ -6,7 +6,8 @@ import { useMemo } from "react";
 import { cn } from "@/lib/utils";
 
 export default function RoundList() {
-  const { players, rounds, shootRecords } = useGameStore();
+  const { players, rounds, shootRecords, firstTurnPlayerId } = useGameStore();
+  const firstTurnName = players.find((p) => p.id === firstTurnPlayerId)?.name ?? null;
 
   const gridColsClass = useMemo(() => {
     switch (players.length) {
@@ -76,8 +77,13 @@ export default function RoundList() {
 
   if (rounds.length === 0) {
     return (
-      <div className="flex-1 flex flex-col items-center justify-center p-8 text-center space-y-4 opacity-50 overflow-y-auto">
-        <p className="text-fg-subtle text-sm">Nembe Mulai, durung itungan.</p>
+      <div className="flex-1 flex flex-col items-center justify-center p-8 text-center space-y-4 overflow-y-auto">
+        <p className="text-fg-subtle text-sm opacity-50">Nembe Mulai, durung itungan.</p>
+        {firstTurnName && (
+          <p data-testid="giliran-pertama" className="text-fg text-sm font-semibold">
+            Sing mulai disik: {firstTurnName}
+          </p>
+        )}
       </div>
     );
   }

@@ -17,6 +17,8 @@ import AddRoundModal, { type AddRoundEditData } from "./AddRoundModal";
 import PlayerDetailModal from "./PlayerDetailModal";
 import TieBreakModal from "./TieBreakModal";
 import LastPlaceAlert from "./LastPlaceAlert";
+import AutoFinish from "./AutoFinish";
+import FirstTurnModal from "./FirstTurnModal";
 
 export default function DashboardScreen() {
   const {
@@ -189,9 +191,11 @@ export default function DashboardScreen() {
 
       {/* Blocking. Tidak bisa ditutup sampai spin selesai. */}
       <TieBreakModal />
+      <FirstTurnModal />
 
       {/* Pengingat juru kunci 30 menit. Menunggu kalau ada modal yang sedang dipakai. */}
       <LastPlaceAlert paused={isAddRoundOpen || isFinishModalOpen || isUndoModalOpen} />
+      <AutoFinish paused={isAddRoundOpen || isFinishModalOpen || isUndoModalOpen} />
 
       {isAddRoundOpen && (
         <AddRoundModal
