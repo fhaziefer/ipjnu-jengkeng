@@ -5,6 +5,7 @@ import { buildSretVars } from "@/lib/speechContext";
 import { getTemplates } from "@/store/useSettingsStore";
 import { SpinBorder } from "./SpinBorder";
 import { useState, useMemo } from "react";
+import ChipEffects, { useChipMotions } from "./ChipEffects";
 import { useGameStore } from "@/store/useGameStore";
 import { Undo2, CheckCircle2, AlertTriangle, RotateCcw } from "lucide-react";
 import { buildShortLabels } from "@/lib/playerName";
@@ -56,6 +57,7 @@ export default function DashboardScreen() {
   }, [players.length]);
 
   const totals = useMemo(() => computeTotals(players, rounds), [players, rounds]);
+  const motions = useChipMotions(players.map((p) => p.id));
 
   /**
    * 💩 diambil dari store, BUKAN dari posisi terakhir hasil sort.
@@ -129,16 +131,21 @@ export default function DashboardScreen() {
           const score = totals[p.id] || 0;
           const isGodTier = score >= 1000;
           const isHellTier = score <= -1000;
+          const motion = motions[p.id];
 
           return (
             <button
-              key={p.id}
+              key={`${p.id}:${motion.key}`}
               onClick={() => setSelectedPlayerId(p.id)}
               title={p.name}
+              data-testid={`chip-${p.id}`}
+              style={motion.style}
               className={cn(
-                "relative overflow-hidden flex flex-col items-center justify-center py-3 sm:py-4 md:py-5 min-h-11 bg-bg active:bg-surface transition-colors min-w-0"
+                "relative overflow-hidden flex flex-col items-center justify-center py-3 sm:py-4 md:py-5 min-h-11 bg-bg active:bg-surface transition-colors min-w-0",
+                motion.className
               )}
             >
+              <ChipEffects playerId={p.id} />
               {/* Tembus +1000 (nyewu) = cincin emas berputar, tembus -1000 = cincin merah */}
               {isGodTier && <SpinBorder tone="god" tint="bg-fg/10" />}
               {isHellTier && <SpinBorder tone="hell" tint="bg-danger/10" />}
@@ -146,7 +153,9 @@ export default function DashboardScreen() {
                 {shortLabels[p.id]}
               </span>
               <span className="relative z-10 text-lg sm:text-xl md:text-2xl">
-                {playerRanks[p.id]}
+                <span key={motion.rankKey} className={motion.rankClassName}>
+                  {playerRanks[p.id]}
+                </span>
               </span>
             </button>
           );

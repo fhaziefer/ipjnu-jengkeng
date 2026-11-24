@@ -38,9 +38,12 @@ copy berbahasa Jawa, emote, dan cincin ±1000, bukan dari efek visual lain.
    outline pakai `line-control` (≥ 3:1), bukan `line`.
 7. **Teks ≥ 12px.** Chip label dan stempel kecil boleh 11px. Angka ronde 14px (`text-sm`),
    baris terakhir/total 20px. Teks receipt PNG diekspor sebagai gambar, boleh lebih kecil.
-8. **Gerak hanya yang berfungsi**, selain cincin ±1000. Tidak ada kelas animasi dekoratif
-   (`animate-in`, `zoom-in`, dll. tidak ada di build ini; jangan ditulis). `prefers-reduced-motion`
-   dihormati di `globals.css`.
+8. **Gerak boleh kalau menyampaikan kejadian game** (ganti juru kunci, nyewu, gepuk, comeback),
+   selain cincin ±1000. Syaratnya: ≤ 1,2 detik, tidak menangkap sentuhan dan tidak menahan input,
+   dipicu hanya oleh aksi simpan (bukan undo/edit/reload), dan tidak jalan sama sekali kalau
+   `prefers-reduced-motion` aktif atau saklar "Animasi" di Pengaturan mati. Keyframes ada di
+   `globals.css` (`jk-*`), pemicu di `src/lib/gameEvents.ts`. Tetap tidak ada animasi dekoratif
+   (`animate-in`, `zoom-in`, dll. tidak ada di build ini; jangan ditulis).
 9. **Fokus keyboard selalu terlihat** (`:focus-visible` global). Tombol ikon wajib `aria-label`.
 10. Angka skor pakai `font-mono`; kolom angka sejajar memakai `tabular-nums`.
 11. **Undo adalah tombol ikon** (`Undo2`, `aria-label="Salah Ngitung"`), outline, di kiri tombol utama.

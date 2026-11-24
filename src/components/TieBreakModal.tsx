@@ -5,6 +5,8 @@ import { buildTieIntroVars } from "@/lib/speechContext";
 import { useEffect, useRef, useState } from "react";
 import { Dices, Skull, ArrowRight } from "lucide-react";
 import { useGameStore, drawSpin, evaluateTieResults } from "@/store/useGameStore";
+import { useEffectsStore } from "@/store/useEffectsStore";
+import { detectTieEvents } from "@/lib/gameEvents";
 import { buildShortLabels } from "@/lib/playerName";
 import { buildRoundAnnouncement } from "@/lib/announcement";
 import { getTemplates } from "@/store/useSettingsStore";
@@ -120,6 +122,7 @@ export default function TieBreakModal() {
             if (outcome.status === "waiting") return;
 
             const reveal = window.setTimeout(() => {
+                const lastPlaceBefore = useGameStore.getState().currentLastPlacePlayerId;
                 const committedOutcome = commitTieBreak();
 
                 if (committedOutcome.status === "respin") {
@@ -128,6 +131,11 @@ export default function TieBreakModal() {
                 }
 
                 if (committedOutcome.status === "resolved") {
+                    // Diputar saat hasil ditutup ("Wes, Lanjut"), bukan sekarang:
+                    // modal ini menutupi chip pemain.
+                    useEffectsStore
+                        .getState()
+                        .defer(detectTieEvents(lastPlaceBefore, committedOutcome.loserId));
                     // Snapshot dulu, karena commit sudah mengosongkan pending.
                     setVerdict({
                         loserId: committedOutcome.loserId,
@@ -263,7 +271,10 @@ export default function TieBreakModal() {
                            yang lagi noleh bentar kelewat dan nggak bisa balik. */
                         <button
                             type="button"
-                            onClick={() => setVerdict(null)}
+                            onClick={() => {
+                                setVerdict(null);
+                                useEffectsStore.getState().flush();
+                            }}
                             className="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl font-bold active:scale-[0.98] transition-all bg-accent text-on-accent hover:bg-accent-hover"
                         >
                             Wes, Lanjut

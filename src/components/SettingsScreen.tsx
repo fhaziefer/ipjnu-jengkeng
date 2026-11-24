@@ -147,6 +147,7 @@ function Editor() {
   const overrides = useSettingsStore((s) => s.overrides);
   const resetAll = useSettingsStore((s) => s.resetAll);
   const streakThreshold = useSettingsStore((s) => s.streakThreshold);
+  const animations = useSettingsStore((s) => s.animations);
   const [confirmingReset, setConfirmingReset] = useState(false);
 
   const effective = useMemo(() => resolveTemplates(overrides), [overrides]);
@@ -154,7 +155,8 @@ function Editor() {
   // Simpan / Bawaan / "kembalikan semua" editornya dimulai ulang dari nilai terbaru.
   const changedCount =
     TEMPLATE_DEFS.filter((d) => effective[d.key] !== d.defaultText).length +
-    (streakThreshold !== LAST_PLACE_STREAK_ROUNDS ? 1 : 0);
+    (streakThreshold !== LAST_PLACE_STREAK_ROUNDS ? 1 : 0) +
+    (animations ? 0 : 1);
 
   return (
     <div className="space-y-6">
@@ -162,6 +164,8 @@ function Editor() {
         Ubah kalimat yang diucapkan. Kosongkan kolom untuk membisukan bagian itu. Perubahan baru
         berlaku setelah ditekan <strong className="text-fg">Simpan</strong>.
       </p>
+
+      <AnimationCard />
 
       <ThresholdCard key={`ambang:${streakThreshold}`} current={streakThreshold} />
 
@@ -214,6 +218,46 @@ function Editor() {
         )}
       </section>
     </div>
+  );
+}
+
+function AnimationCard() {
+  const animations = useSettingsStore((s) => s.animations);
+  const setAnimations = useSettingsStore((s) => s.setAnimations);
+
+  return (
+    <section className="rounded-2xl border border-line bg-surface p-4" aria-labelledby="animasi-judul">
+      <div className="flex items-center justify-between gap-4">
+        <div className="min-w-0">
+          <h2 id="animasi-judul" className="text-sm font-bold text-fg">
+            Animasi
+          </h2>
+          <p className="text-xs text-fg-subtle">
+            Efek singkat saat ganti juru kunci, nyewu, gepuk, dan comeback. Mati sendiri kalau HP memakai
+            mode kurangi gerakan. Tersimpan di HP ini.
+          </p>
+        </div>
+        <button
+          type="button"
+          role="switch"
+          aria-checked={animations}
+          aria-labelledby="animasi-judul"
+          onClick={() => setAnimations(!animations)}
+          className={cn(
+            "relative shrink-0 w-14 h-11 rounded-full border transition-colors",
+            animations ? "bg-accent border-accent" : "bg-surface-2 border-line-control"
+          )}
+        >
+          <span
+            aria-hidden
+            className={cn(
+              "absolute top-1/2 -translate-y-1/2 size-7 rounded-full transition-[left]",
+              animations ? "left-[calc(100%-2rem)] bg-on-accent" : "left-1 bg-fg-subtle"
+            )}
+          />
+        </button>
+      </div>
+    </section>
   );
 }
 

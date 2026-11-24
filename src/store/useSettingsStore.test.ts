@@ -120,3 +120,31 @@ describe("useSettingsStore", () => {
     expect(await load(null)).toBe(7);
   });
 });
+
+describe("saklar animasi", () => {
+  const get2 = () => useSettingsStore.getState();
+
+  it("bawaan hidup, bisa dimatikan, resetAll menghidupkan lagi", () => {
+    expect(get2().animations).toBe(true);
+    get2().setAnimations(false);
+    expect(get2().animations).toBe(false);
+    get2().resetAll();
+    expect(get2().animations).toBe(true);
+  });
+
+  it("rehydrate: hanya false yang mematikan; data lama/rusak = hidup", async () => {
+    const load = async (value: unknown) => {
+      localStorage.setItem(
+        SETTINGS_STORAGE_KEY,
+        JSON.stringify({ state: { overrides: {}, animations: value }, version: 1 })
+      );
+      await useSettingsStore.persist.rehydrate();
+      return get2().animations;
+    };
+    expect(await load(false)).toBe(false);
+    expect(await load(true)).toBe(true);
+    expect(await load(undefined)).toBe(true);
+    expect(await load("false")).toBe(true);
+    expect(await load(0)).toBe(true);
+  });
+});
