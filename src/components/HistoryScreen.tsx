@@ -16,6 +16,7 @@ import { downloadTextFile, requestPersistentStorage } from "@/lib/storage";
 import { cn } from "@/lib/utils";
 import BackupCard from "@/components/BackupCard";
 import HallOfFame from "@/components/HallOfFame";
+import RekapBulanan from "@/components/RekapBulanan";
 import Stat from "@/components/Stat";
 
 type Tab = "game" | "statistik" | "rekor" | "cadangan";
@@ -196,7 +197,12 @@ export default function HistoryScreen({ onClose }: HistoryScreenProps) {
           </section>
         )}
 
-        {tab === "rekor" && <HallOfFame games={games} />}
+        {tab === "rekor" && (
+          <div className="space-y-5">
+            <RekapBulanan games={games} />
+            <HallOfFame games={games} />
+          </div>
+        )}
 
         {tab === "cadangan" && (
           <section className="space-y-4">
