@@ -1,9 +1,11 @@
 "use client";
 
+import { canResume, AUTO_FINISH_IDLE_MS, RESUME_WINDOW_MS } from "@/lib/autoFinish";
 import { useGameStore } from "@/store/useGameStore";
 import { RefreshCcw, Trophy, Skull, Share2, Loader2, History } from "lucide-react";
 import { useMemo, useRef, useState } from "react";
 import { toPng } from "html-to-image";
+import { format } from "date-fns";
 import { buildShortLabels } from "@/lib/playerName";
 import HistoryScreen from "./HistoryScreen";
 import { computeTotals, sortPlayersByTotal } from "@/lib/scoring";
@@ -35,8 +37,13 @@ function downloadDataUrl(dataUrl: string, fileName: string) {
 }
 
 export default function FinishedScreen() {
-  const { players, rounds, resetGame, startGame, currentLastPlacePlayerId } =
+  const { players, rounds, resetGame, startGame, currentLastPlacePlayerId, autoFinish, resumeGame } =
     useGameStore();
+  const gameStatus = useGameStore((s) => s.gameStatus);
+  const lastActivityAt = useGameStore((s) => s.lastActivityAt);
+  // Dibaca sekali saat layar dibuka; jendela 3 jam tidak perlu detak per detik.
+  const [openedAt] = useState(() => Date.now());
+  const resumable = canResume(gameStatus, autoFinish, openedAt);
 
   const receiptRef = useRef<HTMLDivElement>(null);
 
@@ -164,6 +171,33 @@ export default function FinishedScreen() {
             </p>
           </div>
         </div>
+
+        {autoFinish && (
+          <div
+            data-testid="auto-finish-notice"
+            className="bg-surface border border-line-strong rounded-2xl p-4 space-y-3 text-center"
+          >
+            <p className="text-sm text-fg">
+              Game ditutup otomatis: {AUTO_FINISH_IDLE_MS / 60_000} menit tanpa itungan
+              {lastActivityAt ? ` (terakhir ${format(new Date(lastActivityAt), "HH.mm")})` : ""}.
+            </p>
+            {resumable ? (
+              <>
+                <button
+                  type="button"
+                  onClick={() => resumeGame()}
+                  className="w-full min-h-11 py-3 rounded-xl font-bold text-on-accent bg-accent hover:bg-accent-hover transition-colors"
+                >
+                  Lanjutkan game
+                </button>
+                <p className="text-xs text-fg-subtle">
+                  Masih bisa dilanjutkan sampai {RESUME_WINDOW_MS / 3_600_000} jam setelah ditutup. Cadangan online
+                  menunggu sampai itu lewat atau game baru dimulai.
+                </p>
+              </>
+            ) : null}
+          </div>
+        )}
 
         <div className="bg-surface/50 border border-line rounded-2xl p-4 sm:p-6 space-y-4">
           <h2 className="text-sm font-semibold text-fg-subtle uppercase tracking-wider text-center">
@@ -309,6 +343,9 @@ export default function FinishedScreen() {
                       lastPlaceSinceTimestamp: null,
                       pendingTieBreak: null,
                       carriedTieBreak: null,
+                      firstTurnPlayerId: null,
+                      lastActivityAt: null,
+                      autoFinish: null,
                     });
                     setIsRematchModalOpen(false);
                   }}

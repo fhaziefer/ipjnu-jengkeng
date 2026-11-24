@@ -7,6 +7,7 @@ import { renderTemplate, type TemplateVars } from "@/lib/speechTemplates";
 import { buildSretVars, buildStreakVars } from "@/lib/speechContext";
 import { countConsecutiveLastPlace } from "@/lib/scoring";
 import { isSpeechAvailable, speak } from "@/lib/speech";
+import { dueAutoFinish } from "@/lib/autoFinish";
 import {
   dueRounds,
   dueStreakKey,
@@ -77,6 +78,10 @@ export default function LastPlaceAlert({ paused }: { paused: boolean }) {
         );
         return;
       }
+
+      // Sudah 30 menit tanpa itungan: game sebentar lagi ditutup otomatis, jadi
+      // "juru kunci kelamaan" tidak relevan (dan akan bunyi tepat sebelum ditutup).
+      if (dueAutoFinish(game, Date.now()) !== null) return;
 
       const timeKey = dueStreakKey(snapshot, Date.now(), readAnnounced("time"));
       if (timeKey !== null) {
