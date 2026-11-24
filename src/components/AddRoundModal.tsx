@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
+import { emitRoundEffects } from "@/store/useEffectsStore";
+import { detectRoundEvents } from "@/lib/gameEvents";
 import { useGameStore } from "@/store/useGameStore";
 import { X, Plus, AlertCircle, ShieldAlert } from "lucide-react";
 import { buildShortLabels } from "@/lib/playerName";
@@ -97,11 +99,16 @@ export default function AddRoundModal({
         ? { shooterId, victimId, penaltyPoints }
         : undefined;
 
+    // Dipotret sebelum undo: edit (undo + simpan ulang) tidak menambah ronde,
+    // jadi tidak memicu animasi.
+    const before = useGameStore.getState();
+
     if (isEditMode) undoLastRound();
 
     addRound(baseScores, shootData, isEditMode);
 
     const state = useGameStore.getState();
+    emitRoundEffects(detectRoundEvents(before, state), state.pendingTieBreak !== null);
 
     // Kalau skor terendahnya seri, pengumuman ditahan dulu. TieBreakModal yang
     // bicara: intro "bijine podo", lalu spin, baru pengumuman skor lengkap.

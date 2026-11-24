@@ -122,3 +122,73 @@
     border: 1px solid #000 !important;
   }
 }
+
+/*
+ * Efek kejadian game (DESIGN.md aturan 8). Semua <= 1,2 detik, tidak menangkap
+ * sentuhan, dan tidak dipicu sama sekali kalau reduced-motion aktif atau
+ * animasi dimatikan di Pengaturan. Kelas dipasang oleh ChipEffects/useChipMotion.
+ */
+@keyframes jk-flash {
+  0% { opacity: 0; }
+  15% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes jk-ring {
+  0% { opacity: 1; box-shadow: inset 0 0 0 0 var(--jk-ring); }
+  100% { opacity: 0; box-shadow: inset 0 0 0 10px var(--jk-ring); }
+}
+@keyframes jk-float {
+  0% { opacity: 0; transform: translate(-50%, 6px); }
+  15% { opacity: 1; }
+  100% { opacity: 0; transform: translate(-50%, -26px); }
+}
+@keyframes jk-shake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(calc(var(--jk-amp, 3px) * -1)); }
+  40% { transform: translateX(var(--jk-amp, 3px)); }
+  60% { transform: translateX(calc(var(--jk-amp, 3px) * -0.6)); }
+  80% { transform: translateX(calc(var(--jk-amp, 3px) * 0.4)); }
+}
+@keyframes jk-stamp {
+  0% { transform: scale(1); }
+  30% { transform: scale(1.1); }
+  100% { transform: scale(1); }
+}
+@keyframes jk-drop {
+  0% { opacity: 0; transform: translateY(-16px) scale(1.5); }
+  60% { opacity: 1; transform: translateY(2px) scale(1); }
+  100% { opacity: 1; transform: none; }
+}
+
+.jk-fx-layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.jk-fx-flash {
+  z-index: 5;
+  animation: jk-flash 1000ms ease-out forwards;
+}
+.jk-fx-ring {
+  z-index: 5;
+  animation: jk-ring 1100ms ease-out forwards;
+}
+.jk-fx-float {
+  position: absolute;
+  left: 50%;
+  top: 45%;
+  z-index: 20;
+  pointer-events: none;
+  white-space: nowrap;
+  animation: jk-float 1100ms ease-out forwards;
+}
+.jk-shake {
+  animation: jk-shake 450ms ease-in-out;
+}
+.jk-stamp {
+  animation: jk-stamp 600ms ease-out;
+}
+.jk-drop {
+  display: inline-block;
+  animation: jk-drop 700ms ease-out;
+}

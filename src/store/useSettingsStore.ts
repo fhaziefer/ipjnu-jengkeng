@@ -28,11 +28,14 @@ interface SettingsState {
     overrides: TemplateOverrides;
     /** Berapa ronde berturut-turut jadi juru kunci sebelum TTS "beruntun" bunyi. */
     streakThreshold: number;
+    /** Animasi kejadian game (ganti juru kunci, nyewu, gepuk, comeback). */
+    animations: boolean;
     /** Mengembalikan hasil validasi; yang tidak valid tidak disimpan. */
     setOverride: (key: TemplateKey, text: string) => TemplateValidation;
     resetOverride: (key: TemplateKey) => void;
     setStreakThreshold: (value: number) => StreakThresholdValidation;
     resetStreakThreshold: () => void;
+    setAnimations: (on: boolean) => void;
     /** Kalimat dan ambang kembali ke bawaan. */
     resetAll: () => void;
 }
@@ -57,6 +60,7 @@ export const useSettingsStore = create<SettingsState>()(
         (set, get) => ({
             overrides: {},
             streakThreshold: LAST_PLACE_STREAK_ROUNDS,
+            animations: true,
 
             setOverride: (key, text) => {
                 const check = validateTemplate(key, text);
@@ -78,7 +82,10 @@ export const useSettingsStore = create<SettingsState>()(
 
             resetStreakThreshold: () => set({ streakThreshold: LAST_PLACE_STREAK_ROUNDS }),
 
-            resetAll: () => set({ overrides: {}, streakThreshold: LAST_PLACE_STREAK_ROUNDS }),
+            setAnimations: (on) => set({ animations: on === true }),
+
+            resetAll: () =>
+                set({ overrides: {}, streakThreshold: LAST_PLACE_STREAK_ROUNDS, animations: true }),
         }),
         {
             name: SETTINGS_STORAGE_KEY,
@@ -86,14 +93,19 @@ export const useSettingsStore = create<SettingsState>()(
             partialize: (state) => ({
                 overrides: state.overrides,
                 streakThreshold: state.streakThreshold,
+                animations: state.animations,
             }),
             // Data lama (hanya `overrides`) tetap terbaca: ambang yang tidak ada jatuh ke bawaan.
             merge: (persisted, current) => {
-                const p = persisted as { overrides?: unknown; streakThreshold?: unknown } | undefined;
+                const p = persisted as
+                    | { overrides?: unknown; streakThreshold?: unknown; animations?: unknown }
+                    | undefined;
                 return {
                     ...current,
                     overrides: sanitizeOverrides(p?.overrides),
                     streakThreshold: sanitizeStreakThreshold(p?.streakThreshold),
+                    // Hanya `false` yang mematikan; data lama atau rusak = hidup.
+                    animations: p?.animations !== false,
                 };
             },
         }
