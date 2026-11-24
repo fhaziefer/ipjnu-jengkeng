@@ -4,7 +4,9 @@ import { useGameStore } from "@/store/useGameStore";
 import { X, Coins, TrendingDown, Skull, Clock, Dices, Target } from "lucide-react";
 import { useMemo } from "react";
 import { useNow } from "@/hooks/useNow";
-import { buildShortLabels } from "@/lib/playerName";
+import { buildShortLabels, playerNameKey } from "@/lib/playerName";
+import { useHistoryStore } from "@/store/useHistoryStore";
+import { PlayerGelar } from "./GelarRivalitas";
 
 interface PlayerDetailModalProps {
   playerId: string;
@@ -14,6 +16,7 @@ interface PlayerDetailModalProps {
 export default function PlayerDetailModal({ playerId, onClose }: PlayerDetailModalProps) {
   const { players, rounds, shootRecords, gameStartTime } = useGameStore();
   const player = players.find((p) => p.id === playerId);
+  const historyGames = useHistoryStore((s) => s.games);
 
   const now = useNow(60000);
   const shortLabels = useMemo(() => buildShortLabels(players), [players]);
@@ -118,6 +121,7 @@ export default function PlayerDetailModal({ playerId, onClose }: PlayerDetailMod
             <div className="min-w-0">
               <h2 className="text-xl font-bold text-fg truncate">{player.name}</h2>
               <p className="text-xs text-fg-subtle">Rapor Pemain</p>
+              <PlayerGelar games={historyGames} playerKey={playerNameKey(player.name)} />
             </div>
           </div>
           <button

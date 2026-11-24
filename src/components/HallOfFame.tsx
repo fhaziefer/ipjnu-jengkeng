@@ -6,6 +6,7 @@ import { id as localeId } from "date-fns/locale";
 import { computeHallOfFame, MIN_GAMES_FOR_RATE, type HallRecord, type RecordId } from "@/lib/hallOfFame";
 import { formatDuration, type GameRecord } from "@/lib/history";
 import Stat from "@/components/Stat";
+import GelarRivalitas from "@/components/GelarRivalitas";
 
 const RECORD_INFO: Record<RecordId, { label: string; emoji?: string; penalty?: boolean; unit?: string }> = {
   mostWins: { label: "Menang terbanyak", emoji: "👑", unit: "kali" },
@@ -15,7 +16,8 @@ const RECORD_INFO: Record<RecordId, { label: string; emoji?: string; penalty?: b
   mostLosses: { label: "Juru kunci terbanyak", emoji: "💩", penalty: true, unit: "kali" },
   longestLoserStreak: { label: "Jengkeng beruntun terpanjang", emoji: "💩", penalty: true, unit: "game" },
   lowestTotal: { label: "Skor akhir terendah", penalty: true },
-  mostNyewu: { label: "Paling sering nyewu", penalty: true, unit: "kali" },
+  // Nyewu = tembus +1000 (cincin emas), prestasi, bukan hukuman.
+  mostNyewu: { label: "Paling sering nyewu", unit: "kali" },
   mostShotsGiven: { label: "Penggepuk terbanyak", unit: "gepuk" },
   mostShotsTaken: { label: "Paling sering digepuk", penalty: true, unit: "gepuk" },
 };
@@ -25,11 +27,11 @@ const ORDER: RecordId[] = [
   "bestWinRate",
   "longestWinStreak",
   "highestTotal",
+  "mostNyewu",
   "mostShotsGiven",
   "mostLosses",
   "longestLoserStreak",
   "lowestTotal",
-  "mostNyewu",
   "mostShotsTaken",
 ];
 
@@ -111,6 +113,8 @@ export default function HallOfFame({ games }: { games: ReadonlyArray<GameRecord>
           </ul>
         )}
       </div>
+
+      <GelarRivalitas games={games} />
     </section>
   );
 }
